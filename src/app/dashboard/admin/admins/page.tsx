@@ -380,8 +380,8 @@ export default function ManageAdminsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · People"
-        title="Manage Admins"
+        eyebrow="Command Deck"
+        title="Admin Access"
         description="Create and manage admin accounts. Master admins have full platform access; regular admins can be scoped to specific tabs."
         actions={
           tab === "admins" ? (
@@ -622,7 +622,7 @@ function NewAdminForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@transpe.net"
+            placeholder="admin@bankingpoint-24.com"
           />
         </div>
         <div>
@@ -794,7 +794,7 @@ function NewMasterAdminForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="masteradmin@transpe.net"
+            placeholder="masteradmin@bankingpoint-24.com"
           />
         </div>
         <div>

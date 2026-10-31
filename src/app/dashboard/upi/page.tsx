@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { QrCode, Copy, Check } from "lucide-react";
@@ -17,9 +17,9 @@ export default function UpiPage() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
-  const upiId = "TRANSPE@axisbank";
-  const link = `upi://pay?pa=${upiId}&pn=TRANSPE&am=${amount}&tn=${encodeURIComponent(
-    note || "TRANSPE payment"
+  const upiId = "BankingPoint24@axisbank";
+  const link = `upi://pay?pa=${upiId}&pn=BankingPoint24&am=${amount}&tn=${encodeURIComponent(
+    note || "BankingPoint24 payment"
   )}&cu=INR`;
 
   function copy() {
@@ -80,7 +80,7 @@ export default function UpiPage() {
             </div>
             <AsideTips
               items={[
-                { icon: <Lightning weight="duotone" />, text: "Payments settle to your TRANSPE wallet instantly." },
+                { icon: <Lightning weight="duotone" />, text: "Payments settle to your BankingPoint24 wallet instantly." },
                 { icon: <DeviceMobile weight="duotone" />, text: "Leave the amount blank to let the customer enter it." },
               ]}
             />

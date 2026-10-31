@@ -1,4 +1,4 @@
-import pino from "pino";
+﻿import pino from "pino";
 
 /**
  * Structured application logger (pino). One JSON line per event so logs can be
@@ -12,7 +12,7 @@ const level = process.env.LOG_LEVEL ?? (process.env.NODE_ENV === "production" ? 
 
 export const logger = pino({
   level,
-  base: { service: "TRANSPE" },
+  base: { service: "bankingpoint24" },
   redact: {
     paths: [
       "password",

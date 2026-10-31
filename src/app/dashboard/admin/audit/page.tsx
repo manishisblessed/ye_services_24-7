@@ -97,14 +97,14 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Platform"
-        title="Audit log"
-        description="Immutable record of every privileged action across the platform."
+        eyebrow="Command Deck"
+        title="Activity Log"
+        description="Immutable record of every privileged action across the BankingPoint24 platform."
         actions={
           <>
             <ReportActions
               filename="audit-log"
-              title="JMP TRANSPE · Audit Log"
+              title="JMP BankingPoint24 · Audit Log"
               subtitle={`${events.length} of ${total} events`}
               columns={[
                 { key: "id", header: "Event ID" },

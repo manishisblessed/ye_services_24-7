@@ -107,7 +107,7 @@ export default function LoginMethodSettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHeader
-        eyebrow="Account · Security"
+        eyebrow="My Profile"
         title="Login method"
         description="Choose how you verify your identity when you sign in."
         actions={

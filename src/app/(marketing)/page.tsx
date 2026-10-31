@@ -1,4 +1,4 @@
-import { HeroConsole } from "@/components/home/HeroConsole";
+﻿import { HeroConsole } from "@/components/home/HeroConsole";
 import { ImpactStrip } from "@/components/home/ImpactStrip";
 import { ServiceRail } from "@/components/home/ServiceRail";
 import { LaunchPath } from "@/components/home/LaunchPath";
@@ -12,25 +12,26 @@ import { AnswerDesk } from "@/components/home/AnswerDesk";
 import { ClosingSlab } from "@/components/home/ClosingSlab";
 
 /**
- * TRANSPE home — the "counter console" narrative.
+ * BankingPoint24 home — "One counter. Sixty ways to earn."
  *
- * Flow: prove it's alive (hero + numbers) → show the catalogue → show how
- * fast you start → let the visitor model their income → explain the network
- * → social proof → regulation → India reach → pricing → objections → close.
+ * Flow: hero (counter receipt proves the earnings) → services catalogue →
+ * network numbers → income calculator → network ladder → how-to-start path →
+ * compliance vault → partner stories → pricing → India reach → FAQs →
+ * closing CTA.
  */
 export default function HomePage() {
   return (
     <>
       <HeroConsole />
-      <ImpactStrip />
       <ServiceRail />
-      <LaunchPath />
+      <ImpactStrip />
       <IncomeDesigner />
       <NetworkLadder />
-      <ProofLoop />
+      <LaunchPath />
       <TrustVault />
-      <BharatGrid />
+      <ProofLoop />
       <PlansBoard />
+      <BharatGrid />
       <AnswerDesk />
       <ClosingSlab />
     </>

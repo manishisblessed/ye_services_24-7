@@ -153,9 +153,9 @@ export default function MyAssignedSchemePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Account · Pricing"
-        title="My scheme"
-        description="The rate-card assigned to you. Charges, commissions and POS MDR are set by your parent and applied to every transaction you process."
+        eyebrow="My Kiosk"
+        title="My Rate Card"
+        description="The pricing scheme assigned to your account. Charges, commissions and MDR rates applied to every transaction you process."
         actions={
           <>
             {children.length > 0 && (

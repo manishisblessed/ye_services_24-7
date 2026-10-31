@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Viable DigiSeva PG adapter — hosted-checkout payin (wallet top-up / PG collect).
  *
  * Activate: PARTNER_UPI_ENABLED=true  (flags.upi)
@@ -290,9 +290,9 @@ export const viableUpi: UpiProvider = {
   async collect(input: UpiCollectInput): Promise<PartnerResult<UpiCollectOutput>> {
     const body = {
       amount: input.amount, // rupees (verified: Viable amounts are in ₹)
-      name: input.customerName || "TRANSPE Customer",
+      name: input.customerName || "BankingPoint24 Customer",
       mobile: input.customerPhone,
-      email: input.customerEmail || "noreply@transpe.net",
+      email: input.customerEmail || "noreply@bankingpoint-24.com",
       redirectUri: input.callbackUrl,
     };
     const requested = resolveChannelRoute(input.channel);
@@ -429,8 +429,8 @@ async function probeRoute(route: string): Promise<{ healthy: boolean; detail: st
       amount: PROBE_AMOUNT,
       name: "Health Probe",
       mobile: "9999999999",
-      email: "noreply@transpe.net",
-      redirectUri: "https://transpe.net/api/healthz",
+      email: "noreply@bankingpoint-24.com",
+      redirectUri: "https://www.bankingpoint-24.com/api/healthz",
     },
     { retries: 0 }
   );

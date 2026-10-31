@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -59,8 +59,8 @@ export default function CommissionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Account · Commissions"
-        title={role === "master-distributor" ? "Commission master" : "Commission slabs"}
+        eyebrow="My Kiosk"
+        title={role === "master-distributor" ? "My Rates" : "My Rate Card"}
         description={role === "master-distributor"
           ? "Set rate-cards for your distributors. They can only set retailer payouts within these caps."
           : "View your commission rates per transaction type."}
@@ -70,8 +70,8 @@ export default function CommissionsPage() {
               filename="commission-slabs"
               title={
                 role === "master-distributor"
-                  ? "JMP TRANSPE · Commission Master"
-                  : "JMP TRANSPE · Commission Slabs"
+                  ? "JMP BankingPoint24 · Commission Master"
+                  : "JMP BankingPoint24 · Commission Slabs"
               }
               subtitle="Service-wise rate-card"
               columns={[

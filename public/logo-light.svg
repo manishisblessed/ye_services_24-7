@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" fill="none" role="img" aria-label="TRANSPE">
-  <!-- Up-tick accent -->
-  <polygon points="22,8 32,8 27,0" fill="#2DD4BF"/>
-
-  <g font-family="'Clash Display','Satoshi','Segoe UI',system-ui,sans-serif" font-weight="800" font-size="54" letter-spacing="-1.5">
-    <text x="0"   y="54" fill="#FFFFFF">trans</text>
-    <text x="167" y="54" fill="#2DD4BF">pe</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 72" fill="none" role="img" aria-label="BankingPoint24">
+  <!-- Light variant: white wordmark for dark backgrounds -->
+  <g font-family="'Clash Display','Satoshi','Segoe UI',system-ui,sans-serif" font-weight="800" font-size="44" letter-spacing="-1">
+    <text x="0"   y="52" fill="#ffffff">Banking</text>
+    <text x="215" y="52" fill="#ffffff">Point</text>
   </g>
-
-  <path d="M18 36 Q 22 48 32 54 L 22 58 Q 14 50 12 40 Z" fill="#FFFFFF" opacity="0.9"/>
+  <!-- "24" badge in white circle -->
+  <circle cx="355" cy="30" r="22" fill="none" stroke="#ffffff" stroke-width="3"/>
+  <text x="355" y="38" font-family="'Clash Display','Satoshi',system-ui,sans-serif" font-weight="800" font-size="18" fill="#ffffff" text-anchor="middle">24</text>
 </svg>

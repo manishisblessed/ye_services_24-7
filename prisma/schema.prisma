@@ -1,5 +1,5 @@
 // =====================================================================
-// TRANSPE — production schema (Supabase Postgres + Prisma)
+// BankingPoint24 (RUTVA MULTISERVICES LLP) — production schema (Supabase Postgres + Prisma)
 // =====================================================================
 
 generator client {
@@ -124,7 +124,7 @@ model User {
 
   // ── White-label tenancy (Phase A) ────────────────────────────────────────
   // platformOwnerId links every user created under a white-label tenant to the
-  // SD/MD who owns that tenant. NULL = native TRANSPE user (not under any
+  // SD/MD who owns that tenant. NULL = native BankingPoint24 user (not under any
   // white-label). All downline queries, report scopes, and scheme lookups MUST
   // filter by platformOwnerId to keep tenants isolated.
   // isTenantOwner marks the SD/MD who IS the white-label tenant root — they get
@@ -574,7 +574,7 @@ model Document {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   type         DocumentType
   // Cloudinary
-  publicId     String // e.g. "TRANSPE/kyc/abc123"
+  publicId     String // e.g. "bankingpoint24/kyc/abc123"
   url          String // secure_url
   resourceType String       @default("image") // image | raw | video
   format       String?
@@ -954,7 +954,7 @@ enum CashCollectionStatus {
 /// Admin (ADMIN / MASTER_ADMIN) creates and manages these.
 model CompanyBankAccount {
   id            String   @id @default(cuid())
-  accountName   String   // Beneficiary name (e.g. "Transpe Payments Pvt Ltd")
+  accountName   String   // Beneficiary name (e.g. "RUTVA MULTISERVICES LLP")
   bankName      String   // e.g. "HDFC Bank"
   accountNumber String   // Bank account number
   ifscCode      String   // IFSC code
@@ -1956,7 +1956,7 @@ model StaticQr {
 
 // =====================================================================
 // Admin Console expansion — Phases A1–A6 (functional parity with the
-// reference platform's admin, built natively on the TRANSPE ledger).
+// reference platform's admin, built natively on the BankingPoint24 ledger).
 // =====================================================================
 
 // ---------- A1: Platform settings (typed key-value store) ----------

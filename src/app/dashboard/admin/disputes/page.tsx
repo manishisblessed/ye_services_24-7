@@ -180,9 +180,9 @@ export default function AdminDisputesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Compliance"
-        title="Disputes & Support"
-        description="Support queue with SLA tracking. Breaches are auto-escalated and alerted to ops every 30 minutes."
+        eyebrow="Partner Network"
+        title="Helpdesk"
+        description="Member support queue with SLA tracking. Breaches are auto-escalated and alerted to ops every 30 minutes."
         actions={
           <Button variant="outline" onClick={fetchList} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />

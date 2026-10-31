@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Transactional email templates.
  *
  * Design constraints (email is not the web):
@@ -13,12 +13,12 @@
  * feel continuous with the dashboard.
  */
 
-// TRANSPE email palette — mirrors tailwind.config.ts brand (navy) & accent (teal).
+// BankingPoint24 email palette — mirrors tailwind.config.ts brand (navy) & accent (teal).
 const BRAND = {
   primary: "#172b6b",    // brand-700 (navy)
   primaryDark: "#0b1740", // brand-900 (deep navy)
   primarySoft: "#eef2fb", // brand-50
-  accent: "#17b8a6",     // accent-500 (teal)
+  accent: "#61a93a",     // accent-500 (teal)
   ink: "#0e1626",        // ink-900
   inkMuted: "#516a8c",   // ink-500
   inkLight: "#a4b3c8",   // ink-300
@@ -29,14 +29,14 @@ const BRAND = {
 /**
  * Optional per-tenant brand override.
  * Pass this from any email template to render with a white-label identity
- * instead of the default TRANSPE branding.
+ * instead of the default BankingPoint24 branding.
  */
 export type EmailBrand = {
-  /** White-label tenant name (replaces "TRANSPE" in all copy). */
+  /** White-label tenant name (replaces "BankingPoint24" in all copy). */
   brandName: string;
-  /** Hex primary colour (e.g. "#1a3c8f"). Defaults to TRANSPE navy. */
+  /** Hex primary colour (e.g. "#1a3c8f"). Defaults to BankingPoint24 navy. */
   primaryColor?: string;
-  /** Hex accent colour. Defaults to TRANSPE teal. */
+  /** Hex accent colour. Defaults to BankingPoint24 teal. */
   accentColor?: string;
   /** Support email for the tenant. */
   supportEmail?: string;
@@ -80,16 +80,16 @@ function shell({
   bodyHtml: string;
   brand?: EmailBrand;
 }) {
-  const platformName = brand?.brandName ?? "TRANSPE";
+  const platformName = brand?.brandName ?? "BankingPoint24";
   const primaryHex = brand?.primaryColor ?? BRAND.primary;
   const primaryDark = brand?.primaryColor ?? BRAND.primaryDark;
   const year = new Date().getFullYear();
   const poweredByHtml = brand
-    ? `<div style="margin-top:8px;color:${BRAND.inkLight};font-size:11px;">Powered by TRANSPE</div>`
+    ? `<div style="margin-top:8px;color:${BRAND.inkLight};font-size:11px;">Powered by BankingPoint24</div>`
     : "";
   const nativeAddressHtml = brand
     ? ""
-    : `<div>Pune, Maharashtra, India &middot; <a href="https://transpe.net" style="color:${primaryHex};text-decoration:none;">transpe.net</a></div>`;
+    : `<div>Mogri, Anand, Gujarat, India &middot; <a href="https://www.bankingpoint-24.com" style="color:${primaryHex};text-decoration:none;">bankingpoint-24.com</a></div>`;
 
   return `<!doctype html>
 <html lang="en">
@@ -168,7 +168,7 @@ export function renderInviteEmail(opts: {
   const expiry = fmtExpiry(opts.expiresAt);
   const firstName = opts.name?.split(" ")[0]?.trim();
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
-  const platformName = opts.brand?.brandName ?? "TRANSPE";
+  const platformName = opts.brand?.brandName ?? "BankingPoint24";
   const primaryHex = opts.brand?.primaryColor ?? BRAND.primary;
   const primaryDark = opts.brand?.primaryColor ?? BRAND.primaryDark;
 
@@ -279,7 +279,7 @@ export function renderDocResubmissionEmail(opts: {
   const expiry = fmtExpiry(opts.expiresAt);
   const firstName = opts.name?.split(" ")[0]?.trim();
   const greeting = firstName ? `Hello ${firstName},` : "Hello,";
-  const platformName = opts.brand?.brandName ?? "TRANSPE";
+  const platformName = opts.brand?.brandName ?? "BankingPoint24";
 
   const subject = `Action needed: re-upload a few documents for ${platformName}`;
   const preheader = `A few of your documents need to be re-uploaded. It only takes a minute — link expires ${expiry}.`;
@@ -357,7 +357,7 @@ function escapeHtml(s: string): string {
  * Internal alert sent to the support/ops inbox when a prospect submits the
  * public Join Form. There is NO account yet — this is a lead the team must
  * reach out to and convert into an onboarding invite.
- * (This email always goes to the TRANSPE ops team; no tenant override needed.)
+ * (This email always goes to the BankingPoint24 ops team; no tenant override needed.)
  */
 export function renderJoinRequestEmail(opts: {
   name: string;
@@ -372,7 +372,7 @@ export function renderJoinRequestEmail(opts: {
 }): { subject: string; html: string } {
   const roleLabel = fmtRole(opts.role);
   const subject = `New join request — ${opts.name} (${roleLabel})`;
-  const preheader = `${opts.name} wants to join TRANSPE as a ${roleLabel}. Reach out and start onboarding.`;
+  const preheader = `${opts.name} wants to join BankingPoint24 as a ${roleLabel}. Reach out and start onboarding.`;
 
   const row = (label: string, value?: string | null) =>
     value
@@ -424,7 +424,7 @@ export function renderJoinRequestEmail(opts: {
     </table>
 
     <p style="font-size:14px;color:${BRAND.ink};line-height:20px;margin:18px 0 8px 0;">
-      &mdash; TRANSPE Platform
+      &mdash; BankingPoint24 Platform
     </p>
   `;
 
@@ -447,10 +447,10 @@ export function renderAccountApprovedEmail(opts: {
   const firstName = opts.name?.split(" ")[0]?.trim();
   const fullName = opts.name?.trim() || firstName || "there";
   const greeting = firstName ? `Dear ${fullName},` : "Dear user,";
-  const platformName = opts.brand?.brandName ?? "TRANSPE";
+  const platformName = opts.brand?.brandName ?? "BankingPoint24";
   const primaryHex = opts.brand?.primaryColor ?? BRAND.primary;
   const primaryDark = opts.brand?.primaryColor ?? BRAND.primaryDark;
-  const supportEmail = opts.brand?.supportEmail ?? "support@transpe.today";
+  const supportEmail = opts.brand?.supportEmail ?? "support@bankingpoint-24.com";
 
   const subject = `Your ${platformName} ${roleLabel} account is approved`;
   const preheader = `Good news — your ${roleLabel} account is live. Sign in and start using ${platformName}.`;

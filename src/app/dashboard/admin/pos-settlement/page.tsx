@@ -324,7 +324,7 @@ export default function PosSettlementPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Acquiring & Devices"
         title="POS Settlement"
         description="Configure when POS T+1 settlement runs, and trigger ingestion / settlement sweeps on demand. Same Day sends no capture webhooks, so ingestion pulls captured transactions into the queue; the T+1 sweep credits retailers on their capture's next day."
         actions={

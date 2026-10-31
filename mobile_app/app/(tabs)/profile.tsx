@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -136,7 +136,7 @@ export default function Profile() {
           <Text style={{ color: colors.rose[600], fontWeight: "800", marginLeft: 8 }}>Sign out</Text>
         </Pressable>
 
-        <Text style={styles.foot}>TRANSPE v1.0.0 · Powered by TRANSPE</Text>
+        <Text style={styles.foot}>BankingPoint24 v1.0.0 · Powered by BankingPoint24</Text>
       </ScrollView>
     </SafeAreaView>
   );

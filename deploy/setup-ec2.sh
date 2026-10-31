@@ -1,8 +1,8 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -euo pipefail
 
 echo "=========================================="
-echo "  TRANSPE EC2 Setup — Ubuntu 26.04"
+echo "  BankingPoint24 EC2 Setup — Ubuntu 26.04"
 echo "=========================================="
 
 # 1. System updates
@@ -33,21 +33,21 @@ fi
 
 # 5. Create app directory and logs
 echo "[5/7] Setting up directories..."
-mkdir -p /home/ubuntu/TRANSPE
+mkdir -p /home/ubuntu/bankingpoint24
 mkdir -p /home/ubuntu/logs
 
 # 6. Clone the repo
 echo "[6/7] Cloning repository..."
-if [ -d "/home/ubuntu/TRANSPE/.git" ]; then
+if [ -d "/home/ubuntu/bankingpoint24/.git" ]; then
     echo "Repo already exists, pulling latest..."
-    cd /home/ubuntu/TRANSPE && git pull origin main
+    cd /home/ubuntu/bankingpoint24 && git pull origin main
 else
-    git clone https://github.com/manishisblessed/money_live.git /home/ubuntu/TRANSPE
+    git clone https://github.com/manishisblessed/money_live.git /home/ubuntu/bankingpoint24
 fi
 
 # 7. Install dependencies
 echo "[7/7] Installing npm dependencies..."
-cd /home/ubuntu/TRANSPE
+cd /home/ubuntu/bankingpoint24
 npm ci --production=false
 
 echo ""
@@ -55,14 +55,14 @@ echo "=========================================="
 echo "  Base setup complete!"
 echo "  Next steps:"
 echo "  1. Load secrets from AWS (DO NOT create .env.production by hand):"
-echo "       SECRETS_BACKEND=ssm SSM_PREFIX=/TRANSPE/prod AWS_REGION=ap-south-1 \\"
+echo "       SECRETS_BACKEND=ssm SSM_PREFIX=/BankingPoint24/prod AWS_REGION=ap-south-1 \\"
 echo "         bash deploy/load-secrets.sh"
 echo "     (requires an EC2 instance role with ssm:GetParametersByPath + kms:Decrypt"
 echo "      — or secretsmanager:GetSecretValue. No static AWS keys on the box.)"
 echo "  2. Run: npx prisma generate"
 echo "  3. Run: npx prisma migrate deploy"
 echo "  4. Run: npm run build"
-echo "  5. Configure Nginx (TLS via certbot; see deploy/nginx-TRANSPE.conf)"
+echo "  5. Configure Nginx (TLS via certbot; see deploy/nginx-bankingpoint24.conf)"
 echo "  6. Start PM2 (app + worker)"
 echo ""
 echo "  Security reminders:"

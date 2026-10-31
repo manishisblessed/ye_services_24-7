@@ -314,14 +314,14 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · People"
-        title="Users & shops"
-        description="Search, filter and manage every retailer, distributor and master across the platform."
+        eyebrow="Partner Network"
+        title="Member Directory"
+        description="Search, filter and manage every retailer, distributor and master across the BankingPoint24 network."
         actions={
           <>
             <ReportActions
               filename="users"
-              title="JMP TRANSPE · Users & Shops"
+              title="JMP BankingPoint24 · Users & Shops"
               subtitle={`${users.length} users`}
               columns={[
                 { key: "id", header: "ID" },

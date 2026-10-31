@@ -60,8 +60,8 @@ const ACCENT_DOT: Record<Accent, string> = {
 };
 const ACCENT_HEX: Record<Accent, string> = {
   brand: "#1f3b8b",
-  accent: "#0f9789",
-  emerald: "#0f9789",
+  accent: "#4a8a2b",
+  emerald: "#4a8a2b",
   violet: "#172b6b",
 };
 
@@ -481,7 +481,7 @@ export function ReportView({ type }: { type: ReportType }) {
           <>
             <ReportActions
               filename={`${type}-report`}
-              title={`JMP TRANSPE · ${config.title}`}
+              title={`JMP BankingPoint24 · ${config.title}`}
               subtitle={
                 f.dateRange && from && to ? `${toDateStr(from)} – ${toDateStr(to)}` : "All records"
               }

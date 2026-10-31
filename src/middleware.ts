@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+﻿import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { MAX_BODY_BYTES } from "@/lib/env";
 import { TENANT_HEADER, TENANT_DOMAIN_HEADER } from "@/lib/tenant/context";
@@ -20,7 +20,7 @@ async function resolveTenantId(host: string): Promise<string | null> {
   }
 
   // Skip resolution for the platform's own domain
-  const platformDomain = process.env.PLATFORM_DOMAIN ?? "transpe.in";
+  const platformDomain = process.env.PLATFORM_DOMAIN ?? "bankingpoint-24.com";
   const appHost = (process.env.NEXT_PUBLIC_APP_URL ?? "")
     .replace(/^https?:\/\//, "")
     .split(":")[0];
@@ -35,7 +35,7 @@ async function resolveTenantId(host: string): Promise<string | null> {
     // Dynamic import to avoid pulling Prisma into the edge runtime
     const { prisma } = await import("@/lib/db");
 
-    // Check if it's a subdomain of the platform domain (e.g. kapoor.transpe.in)
+    // Check if it's a subdomain of the platform domain (e.g. kapoor.bankingpoint-24.com)
     let subdomain: string | null = null;
     if (host.endsWith(`.${platformDomain}`)) {
       subdomain = host.slice(0, -(`.${platformDomain}`.length));

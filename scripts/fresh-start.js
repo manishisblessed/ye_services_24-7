@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Fresh-start cleanup: delete extra users + wipe all transactional data.
  * Keeps: Manish Master (MASTER_ADMIN), Manish SD, MD, DT, RT.
  */
@@ -14,7 +14,7 @@ const KEEP_IDS = [
 ];
 
 (async () => {
-  console.log("=== TRANSPE Fresh Start ===\n");
+  console.log("=== BankingPoint24 Fresh Start ===\n");
 
   // 1. List who we're deleting
   const toDelete = await p.user.findMany({

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -164,7 +164,7 @@ function BankAccountForm({
             required
             value={form.accountName}
             onChange={(e) => setForm((f) => ({ ...f, accountName: e.target.value }))}
-            placeholder="Transpe Payments Pvt Ltd"
+            placeholder="BankingPoint24 Payments Pvt Ltd"
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -220,7 +220,7 @@ function BankAccountForm({
           <input
             value={form.upiId}
             onChange={(e) => setForm((f) => ({ ...f, upiId: e.target.value }))}
-            placeholder="transpe@hdfcbank"
+            placeholder="BankingPoint24@hdfcbank"
             className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Tenant-aware notification helpers.
  *
  * Wraps SMS/email sending with brand substitution for white-label tenants.
- * Platform name ("TRANSPE") is replaced with the tenant brand name in all
+ * Platform name ("BankingPoint24") is replaced with the tenant brand name in all
  * user-visible text when the user belongs to a white-label tenant.
  */
 
@@ -17,7 +17,7 @@ export type TenantNotificationBrand = {
 
 /**
  * Resolve the notification brand for a user based on their platformOwnerId.
- * Returns null for native TRANSPE users.
+ * Returns null for native BankingPoint24 users.
  */
 export async function resolveNotificationBrand(
   platformOwnerId: string | null | undefined
@@ -37,19 +37,19 @@ export async function resolveNotificationBrand(
 
 /**
  * Replace the platform name in a string template.
- * "TRANSPE" → tenant brand name when in white-label context.
+ * "BankingPoint24" → tenant brand name when in white-label context.
  */
 export function applyBrandToText(
   text: string,
   brand: TenantNotificationBrand | null
 ): string {
   if (!brand) return text;
-  return text.replace(/TRANSPE/g, brand.brandName);
+  return text.replace(/BankingPoint24/g, brand.brandName);
 }
 
 /**
  * Build a tenant-aware email footer HTML block.
- * Shows the tenant brand name with "Powered by TRANSPE" attribution.
+ * Shows the tenant brand name with "Powered by BankingPoint24" attribution.
  */
 export function buildEmailFooter(
   year: number,
@@ -58,9 +58,9 @@ export function buildEmailFooter(
   if (!brand) {
     return `
       <td style="padding:24px 32px 28px;background:#0f172a;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
-        <p style="margin:0 0 4px;color:#f1f5f9;font-weight:700;letter-spacing:0.4px;">TRANSPE</p>
-        <p style="margin:0 0 10px;color:#cbd5e1;">transpe.net</p>
-        <p style="margin:0;color:#64748b;">&copy; ${year} TRANSPE. All rights reserved.<br />This is an automated message &mdash; please do not reply.</p>
+        <p style="margin:0 0 4px;color:#f1f5f9;font-weight:700;letter-spacing:0.4px;">BankingPoint24</p>
+        <p style="margin:0 0 10px;color:#cbd5e1;">bankingpoint-24.com</p>
+        <p style="margin:0;color:#64748b;">&copy; ${year} BankingPoint24. All rights reserved.<br />This is an automated message &mdash; please do not reply.</p>
       </td>
     `;
   }
@@ -68,14 +68,14 @@ export function buildEmailFooter(
     <td style="padding:24px 32px 28px;background:${brand.primaryColor};color:rgba(255,255,255,0.8);font-size:12px;line-height:1.6;text-align:center;">
       <p style="margin:0 0 4px;color:#ffffff;font-weight:700;letter-spacing:0.4px;">${brand.brandName}</p>
       <p style="margin:0 0 10px;color:rgba(255,255,255,0.6);">${brand.supportEmail ?? ""}</p>
-      <p style="margin:0;color:rgba(255,255,255,0.5);">&copy; ${year} ${brand.brandName}. All rights reserved.<br />Powered by TRANSPE &middot; This is an automated message.</p>
+      <p style="margin:0;color:rgba(255,255,255,0.5);">&copy; ${year} ${brand.brandName}. All rights reserved.<br />Powered by BankingPoint24 &middot; This is an automated message.</p>
     </td>
   `;
 }
 
 /**
  * Build the onboard invitation email HTML for a given brand context.
- * Used by both the native TRANSPE flow and white-label tenant flows.
+ * Used by both the native BankingPoint24 flow and white-label tenant flows.
  */
 export function buildOnboardInviteHtml(opts: {
   name?: string | null;
@@ -85,7 +85,7 @@ export function buildOnboardInviteHtml(opts: {
   brand: TenantNotificationBrand | null;
 }): string {
   const { name, role, onboardingLink, expiresAt, brand } = opts;
-  const platformName = brand?.brandName ?? "TRANSPE";
+  const platformName = brand?.brandName ?? "BankingPoint24";
   const primaryColor = brand?.primaryColor ?? "#172b6b";
   const year = new Date().getFullYear();
   const roleLabel = role.toLowerCase().split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -149,7 +149,7 @@ export function buildOnboardInviteHtml(opts: {
  * Build the OTP SMS body with brand substitution.
  */
 export function buildOtpSmsBody(otp: string, brand: TenantNotificationBrand | null): string {
-  const name = brand?.brandName ?? "TRANSPE";
+  const name = brand?.brandName ?? "BankingPoint24";
   return `Your ${name} verification code is ${otp}. Valid for 5 minutes. Do not share.`;
 }
 
@@ -161,7 +161,7 @@ export function buildSmsBody(
   variables: Record<string, string>,
   brand: TenantNotificationBrand | null
 ): string {
-  const name = brand?.brandName ?? "TRANSPE";
+  const name = brand?.brandName ?? "BankingPoint24";
   switch (templateId) {
     case "onboard_invite":
       return `${name}: You're invited as ${variables.role ?? ""}. Complete registration: ${variables.link ?? ""}`;

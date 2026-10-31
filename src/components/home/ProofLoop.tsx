@@ -49,8 +49,8 @@ export function ProofLoop() {
       <div className="container-x">
         <SectionHeading
           align="center"
-          eyebrow="From the counters"
-          title="Partners do the talking"
+          eyebrow="Partner stories"
+          title="BankingPoint24 counters across India"
         />
 
         <div className="relative mx-auto mt-12 max-w-3xl text-center">

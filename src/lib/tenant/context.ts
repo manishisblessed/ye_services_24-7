@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Tenant context — white-label brand resolution.
  *
  * Server-side: resolves a LIVE WhitelabelProfile from the incoming request's
  * host header (injected by the middleware as x-tenant-id). Returns null for
- * native TRANSPE requests.
+ * native BankingPoint24 requests.
  *
  * The resolved brand is safe to embed in RSC/SSR since it contains no PII.
  */
@@ -88,8 +88,8 @@ export const getTenantBrand = cache(async (): Promise<TenantBrand | null> => {
  * For native users, returns the platform APP_URL.
  */
 export async function getEffectivePlatformUrl(platformOwnerId: string | null): Promise<string> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://transpe.net";
-  const platformDomain = process.env.PLATFORM_DOMAIN ?? "transpe.in";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.bankingpoint-24.com";
+  const platformDomain = process.env.PLATFORM_DOMAIN ?? "bankingpoint-24.com";
 
   if (!platformOwnerId) return appUrl;
 

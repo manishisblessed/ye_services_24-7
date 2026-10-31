@@ -1063,7 +1063,7 @@ export default function AdminQrPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Money & Ops"
+        eyebrow="Acquiring & Devices"
         title="QR Collections"
         description="Manage the shop collection QRs (separate pools for Instant & T+1) and verify retailer settlement claims. Money moves only after the UTR is confirmed in the provider portal."
       />

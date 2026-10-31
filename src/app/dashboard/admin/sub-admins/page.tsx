@@ -267,14 +267,14 @@ export default function AdminSubAdminsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · People"
-        title="Sub-admins"
+        eyebrow="Command Deck"
+        title="Team Access"
         description="Create operations users delegated by you. Each sub-admin signs in at /sub-admin with 2FA enforced."
         actions={
           <>
             <ReportActions
               filename="sub-admins"
-              title="JMP TRANSPE · Sub-Admins"
+              title="JMP BankingPoint24 · Sub-Admins"
               columns={[
                 { key: "id", header: "ID" },
                 { key: "name", header: "Name" },

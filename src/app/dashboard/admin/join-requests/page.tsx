@@ -136,8 +136,8 @@ export default function AdminJoinRequestsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · People"
-        title="Join requests"
+        eyebrow="Partner Network"
+        title="Entry Gate"
         description="Leads from the public Join Form. Connect with each applicant and convert them into an onboarding invite."
       />
 

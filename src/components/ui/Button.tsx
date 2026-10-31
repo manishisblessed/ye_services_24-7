@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE Button — Phase 1 redesign.
+ * BankingPoint24 Button — Phase 1 redesign.
  *
  * Shape language that differentiates from Nextgen:
  *  · Squircle corners (rounded-2xl) instead of pill.
@@ -34,7 +34,7 @@ const buttonStyles = cva(
   {
     variants: {
       variant: {
-        // Primary — signature TRANSPE energy gradient + colored shadow.
+        // Primary — signature BankingPoint24 energy gradient + colored shadow.
         primary:
           "btn-shine bg-energy-gradient text-white shadow-energy-sm hover:shadow-energy",
         // Secondary — solid ink, calm, for high-density admin UIs.

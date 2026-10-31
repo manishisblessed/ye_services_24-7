@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/auth-server";
 import { toErrorResponse } from "@/lib/security/apiErrors";
@@ -93,10 +93,10 @@ export async function POST(req: Request) {
     // pass-through (mirrors rechargekit/pay). GST-inclusive slabs back-calculate.
     const gstInclusive = rate.chargeGstInclusive;
     const gross = withGst(rate.charge, 18);
-    const feTRANSPE = gstInclusive ? dec(rate.charge) : gross.total;
+    const feBankingPoint24 = gstInclusive ? dec(rate.charge) : gross.total;
     const baseCharge = gstInclusive ? round(dec(rate.charge).div("1.18")) : dec(rate.charge);
-    const gstMoney = gstInclusive ? round(sub(feTRANSPE, baseCharge)) : gross.gst;
-    const fee = toNumber(feTRANSPE);
+    const gstMoney = gstInclusive ? round(sub(feBankingPoint24, baseCharge)) : gross.gst;
+    const fee = toNumber(feBankingPoint24);
 
     const result = await runTransaction({
       userId: user.id,

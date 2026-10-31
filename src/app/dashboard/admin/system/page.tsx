@@ -59,9 +59,9 @@ export default function AdminSystemPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Platform"
-        title="System health"
-        description="Live status of database, partner integrations, and all payment switches."
+        eyebrow="Command Deck"
+        title="System Health"
+        description="Live status of the database, partner rails, and all BankingPoint24 payment switches."
         actions={
           <Button variant="outline" onClick={fetchHealth} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh

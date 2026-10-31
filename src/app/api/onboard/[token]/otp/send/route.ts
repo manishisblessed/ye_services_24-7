@@ -86,7 +86,7 @@ export async function POST(
 
   // Resolve tenant brand for branded OTP delivery
   const otpBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
-  const platformName = otpBrand?.brandName ?? "TRANSPE";
+  const platformName = otpBrand?.brandName ?? "BankingPoint24";
   const primaryColor = otpBrand?.primaryColor ?? "#172b6b";
 
   if (channel === "SMS") {
@@ -119,7 +119,7 @@ export async function POST(
             <span style="font-size:32px;font-weight:bold;letter-spacing:8px;color:${primaryColor};">${otp}</span>
           </div>
           <p style="color:#64748b;font-size:14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
-          ${otpBrand ? `<p style="color:#94a3b8;font-size:11px;margin-top:16px;text-align:center;">Powered by TRANSPE</p>` : ""}
+          ${otpBrand ? `<p style="color:#94a3b8;font-size:11px;margin-top:16px;text-align:center;">Powered by BankingPoint24</p>` : ""}
           </div>
         </div>
       `,

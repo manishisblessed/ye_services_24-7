@@ -147,8 +147,8 @@ export default function AmlPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Compliance"
-        title="AML monitoring"
+        eyebrow="Risk & Compliance"
+        title="AML Watch"
         description="Transaction-monitoring alerts, STR/CTR exports and audit-chain integrity."
         actions={
           <Button variant="secondary" onClick={load} disabled={loading}>

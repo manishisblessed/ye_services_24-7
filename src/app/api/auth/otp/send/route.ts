@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
 import { getPartner } from "@/lib/partners";
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
   // Resolve platform name from the tenant header injected by middleware
   const tenantId = req.headers.get(TENANT_HEADER);
-  let platformName = "TRANSPE";
+  let platformName = "bankingpoint24";
   let primaryColor = "#172b6b";
   if (tenantId) {
     try {
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         primaryColor = tenantProfile.primaryColor ?? "#172b6b";
       }
     } catch {
-      // Brand resolution is best-effort; fall back to TRANSPE defaults
+      // Brand resolution is best-effort; fall back to BankingPoint24 defaults
     }
   }
 
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
               <span style="font-size:32px;font-weight:bold;letter-spacing:8px;color:${primaryColor};">${otp}</span>
             </div>
             <p style="color:#64748b;font-size:13px;margin:0;">Valid for 5 minutes. Do not share it with anyone.</p>
-            ${tenantId ? `<p style="color:#94a3b8;font-size:11px;margin-top:16px;text-align:center;">Powered by TRANSPE</p>` : ""}
+            ${tenantId ? `<p style="color:#94a3b8;font-size:11px;margin-top:16px;text-align:center;">Powered by BankingPoint24</p>` : ""}
           </div>
         </div>
       `,

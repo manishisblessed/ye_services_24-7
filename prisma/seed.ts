@@ -1,11 +1,11 @@
-import { PrismaClient, Role, UserStatus, ServiceCode } from "@prisma/client";
+﻿import { PrismaClient, Role, UserStatus, ServiceCode } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedServiceRoutes } from "../src/lib/services/catalog";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("→ Seeding TRANSPE database…");
+  console.log("→ Seeding BankingPoint24 database…");
 
   // ── Demo password hash (Lion_9090702707) — shared by all demo accounts ──
   const roleHash = await bcrypt.hash("Lion_9090702707", 12);

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
@@ -269,7 +269,7 @@ function LoginForm({ location }: { location: LocationData }) {
           title="Open your counter console"
           description={
             <>
-              New to TRANSPE?{" "}
+              New to BankingPoint24?{" "}
               <Link href="/register" className="font-semibold text-brand-700 hover:underline">
                 Request to join
               </Link>{" "}

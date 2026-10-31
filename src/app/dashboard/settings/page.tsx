@@ -89,8 +89,8 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Settings"
+        eyebrow="My Profile"
+        title="Preferences"
         description="Notifications, security and sign-in preferences — all in one place."
       />
 

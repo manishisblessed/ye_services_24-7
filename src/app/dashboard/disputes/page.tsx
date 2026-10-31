@@ -140,8 +140,8 @@ export default function DisputesPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Support tickets"
+        eyebrow="My Profile"
+        title="Support"
         description="Track and reply to your tickets. To raise a new one, open the transaction in Reports and click “Raise ticket” — the details fill in for you."
         actions={
           view === "list" ? (

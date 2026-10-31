@@ -250,7 +250,7 @@ export default function ReversalDeskPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Risk & Compliance"
         title="Reversal Desk"
         description="Compensating ledger entries against settled transactions and settlements — history is never edited, only reversed."
         actions={

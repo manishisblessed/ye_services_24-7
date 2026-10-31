@@ -1,14 +1,14 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import type { Icon as PhosphorIcon, IconWeight } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE IconTile — Phase 1 brand treatment for icons.
+ * BankingPoint24 IconTile — Phase 1 brand treatment for icons.
  *
  * Instead of rendering a bare `lucide` glyph (what Nextgen almost certainly
- * does), every "service / nav / stat" icon in TRANSPE is wrapped in a tinted
+ * does), every "service / nav / stat" icon in BankingPoint24 is wrapped in a tinted
  * rounded tile with a Phosphor duotone glyph on top. This is the single
  * biggest change to the perceived icon silhouette across the whole product.
  *
@@ -56,7 +56,7 @@ export interface IconTileProps
   children?: React.ReactNode;
   tone?: IconTone;
   size?: IconTileSize;
-  /** Phosphor weight — TRANSPE defaults to `duotone` for its distinct silhouette. */
+  /** Phosphor weight — BankingPoint24 defaults to `duotone` for its distinct silhouette. */
   weight?: IconWeight;
 }
 

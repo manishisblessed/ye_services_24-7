@@ -212,8 +212,8 @@ export default function NetworkManagerPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Network"
-        title="Network manager"
+        eyebrow="Partner Network"
+        title="Network Map"
         description="Every tier of the distribution chain with wallet snapshots, scheme assignment, limits and settlement controls per user."
         actions={
           <Button variant="outline" onClick={load} disabled={loading}>

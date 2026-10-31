@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -86,34 +86,35 @@ export function MasterOverview({ session }: { session: Session }) {
   const mtdTurnover = children.reduce((s, d) => s + (d.monthlyTurnover ?? 0), 0);
   const domain =
     wl?.customDomain ||
-    (wl?.subdomain ? `${wl.subdomain}.transpe.net` : null);
+    (wl?.subdomain ? `${wl.subdomain}.bankingpoint-24.com` : null);
 
   const quickActions: QuickAction[] = [
-    { label: isSuper ? "Invite MD" : "Invite DT", href: "/dashboard/network/onboard", icon: UserPlus, tone: "brand" },
-    { label: "My Network", href: "/dashboard/network", icon: TreeStructure, tone: "royal" },
-    { label: "Earnings", href: "/dashboard/earnings", icon: ChartLineUp, tone: "accent" },
-    { label: "API Keys", href: "/dashboard/api", icon: Key, tone: "amber" },
-    { label: "White-label", href: "/dashboard/whitelabel", icon: Globe, tone: "coral" },
-    { label: "My Plan", href: "/dashboard/my-scheme", icon: Stack, tone: "ink" },
-    { label: "Activity", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
+    { label: isSuper ? "Recruit MD" : "Add Distributor", href: "/dashboard/network/onboard", icon: UserPlus, tone: "brand" },
+    { label: isSuper ? "Master Dist. List" : "Distributor List", href: "/dashboard/network", icon: TreeStructure, tone: "royal" },
+    { label: "My Commission", href: "/dashboard/earnings", icon: ChartLineUp, tone: "accent" },
+    { label: "My Brand Portal", href: "/dashboard/whitelabel", icon: Globe, tone: "coral", hint: "White-label under your name" },
+    { label: "My Rates", href: "/dashboard/my-scheme", icon: Stack, tone: "amber" },
+    { label: "API & Webhooks", href: "/dashboard/api", icon: Key, tone: "ink" },
+    { label: "Marketing Studio", href: "/dashboard/marketing", icon: ChartLineUp, tone: "energy", hint: "Campaigns for your network" },
+    { label: "Transactions", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
   ];
 
   return (
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        eyebrow={`Network console · ${isSuper ? "Super distributor" : "Master distributor"}`}
+        eyebrow={`BankingPoint24 · ${isSuper ? "My Zone" : "My Distributors"}`}
         subtitle={
           loading
-            ? "Loading your network…"
-            : `${children.length} ${childLabel} · ${totalRetailers} retailers${domain ? " · white-label configured" : ""}`
+            ? "Loading your zone…"
+            : `${children.length} ${childLabel} · ${totalRetailers} retailers in network${domain ? " · branded portal active" : ""}`
         }
-        heroLabel="Network wallet"
+        heroLabel="Commission Float"
         heroValue={session.walletBalance}
         chips={[
-          { label: isSuper ? "MDs" : "DTs", value: loading ? "…" : `${children.length}`, tone: "brand" },
-          { label: "Retailers", value: loading ? "…" : totalRetailers.toLocaleString("en-IN"), tone: "royal" },
-          { label: "MTD", value: loading ? "…" : formatINR(mtdTurnover), tone: "accent" },
+          { label: isSuper ? "Master Dist." : "Distributors", value: loading ? "…" : `${children.length}`, tone: "brand" },
+          { label: "Total Retailers", value: loading ? "…" : totalRetailers.toLocaleString("en-IN"), tone: "royal" },
+          { label: "Zone MTD", value: loading ? "…" : formatINR(mtdTurnover), tone: "accent" },
         ]}
         actions={
           <>
@@ -125,7 +126,7 @@ export function MasterOverview({ session }: { session: Session }) {
             </Link>
             <Link href="/dashboard/network/onboard">
               <Button size="sm">
-                Onboard {isSuper ? "master distributor" : "distributor"}
+                {isSuper ? "Recruit MD" : "Add distributor"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -155,7 +156,7 @@ export function MasterOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Retailers (network)"
+                label="Total Retailers"
                 value={`${totalRetailers.toLocaleString("en-IN")}`}
                 icon={Users}
                 accent="violet"
@@ -163,7 +164,7 @@ export function MasterOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Override Earnings (MTD)"
+                label="My Commission (MTD)"
                 value={formatINR(0)}
                 icon={IndianRupee}
                 accent="emerald"
@@ -171,7 +172,7 @@ export function MasterOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Network Turnover (MTD)"
+                label="Zone Turnover (MTD)"
                 value={formatINR(mtdTurnover)}
                 icon={TrendingUp}
                 accent="accent"
@@ -187,7 +188,7 @@ export function MasterOverview({ session }: { session: Session }) {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">
-                  Network turnover · last 14 days
+                  Zone turnover · last 14 days
                 </p>
                 <p className="mt-1 font-display text-3xl font-semibold tabular-nums tracking-[-0.02em] text-ink-900">
                   {formatINR(mtdTurnover)}
@@ -217,13 +218,13 @@ export function MasterOverview({ session }: { session: Session }) {
                 White-label portal
               </p>
             </div>
-            <p className="mt-4 truncate font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
-              {domain ?? "Not configured"}
+              <p className="mt-4 truncate font-display text-xl font-semibold tracking-[-0.02em] text-ink-900">
+              {domain ?? "Not set up yet"}
             </p>
             <p className="mt-1 text-sm text-ink-600">
               {domain
-                ? "Manage co-branded portal settings for your downline."
-                : "Set a custom domain or subdomain for your distributors."}
+                ? "Manage your branded portal and co-branding for your downline."
+                : "Set a custom domain to give your network a branded experience."}
             </p>
             <Link
               href="/dashboard/whitelabel"
@@ -243,26 +244,26 @@ export function MasterOverview({ session }: { session: Session }) {
               size="sm"
               icon={UsersThree}
               tone="brand"
-              title={<span className="capitalize">My {childLabel}</span>}
-              description={`Direct child ${childLabel} with live wallet & turnover`}
+              title={<span className="capitalize">{isSuper ? "Master Dist. Board" : "Distributor Board"}</span>}
+              description={`Live float & zone turnover per ${isSuper ? "master distributor" : "distributor"}`}
             />
             <Link
               href="/dashboard/network"
               className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 transition hover:text-brand-800"
             >
-              View tree <ArrowRight className="h-3 w-3" />
+              Full network view <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           {children.length === 0 && !loading ? (
             <EmptyState
               icon={UserPlus}
               tone="brand"
-              title={`No ${childLabel} yet`}
-              body="Onboard your first partner to build the network."
+              title={`Your zone has no ${childLabel} yet`}
+              body={`${isSuper ? "Recruit your first master distributor" : "Add your first distributor"} to start building your zone.`}
               action={
                 <Link href="/dashboard/network/onboard">
                   <Button size="sm">
-                    Onboard {isSuper ? "master distributor" : "distributor"} <ArrowRight className="h-4 w-4" />
+                    {isSuper ? "Recruit MD" : "Add distributor"} <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               }

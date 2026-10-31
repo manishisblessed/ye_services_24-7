@@ -1,4 +1,4 @@
-import crypto from "crypto";
+﻿import crypto from "crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
@@ -20,7 +20,7 @@ type DbClient = Prisma.TransactionClient | typeof prisma;
  * Resolved lazily and cached for the process lifetime.
  */
 
-const SUSPENSE_EMAIL = "suspense@system.TRANSPE";
+const SUSPENSE_EMAIL = "suspense@system.BankingPoint24";
 const SUSPENSE_PHONE = "+910000000001";
 
 let cachedSuspenseAccountId: string | null = null;

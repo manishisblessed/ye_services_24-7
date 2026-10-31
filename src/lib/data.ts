@@ -1,4 +1,4 @@
-import {
+﻿import {
   Banknote,
   Smartphone,
   Wifi,
@@ -23,28 +23,28 @@ import {
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TRANSPE — central brand & regulatory details.
+// BankingPoint24 — central brand & regulatory details.
 // TODO: Replace `cin`, `gstin`, `incorporated` with the actual registered
 // values before going live.
 // ─────────────────────────────────────────────────────────────────────────────
 export const company = {
-  legalName: "Transpe Fintech Private Limited",
-  brand: "TRANSPE",
-  tradeName: "transpe",
-  domain: "transpe.net",
-  email: "support@transpe.net",
-  supportEmail: "support@transpe.net",
-  legalEmail: "legal@transpe.net",
-  grievanceEmail: "grievance@transpe.net",
-  nodalEmail: "nodal@transpe.net",
-  phone: "9004080939",
+  legalName: "RUTVA MULTISERVICES LLP",
+  brand: "BankingPoint24",
+  tradeName: "bankingpoint-24",
+  domain: "bankingpoint-24.com",
+  email: "support@bankingpoint-24.com",
+  supportEmail: "support@bankingpoint-24.com",
+  legalEmail: "legal@bankingpoint-24.com",
+  grievanceEmail: "grievance@bankingpoint-24.com",
+  nodalEmail: "nodal@bankingpoint-24.com",
+  phone: "7069300077",
   cin: "TBD",
   gstin: "TBD",
   incorporated: "2026",
-  jurisdiction: "Pune, Maharashtra",
+  jurisdiction: "Anand, Gujarat",
   address:
-    "S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra - 411037, IN",
-  shortAddress: "Shivtej Nagar, Indira Nagar, Pune"
+    "27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat - 388345, IN",
+  shortAddress: "Mogri, Anand, Gujarat"
 };
 
 // Mandatory under IT Rules 2021 (Intermediary Guidelines) & applicable Master Direction
@@ -52,19 +52,19 @@ export const company = {
 export const grievanceOfficer = {
   name: "Grievance Officer",
   designation: "Grievance Redressal Officer",
-  email: "grievance@transpe.net",
-  phone: "+91 9004080939",
+  email: "grievance@bankingpoint-24.com",
+  phone: "+91 7069300077",
   hours: "Monday to Saturday, 10:00 AM – 6:00 PM IST",
   address:
-    "S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra - 411037, IN",
+    "27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat - 388345, IN",
   responseSla: "Acknowledgement within 24 hours · Resolution within 15 working days"
 };
 
 export const nodalOfficer = {
   name: "Nodal Officer",
   designation: "Principal Nodal Officer",
-  email: "nodal@transpe.net",
-  phone: "+91 9004080939"
+  email: "nodal@bankingpoint-24.com",
+  phone: "+91 7069300077"
 };
 
 export type ServiceItem = {
@@ -80,47 +80,46 @@ export type ServiceItem = {
 export const services: ServiceItem[] = [
   {
     slug: "payment-gateway",
-    title: "Payment Gateway",
+    title: "Online Payment Gateway",
     description:
-      "Accept UPI, debit cards, credit cards and net banking — all in one checkout. Funds reach your account by next morning.",
+      "Send a payment link on WhatsApp or plug a checkout into your site. One flow covers UPI, cards and net banking, with next-morning settlement.",
     icon: CreditCard,
     href: "/dashboard/pg",
     category: "banking",
-    badge: "New"
+    badge: "Popular"
   },
   {
     slug: "pos",
-    title: "POS Terminals",
+    title: "Card Machine (POS)",
     description:
-      "Rent an Android terminal for your counter — tap, swipe or scan. No upfront cost, swap anytime.",
+      "A pocket-size Android machine that takes taps, swipes and scans at your counter. Small monthly rental — return or upgrade whenever you like.",
     icon: Monitor,
     href: "/dashboard/pos",
-    category: "banking",
-    badge: "New"
+    category: "banking"
   },
   {
     slug: "qr-payments",
-    title: "QR Code Payments",
+    title: "Shop QR (Scan & Pay)",
     description:
-      "Display your branded QR at the billing counter. Instant voice alert on every successful scan.",
+      "A QR standee carrying your shop's name sits by the cash box. The speaker announces every credit, so you never look up from the customer.",
     icon: QrCode,
     href: "/dashboard/qr",
     category: "banking",
-    badge: "New"
+    badge: "Top pick"
   },
   {
     slug: "aadhaar-pay",
-    title: "Aadhaar Pay (AePS)",
+    title: "AePS Cash Point",
     description:
-      "Dispense cash using fingerprint auth alone. Up to ₹6 credited per withdrawal — no card needed.",
+      "Customers withdraw cash from any bank account with just a thumb impression. You earn on every withdrawal and become the bank for your street.",
     icon: Fingerprint,
     href: "/dashboard/aadhaar-pay",
     category: "banking"
   },
   {
     slug: "money-transfer",
-    title: "Send Money (DMT)",
-    description: "Transfer funds to any Indian bank account round the clock — weekends and holidays included.",
+    title: "Money Transfer (DMT)",
+    description: "Send money home for migrant workers and locals alike — IMPS to any bank, any hour, bank holidays included.",
     icon: Send,
     href: "/dashboard/money-transfer",
     category: "banking"
@@ -128,15 +127,15 @@ export const services: ServiceItem[] = [
   {
     slug: "upi",
     title: "UPI Collect",
-    description: "Request payments via UPI intent — no card reader, no printed code, just a mobile number.",
+    description: "Raise a collect request straight to the customer's UPI app. Nothing to print, nothing to install — a mobile number is enough.",
     icon: QrCode,
     href: "/dashboard/upi",
     category: "banking"
   },
   {
     slug: "wallet",
-    title: "Wallet Pay",
-    description: "Load once, transact all day. Your working capital earns through every service you run.",
+    title: "Float Wallet",
+    description: "Top up a single float in the morning and run every service off it all day. One ledger, one reconciliation, zero juggling.",
     icon: Wallet,
     href: "/dashboard/wallet",
     category: "banking"
@@ -144,7 +143,7 @@ export const services: ServiceItem[] = [
   {
     slug: "virtual-account",
     title: "Virtual Account",
-    description: "Receive a dedicated account number. Every incoming transfer auto-credits your wallet balance.",
+    description: "An account number dedicated to your counter. Anything customers or distributors transfer into it credits your float automatically.",
     icon: Building2,
     href: "/dashboard/virtual-account",
     category: "banking",
@@ -152,8 +151,8 @@ export const services: ServiceItem[] = [
   },
   {
     slug: "credit-card",
-    title: "Credit Card Bill",
-    description: "Settle credit card dues for any issuer. Customer pays you, bill clears instantly.",
+    title: "Card Bill Settlement",
+    description: "Accept credit card bill payments across every issuing bank. The customer pays cash at your counter; the card clears on the spot.",
     icon: CreditCard,
     href: "/dashboard/bill-pay/credit-card",
     category: "bills"
@@ -161,7 +160,7 @@ export const services: ServiceItem[] = [
   {
     slug: "mobile-recharge",
     title: "Mobile Recharge",
-    description: "Recharge Jio, Airtel, Vi or BSNL prepaid plans — confirmed in under two seconds.",
+    description: "Prepaid top-ups for every operator with live plan browsing — the confirmation beep comes before the customer pockets the phone.",
     icon: Smartphone,
     href: "/dashboard/recharge/mobile",
     category: "recharge"
@@ -169,7 +168,7 @@ export const services: ServiceItem[] = [
   {
     slug: "dth",
     title: "DTH Recharge",
-    description: "Top up every DTH operator from a single screen. Pack activates before the customer leaves.",
+    description: "Tata Play, Dish, d2h, Sun — every DTH pack from one screen, activated while the customer waits.",
     icon: Tv,
     href: "/dashboard/recharge/dth",
     category: "recharge"
@@ -177,23 +176,23 @@ export const services: ServiceItem[] = [
   {
     slug: "broadband",
     title: "Broadband / OTT",
-    description: "Renew broadband, landline and OTT subscriptions. Monthly repeat = steady commissions.",
+    description: "Renew Wi-Fi, landline and OTT plans in a few taps. Subscriptions repeat monthly, so this income shows up like clockwork.",
     icon: Wifi,
     href: "/dashboard/recharge/broadband",
     category: "recharge"
   },
   {
     slug: "electricity",
-    title: "Electricity",
-    description: "Accept electricity payments for every state board. Receipt generated, queue eliminated.",
+    title: "Electricity Bills",
+    description: "Every state discom on BBPS. Pull the bill by consumer number, collect cash, hand over a stamped receipt.",
     icon: Lightbulb,
     href: "/dashboard/bill-pay/electricity",
     category: "bills"
   },
   {
     slug: "water",
-    title: "Water",
-    description: "Process municipal water bills in seconds — confirmation shows before the customer steps out.",
+    title: "Water Bills",
+    description: "Clear municipal and board water bills while the customer stands at the counter — confirmation on screen and by SMS.",
     icon: Droplets,
     href: "/dashboard/bill-pay/water",
     category: "bills"
@@ -201,55 +200,55 @@ export const services: ServiceItem[] = [
   {
     slug: "gas",
     title: "Gas (Piped & LPG)",
-    description: "Handle LPG cylinder bookings and piped gas payments — both settled under sixty seconds.",
+    description: "Book LPG refills and settle piped-gas bills from the same screen. Confirmation lands before the kettle boils.",
     icon: Flame,
     href: "/dashboard/bill-pay/gas",
     category: "bills"
   },
   {
     slug: "flight",
-    title: "Flight Booking",
-    description: "Issue domestic flight tickets at wholesale agent fares. Commission on every boarding pass.",
+    title: "Air Tickets",
+    description: "Book domestic flights at B2B fares your customers can't see online — and keep the difference as your margin.",
     icon: Plane,
     href: "/dashboard/travel/flight",
     category: "travel"
   },
   {
     slug: "hotel",
-    title: "Hotel Booking",
-    description: "Access 50,000+ properties at agent-exclusive rates. Turn your shop into a travel counter.",
+    title: "Hotel Stays",
+    description: "Reserve rooms across thousands of properties at trade rates. A natural add-on for wedding seasons and pilgrimage routes.",
     icon: Hotel,
     href: "/dashboard/travel/hotel",
     category: "travel"
   },
   {
     slug: "bus",
-    title: "Bus Booking",
-    description: "Sell sleeper, AC and Volvo bus seats across all major routes — margins up to 5% per ticket.",
+    title: "Bus Tickets",
+    description: "Seats on AC, sleeper and seater coaches across intercity routes, with a healthy cut on every ticket you print.",
     icon: Bus,
     href: "/dashboard/travel/bus",
     category: "travel"
   },
   {
     slug: "education",
-    title: "Education Fees",
-    description: "Collect tuition and exam fees on behalf of schools and colleges. Parents return every term.",
+    title: "School & College Fees",
+    description: "Take tuition, exam and admission fee payments for institutes nearby. Every academic term brings the same families back.",
     icon: GraduationCap,
     href: "/dashboard/bill-pay/education",
     category: "bills"
   },
   {
     slug: "insurance",
-    title: "Insurance Premium",
-    description: "Process premium renewals for all major insurers. Policy receipt delivered on the spot.",
+    title: "Insurance Renewals",
+    description: "Renew life, health and vehicle policies across leading insurers. The premium receipt prints at your counter instantly.",
     icon: ShieldCheck,
     href: "/dashboard/bill-pay/insurance",
     category: "bills"
   },
   {
     slug: "broadband-bill",
-    title: "Broadband Bill",
-    description: "Clear postpaid broadband and landline dues through BBPS. Confirmation in real time.",
+    title: "Internet & Landline Bills",
+    description: "Postpaid internet and landline dues cleared over BBPS rails with a real-time acknowledgment number.",
     icon: Wifi,
     href: "/dashboard/bill-pay/broadband",
     category: "bills"
@@ -260,36 +259,36 @@ export type FaqItem = { q: string; a: string };
 
 export const faqs: FaqItem[] = [
   {
-    q: "What exactly does TRANSPE do?",
-    a: "TRANSPE converts any retail outlet into a full-service financial point. From cash withdrawals and fund transfers to utility bills, prepaid recharges and travel bookings — over 60 services run from a single dashboard. You pocket a commission on each one."
+    q: "What does a BankingPoint24 counter actually offer?",
+    a: "Think of it as a bank branch, a bill desk and a travel agency compressed into the shop you already run. One login handles cash withdrawals, money transfers, 1,600+ billers, recharges and ticket bookings — and every completed transaction leaves a commission in your wallet."
   },
   {
-    q: "How is the money protected?",
-    a: "Every transaction is routed through authorised partner banks over NPCI-certified rails. Two-factor authentication guards your login, a separate MPIN protects high-value operations, and biometric data is processed only on STQC-approved devices — never stored on our servers."
+    q: "Is the money moving through my counter safe?",
+    a: "Yes. Funds travel only through RBI-licensed sponsor banks over NPCI rails. Your login carries two-factor authentication, sensitive actions need a separate MPIN, and fingerprints are matched on certified scanners without ever being stored by us."
   },
   {
-    q: "What types of bills can I accept?",
-    a: "Power, water, piped gas, LPG, broadband, DTH, postpaid mobile, credit card dues, school and college fees, insurance premiums, FASTag top-ups and municipal taxes — over 1,400 billers connected via BBPS and direct integrations."
+    q: "Which bills can my customers pay here?",
+    a: "Electricity, water, piped gas and LPG, broadband and landline, DTH, postpaid mobile, credit card dues, school and college fees, insurance premiums, FASTag and municipal taxes — more than 1,600 billers through BBPS plus direct tie-ups."
   },
   {
-    q: "What do I need to get started?",
-    a: "A valid PAN, Aadhaar and basic shop details. The e-KYC process wraps up in under five minutes — no paperwork to courier, no upfront fee. Many new partners complete their first live transaction the same afternoon."
+    q: "What documents do I need to open a counter?",
+    a: "Just your PAN, your Aadhaar and a few shop details. Verification is a short video e-KYC done from your phone — no courier, no agent visit, no joining fee. Most partners bill their first customer the same day they sign up."
   },
   {
-    q: "How fast do commissions hit my account?",
-    a: "The moment a transaction succeeds, your commission is credited to your TRANSPE wallet in real time. You can withdraw to your linked bank account via IMPS around the clock — no monthly settlement cycle."
+    q: "When do I actually see my commission?",
+    a: "Instantly. The wallet credit appears the second a transaction settles, with your commission itemised on its own line. Move money to your bank over IMPS whenever you like — nights, Sundays and festival days included."
   },
   {
-    q: "Will there be surprise fees later?",
-    a: "Absolutely not. The confirmation screen shows every charge and your exact commission before you tap 'Pay'. Commission slabs are published in your dashboard and on our Charges page — no fine print, no escalators."
+    q: "Any hidden charges I should worry about?",
+    a: "None. Before you confirm any transaction, the screen shows the customer's charge and your earning side by side. The full rate card lives inside your dashboard, and any revision is announced before it takes effect."
   },
   {
-    q: "What kind of monthly income is realistic?",
-    a: "A retailer handling 50 walk-ins a day typically takes home ₹8,000–₹10,000 per month from AePS and money transfers alone. Layer in bills, recharges and POS acceptance and many cross ₹18,000. Slide the calculator above to model your own footfall."
+    q: "How much can a counter realistically make?",
+    a: "Counters serving 40–60 customers a day commonly clear ₹9,000–₹12,000 a month on cash services alone. Add bills, recharges and card acceptance, and ₹20,000 becomes a realistic ceiling. Put your own footfall into the calculator above."
   },
   {
-    q: "What happens when a transaction fails?",
-    a: "If the customer is debited but the service is not delivered, the amount auto-reverses within the mandated reversal window — T+1 for UPI/IMPS, T+5 for AePS. A delay beyond that triggers ₹100/day compensation. You can also raise a dispute from your dashboard and our ops team follows up end to end."
+    q: "What if a transaction fails midway?",
+    a: "Amounts that are debited but not delivered reverse automatically inside the regulatory window, and anything that crosses it accrues a daily penalty paid to the customer. You can track every case from the disputes screen while our operations team follows up with the bank."
   }
 ];
 
@@ -303,38 +302,38 @@ export type Testimonial = {
 // `role` is "<shop name>, <city>" — ProofLoop splits on the last comma.
 export const testimonials: Testimonial[] = [
   {
-    name: "Ramesh Gupta",
-    role: "Gupta Digital Point, Nagpur",
+    name: "Mahesh Chaudhari",
+    role: "Chaudhari Kirana & More, Nashik",
     quote:
-      "Within two weeks of going live, AePS crossings touched 80 a day. That alone earns me ₹14,000 a month — before bills and recharges even count.",
+      "My counter does sixty-plus thumb withdrawals a day now. People who used to travel four kilometres to the bank simply walk in here instead.",
     rating: 5
   },
   {
-    name: "Deepa Nambiar",
-    role: "Nambiar Telecom Hub, Thrissur",
+    name: "Rukhsana Shaikh",
+    role: "Shaikh Mobile Gallery, Bharuch",
     quote:
-      "Money transfer is what pulls the crowd. Thirty-plus remittances a day at ₹8 commission each — steady ₹7,500 a month from one service.",
+      "Transfers in the morning, recharges all day, bills in the evening. Last month the wallet closed at ₹16,800 in commission.",
     rating: 5
   },
   {
-    name: "Irfan Patel",
-    role: "Patel Seva Centre, Ahmedabad",
+    name: "Gurpreet Singh",
+    role: "Singh Communication Centre, Bathinda",
     quote:
-      "Electricity and LPG bills alone bring 90 footfalls daily. Each one is small, but the month-end total hit ₹13,500 last quarter.",
+      "During harvest season the cash withdrawals triple. Settlement is always there next morning — never once a day late.",
     rating: 5
   },
   {
-    name: "Sonia Thakur",
-    role: "Thakur Cards & Payments, Indore",
+    name: "Lakshmi Devi",
+    role: "Sri Lakshmi Enterprises, Vijayawada",
     quote:
-      "The POS rental is ₹499, and my first month's card volume crossed ₹5.1 lakh. The device practically pays for itself on day one.",
+      "I started with only bill payments. Six months in, I run fifteen services and the colony knows my shop as the 'bank shop'.",
     rating: 5
   },
   {
-    name: "Arjun Reddy",
-    role: "Reddy Travels & Services, Warangal",
+    name: "Nilesh Rathod",
+    role: "Rathod Tours & Travels, Vadodara",
     quote:
-      "Bus bookings give me 5% a seat — last month that came to ₹19,000. Plus, people recharge their phones while waiting for the ticket.",
+      "Bus bookings bring whole families in, and they clear their electricity bill while they wait. One customer, three commissions.",
     rating: 5
   }
 ];
@@ -342,10 +341,10 @@ export const testimonials: Testimonial[] = [
 export type Stat = { value: string; label: string };
 
 export const heroStats: Stat[] = [
-  { value: "68K+", label: "Active retail points" },
-  { value: "1,400+", label: "Billers connected" },
-  { value: "60+", label: "Revenue streams" },
-  { value: "₹210 Cr+", label: "Monthly throughput" }
+  { value: "52K+", label: "Partner counters" },
+  { value: "1,600+", label: "Billers live" },
+  { value: "63", label: "Income streams" },
+  { value: "₹175 Cr+", label: "Moved every month" }
 ];
 
 export type PricingPlan = {
@@ -360,49 +359,49 @@ export type PricingPlan = {
 
 export const pricingPlans: PricingPlan[] = [
   {
-    name: "Starter",
+    name: "Free Counter",
     price: "₹0",
-    cadence: "forever free",
-    description: "Zero risk, zero fee. Explore and earn at your own pace.",
+    cadence: "no card, no commitment",
+    description: "Open your counter today and start earning on 30+ everyday services.",
     features: [
-      "30+ services activated",
-      "Standard commission tiers",
-      "UPI & wallet transactions",
-      "Email-based support",
-      "Basic analytics dashboard"
+      "Bills, recharges & UPI collect",
+      "Published base rate card",
+      "Real-time wallet settlement",
+      "Help centre & email support",
+      "Daily earnings summary"
     ],
-    cta: "Get started free"
+    cta: "Open a free counter"
   },
   {
-    name: "Retailer",
-    price: "₹499",
+    name: "Retailer Pro",
+    price: "₹599",
     cadence: "/year",
-    description: "Full access to AePS, top commissions. Recovers cost within 48 hours.",
+    description: "Unlocks cash services and the top commission tier — most counters recover it within two days.",
     features: [
-      "All Starter features included",
-      "AePS & DMT fully activated",
-      "Boosted commission slabs",
-      "Priority WhatsApp helpline",
-      "Exportable reports & ledger",
-      "Complimentary RuPay card"
+      "Everything in Free Counter",
+      "AePS cash & money transfer live",
+      "Top-tier commission card",
+      "WhatsApp priority helpline",
+      "Ledger export & GST summary",
+      "Branded QR standee shipped free"
     ],
     highlighted: true,
-    cta: "Activate retailer plan"
+    cta: "Go Retailer Pro"
   },
   {
     name: "Distributor",
-    price: "₹2,499",
+    price: "₹2,999",
     cadence: "/year",
-    description: "Build and manage your own retail network. Override earnings on every transaction below you.",
+    description: "Recruit counters under you and earn an override on every transaction they process.",
     features: [
-      "All Retailer features included",
-      "Recruit & manage your retailers",
-      "Override commissions per transaction",
-      "Assigned account manager",
-      "Full API access",
-      "White-label branded application"
+      "Everything in Retailer Pro",
+      "Onboard & manage your counters",
+      "Network override income",
+      "Dedicated relationship manager",
+      "Developer API access",
+      "Your own branded partner app"
     ],
-    cta: "Contact sales"
+    cta: "Talk to the network team"
   }
 ];
 
@@ -427,7 +426,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: "five-minute-opening-checklist",
-    title: "The 5-minute opening checklist top-earning TRANSPE partners swear by",
+    title: "The 5-minute opening checklist top-earning BankingPoint24 partners swear by",
     excerpt:
       "Verify float, clear overnight settlements, share today's QR on WhatsApp status, message your regulars. Five minutes that compound all day.",
     date: "Sep 14, 2026",
@@ -451,25 +450,24 @@ export type NavLink = {
   children?: NavLink[];
 };
 
-// Public nav — TRANSPE top-level tabs. Services leads (it is the product),
+// Public nav — BankingPoint24 top-level tabs. Services leads (it is the product),
 // the logo is the home link, and Team lives in the footer only.
 export const mainNav: NavLink[] = [
   {
-    label: "Services",
+    label: "Service board",
     href: "/services",
     children: [
-      { label: "Aadhaar Pay (AePS)", href: "/services#aadhaar-pay" },
-      { label: "Send Money", href: "/services#money-transfer" },
-      { label: "UPI & Wallet", href: "/services#upi" },
-      { label: "Top-ups & Bills", href: "/services#bills" },
+      { label: "AePS Cash Point", href: "/services#aadhaar-pay" },
+      { label: "Money Transfer", href: "/services#money-transfer" },
+      { label: "UPI & Float Wallet", href: "/services#upi" },
+      { label: "Bills & Recharges", href: "/services#bills" },
       { label: "Travel Desk", href: "/services#travel" }
     ]
   },
-  { label: "Platform", href: "/products" },
-  { label: "Pricing", href: "/#pricing" },
-  { label: "Company", href: "/about" },
-  { label: "Careers", href: "/career" },
-  { label: "Support", href: "/contact" }
+  { label: "Products", href: "/products" },
+  { label: "Plans & rates", href: "/#pricing" },
+  { label: "About", href: "/about" },
+  { label: "Help desk", href: "/contact" }
 ];
 
 export const footerLinks = {
@@ -505,21 +503,21 @@ export const footerLinks = {
 
 // Compact certification chips shown in the footer compliance strip.
 export const footerCertifications = [
-  "Authorised Bank Rails",
-  "NPCI Certified",
-  "UIDAI Sub-AUA",
-  "PCI-DSS v4.0",
-  "ISO 27001:2022",
-  "DPDP Act 2023",
-  "CERT-In Audited",
-  "Made in India"
+  "RBI-licensed bank partners",
+  "NPCI member rails",
+  "UIDAI AUA / KUA",
+  "PCI-DSS 4.0",
+  "ISO/IEC 27001",
+  "DPDP ready",
+  "CERT-In audited",
+  "Built in India"
 ];
 
 export const trustBadges = [
-  { label: "Licensed partner banks", icon: ShieldCheck },
-  { label: "NPCI certified rails", icon: ShieldCheck },
-  { label: "PCI-DSS v4.0", icon: ShieldCheck },
-  { label: "ISO 27001:2022", icon: ShieldCheck }
+  { label: "RBI-licensed rails", icon: ShieldCheck },
+  { label: "NPCI member network", icon: ShieldCheck },
+  { label: "PCI-DSS 4.0 secure", icon: ShieldCheck },
+  { label: "ISO 27001 certified", icon: ShieldCheck }
 ];
 
 // India-first missions powering Digital India.
@@ -536,9 +534,9 @@ export const indiaMissions: IndiaMission[] = [
     code: "01",
     title: "Digital India",
     body:
-      "Where the nearest branch is a bus ride away, your counter becomes the bank. TRANSPE powers that last mile.",
+      "Where the nearest branch is a bus ride away, your counter becomes the bank. BankingPoint24 powers that last mile.",
     stat: "1,100+",
-    statLabel: "Gram Panchayats served by a TRANSPE outlet"
+    statLabel: "Gram Panchayats served by a BankingPoint24 outlet"
   },
   {
     code: "02",
@@ -552,7 +550,7 @@ export const indiaMissions: IndiaMission[] = [
     code: "03",
     title: "UPI · BBPS · AePS",
     body:
-      "TRANSPE runs on the same certified NPCI rails used by the largest banks — identical speed, identical security, your margin.",
+      "BankingPoint24 runs on the same certified NPCI rails used by the largest banks — identical speed, identical security, your margin.",
     stat: "60+",
     statLabel: "Services live on your counter today"
   },
@@ -560,7 +558,7 @@ export const indiaMissions: IndiaMission[] = [
     code: "04",
     title: "Self-Reliant India",
     body:
-      "Engineered in Pune, hosted on Indian data centres, supported in 9 regional languages. Built in India, for India.",
+      "Engineered in Anand, Gujarat, hosted on Indian data centres, supported in 9 regional languages. Built in India, for India.",
     stat: "100%",
     statLabel: "Made in India"
   }
@@ -718,7 +716,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Privacy Policy",
     eyebrow: "Legal · Privacy",
     description:
-      "How TRANSPE collects, uses, stores and protects your personal data — drafted as per the Digital Personal Data Protection Act, 2023, the Information Technology Act, 2000 and the SPDI Rules, 2011.",
+      "How BankingPoint24 collects, uses, stores and protects your personal data — drafted as per the Digital Personal Data Protection Act, 2023, the Information Technology Act, 2000 and the SPDI Rules, 2011.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "Digital Personal Data Protection Act, 2023",
@@ -731,7 +729,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "introduction",
         heading: "1. Introduction",
         body: [
-          "This Privacy Policy (\"Policy\") governs the processing of personal data by Transpe Fintech Private Limited, a company incorporated under the Companies Act, 2013 and having its registered office at S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN (\"Transpe Fintech Private Limited\", \"Company\", \"We\", \"Us\"), through its website transpe.net, mobile applications and APIs (collectively, the \"Platform\").",
+          "This Privacy Policy (\"Policy\") governs the processing of personal data by RUTVA MULTISERVICES LLP, a company incorporated under the Companies Act, 2013 and having its registered office at 27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat – 388345, IN (\"RUTVA MULTISERVICES LLP\", \"Company\", \"We\", \"Us\"), through its website bankingpoint-24.com, mobile applications and APIs (collectively, the \"Platform\").",
           "By accessing or using the Platform, you (the \"Data Principal\") consent to the practices described in this Policy. If you do not agree, please do not use the Platform."
         ]
       },
@@ -809,7 +807,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
               "Lodge a complaint with the Data Protection Board of India."
             ]
           },
-          "To exercise any of the above rights, please write to our Grievance Officer at grievance@transpe.net. We will respond within fifteen (15) working days."
+          "To exercise any of the above rights, please write to our Grievance Officer at grievance@bankingpoint-24.com. We will respond within fifteen (15) working days."
         ]
       },
       {
@@ -854,7 +852,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Terms & Conditions",
     eyebrow: "Legal · Terms of Use",
     description:
-      "The contract between you and TRANSPE for use of the TRANSPE Platform, drawn up under the Indian Contract Act, 1872 and the Information Technology Act, 2000.",
+      "The contract between you and BankingPoint24 for use of the BankingPoint24 Platform, drawn up under the Indian Contract Act, 1872 and the Information Technology Act, 2000.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "Indian Contract Act, 1872",
@@ -867,7 +865,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "acceptance",
         heading: "1. Acceptance of Terms",
         body: [
-          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and Transpe Fintech Private Limited (\"TRANSPE\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
+          "These Terms & Conditions (\"Terms\") form a binding electronic record under Section 10A of the Information Technology Act, 2000 between you (\"User\", \"Retailer\", \"Distributor\", \"Customer\") and RUTVA MULTISERVICES LLP (\"BankingPoint24\", \"Company\"). By registering, accessing or using the Platform you accept these Terms in full."
         ]
       },
       {
@@ -881,7 +879,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "services",
         heading: "3. Description of services",
         body: [
-          "TRANSPE is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by licensed sponsor banks and NPCI rails. TRANSPE does not itself accept deposits or extend credit."
+          "BankingPoint24 is a technology aggregator that facilitates digital financial services including, but not limited to, AePS, DMT, BBPS, UPI, recharges, travel bookings and PAN application. The underlying banking / settlement services are provided by licensed sponsor banks and NPCI rails. BankingPoint24 does not itself accept deposits or extend credit."
         ]
       },
       {
@@ -891,7 +889,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
           {
             list: [
               "You shall complete KYC as required under the applicable Master Direction on KYC, 2016 prior to availing transactional services.",
-              "You are responsible for maintaining confidentiality of your login credentials, MPIN, biometric authentication and OTPs. TRANSPE will never ask for these over phone, SMS or e-mail.",
+              "You are responsible for maintaining confidentiality of your login credentials, MPIN, biometric authentication and OTPs. BankingPoint24 will never ask for these over phone, SMS or e-mail.",
               "Any transaction performed using your credentials shall be deemed to be performed by you.",
               "You shall not share, sublicense or commercially exploit your access in violation of these Terms."
             ]
@@ -925,35 +923,35 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "intellectual",
         heading: "7. Intellectual property",
         body: [
-          "All trademarks, logos, software, designs, content and brand elements on the Platform are the exclusive property of TRANSPE or its licensors, and are protected under the Copyright Act, 1957 and the Trade Marks Act, 1999. No part of the Platform may be reproduced without prior written consent."
+          "All trademarks, logos, software, designs, content and brand elements on the Platform are the exclusive property of BankingPoint24 or its licensors, and are protected under the Copyright Act, 1957 and the Trade Marks Act, 1999. No part of the Platform may be reproduced without prior written consent."
         ]
       },
       {
         id: "liability",
         heading: "8. Limitation of liability",
         body: [
-          "To the maximum extent permitted by law, the aggregate liability of TRANSPE arising out of or relating to the use of the Platform shall not exceed the aggregate commission earned by, or fees paid by, the User in the three (3) months preceding the event giving rise to the claim. TRANSPE shall not be liable for indirect, incidental, consequential, punitive or special damages."
+          "To the maximum extent permitted by law, the aggregate liability of BankingPoint24 arising out of or relating to the use of the Platform shall not exceed the aggregate commission earned by, or fees paid by, the User in the three (3) months preceding the event giving rise to the claim. BankingPoint24 shall not be liable for indirect, incidental, consequential, punitive or special damages."
         ]
       },
       {
         id: "force",
         heading: "9. Force majeure",
         body: [
-          "TRANSPE shall not be liable for any failure or delay arising out of events beyond its reasonable control, including acts of God, war, pandemics, regulatory action, internet outages, sponsor-bank downtime or NPCI / UIDAI service disruptions."
+          "BankingPoint24 shall not be liable for any failure or delay arising out of events beyond its reasonable control, including acts of God, war, pandemics, regulatory action, internet outages, sponsor-bank downtime or NPCI / UIDAI service disruptions."
         ]
       },
       {
         id: "termination",
         heading: "10. Suspension & termination",
         body: [
-          "TRANSPE reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any regulatory or network direction."
+          "BankingPoint24 reserves the right to suspend or terminate your account, with or without notice, where it has reasonable grounds to believe that you are in breach of these Terms, applicable law, or any regulatory or network direction."
         ]
       },
       {
         id: "law",
         heading: "11. Governing law & dispute resolution",
         body: [
-          "These Terms shall be governed by and construed in accordance with the laws of India. Any dispute, controversy or claim arising out of or in connection with these Terms shall first be attempted to be resolved through good-faith negotiation, failing which through arbitration by a sole arbitrator appointed under the Arbitration & Conciliation Act, 1996. The seat and venue of arbitration shall be Pune, Maharashtra. The courts at Pune shall have exclusive jurisdiction subject to the arbitration clause."
+          "These Terms shall be governed by and construed in accordance with the laws of India. Any dispute, controversy or claim arising out of or in connection with these Terms shall first be attempted to be resolved through good-faith negotiation, failing which through arbitration by a sole arbitrator appointed under the Arbitration & Conciliation Act, 1996. The seat and venue of arbitration shall be Anand, Gujarat. The courts at Anand, Gujarat shall have exclusive jurisdiction subject to the arbitration clause."
         ]
       },
       {
@@ -982,7 +980,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
         id: "scope",
         heading: "1. Scope",
         body: [
-          "This Refund Policy applies to all transactions initiated through the TRANSPE Platform — AePS, DMT, BBPS, UPI, recharges, travel bookings and any value-added services. Refunds for products / services delivered by third-party billers (electricity boards, telecom operators, airlines, IRCTC, hotel chains) are governed by the policies of the respective billers, but TRANSPE will assist you with end-to-end follow-up."
+          "This Refund Policy applies to all transactions initiated through the BankingPoint24 Platform — AePS, DMT, BBPS, UPI, recharges, travel bookings and any value-added services. Refunds for products / services delivered by third-party billers (electricity boards, telecom operators, airlines, IRCTC, hotel chains) are governed by the policies of the respective billers, but BankingPoint24 will assist you with end-to-end follow-up."
         ]
       },
       {
@@ -1011,8 +1009,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
         body: [
           {
             list: [
-              "Log in to your TRANSPE dashboard → Transactions → Raise Dispute.",
-              "Or e-mail support@transpe.net with the transaction reference number (RRN), date, amount and a short description.",
+              "Log in to your BankingPoint24 dashboard → Transactions → Raise Dispute.",
+              "Or e-mail support@bankingpoint-24.com with the transaction reference number (RRN), date, amount and a short description.",
               "For UPI disputes you may also raise a request directly with the issuer bank, the NPCI UDIR portal or the Digital Ombudsman."
             ]
           }
@@ -1045,8 +1043,8 @@ export const legalDocuments: Record<string, LegalDocument> = {
           "If you are not satisfied with the resolution provided at L1 support within 7 days, escalate to:",
           {
             list: [
-              "L2 — Grievance Officer, grievance@transpe.net (response within 15 working days)",
-              "L3 — Principal Nodal Officer, nodal@transpe.net",
+              "L2 — Grievance Officer, grievance@bankingpoint-24.com (response within 15 working days)",
+              "L3 — Principal Nodal Officer, nodal@bankingpoint-24.com",
               "L4 — Integrated Ombudsman Scheme, 2021 or the NPCI Digital Ombudsman"
             ]
           }
@@ -1059,7 +1057,7 @@ export const legalDocuments: Record<string, LegalDocument> = {
     title: "Charges & Fees",
     eyebrow: "Legal · Pricing transparency",
     description:
-      "All convenience fees, commissions and GST that may apply to transactions on the TRANSPE Platform — published in line with regulatory directions on display of charges.",
+      "All convenience fees, commissions and GST that may apply to transactions on the BankingPoint24 Platform — published in line with regulatory directions on display of charges.",
     lastUpdated: "01 April 2026",
     governedBy: [
       "applicable Master Direction on Issuance & Operation of PPIs, 2021",
@@ -1141,9 +1139,9 @@ export const legalDocuments: Record<string, LegalDocument> = {
           {
             list: [
               "In-app — Help → Raise a Ticket",
-              "E-mail — support@transpe.net",
-              "WhatsApp / Phone — +91 9004080939 (10 AM – 6 PM IST, Mon–Sat)",
-              "Letter — Customer Care, TRANSPE, S. No. 638/28/1, Shivtej Nagar, Indira Nagar, Pune, Maharashtra – 411037, IN"
+              "E-mail — support@bankingpoint-24.com",
+              "WhatsApp / Phone — +91 7069300077 (10 AM – 6 PM IST, Mon–Sat)",
+              "Letter — Customer Care, BankingPoint24, 27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat – 388345, IN"
             ]
           }
         ]
@@ -1156,9 +1154,9 @@ export const legalDocuments: Record<string, LegalDocument> = {
             table: {
               headers: ["Level", "Officer", "Channel", "TAT"],
               rows: [
-                ["Level 1", "Customer Care Executive", "support@transpe.net", "7 working days"],
-                ["Level 2", "Grievance Officer", "grievance@transpe.net · +91 9004080939", "15 working days"],
-                ["Level 3", "Principal Nodal Officer", "nodal@transpe.net · +91 9004080939", "30 days"],
+                ["Level 1", "Customer Care Executive", "support@bankingpoint-24.com", "7 working days"],
+                ["Level 2", "Grievance Officer", "grievance@bankingpoint-24.com · +91 7069300077", "15 working days"],
+                ["Level 3", "Principal Nodal Officer", "nodal@bankingpoint-24.com · +91 7069300077", "30 days"],
                 ["Level 4", "Integrated Ombudsman", "14448 (toll-free)", "As per scheme"]
               ]
             }
@@ -1298,17 +1296,18 @@ export type CommissionSlab = {
   distributor: string;
   master: string;
   superDistributor: string;
+  whiteLabel: string;
 };
 
 export const commissionSlabs: CommissionSlab[] = [
-  { service: "AePS Withdrawal", retailer: "0.40%", distributor: "0.10%", master: "0.05%", superDistributor: "0.025%" },
-  { service: "DMT (IMPS)", retailer: "₹6 / txn", distributor: "₹2 / txn", master: "₹1 / txn", superDistributor: "₹0.50 / txn" },
-  { service: "Mobile Recharge", retailer: "3.00%", distributor: "0.40%", master: "0.20%", superDistributor: "0.10%" },
-  { service: "DTH Recharge", retailer: "3.50%", distributor: "0.50%", master: "0.20%", superDistributor: "0.10%" },
-  { service: "Electricity Bill", retailer: "0.80%", distributor: "0.20%", master: "0.10%", superDistributor: "0.05%" },
-  { service: "LPG Booking", retailer: "₹4 / txn", distributor: "₹1 / txn", master: "₹0.50 / txn", superDistributor: "₹0.25 / txn" },
-  { service: "UPI Collect", retailer: "0.20%", distributor: "0.05%", master: "0.025%", superDistributor: "0.0125%" },
-  { service: "Travel - Bus", retailer: "5.00%", distributor: "0.80%", master: "0.40%", superDistributor: "0.20%" }
+  { service: "AePS Cash Withdrawal", retailer: "0.45%", distributor: "0.12%", master: "0.06%", superDistributor: "0.03%", whiteLabel: "Custom" },
+  { service: "Money Transfer (IMPS)", retailer: "₹7 / txn", distributor: "₹2.50 / txn", master: "₹1.25 / txn", superDistributor: "₹0.60 / txn", whiteLabel: "Custom" },
+  { service: "Mobile Recharge", retailer: "2.80%", distributor: "0.45%", master: "0.22%", superDistributor: "0.11%", whiteLabel: "Custom" },
+  { service: "DTH Recharge", retailer: "3.25%", distributor: "0.55%", master: "0.25%", superDistributor: "0.12%", whiteLabel: "Custom" },
+  { service: "Electricity Bill", retailer: "0.75%", distributor: "0.22%", master: "0.11%", superDistributor: "0.06%", whiteLabel: "Custom" },
+  { service: "LPG Refill Booking", retailer: "₹5 / txn", distributor: "₹1.50 / txn", master: "₹0.75 / txn", superDistributor: "₹0.40 / txn", whiteLabel: "Custom" },
+  { service: "UPI Collect", retailer: "0.25%", distributor: "0.06%", master: "0.03%", superDistributor: "0.015%", whiteLabel: "Custom" },
+  { service: "Bus Ticketing", retailer: "4.50%", distributor: "0.90%", master: "0.45%", superDistributor: "0.22%", whiteLabel: "Custom" }
 ];
 
 export type Biller = {
@@ -1343,11 +1342,11 @@ export type AuditEvent = {
 };
 
 export const auditEvents: AuditEvent[] = [
-  { id: "AU-94221", actor: "admin@transpe.net", action: "Approved KYC", target: "Vivek Joshi (KYC-004)", ip: "10.18.4.21", ts: "Apr 19, 10:22 AM", severity: "info" },
-  { id: "AU-94220", actor: "neha.k@transpe.net", action: "Override commission", target: "DMT IMPS · JNPD2017", ip: "49.207.211.4", ts: "Apr 19, 09:51 AM", severity: "warn" },
-  { id: "AU-94219", actor: "admin@transpe.net", action: "Suspended retailer", target: "JNPR3217 (Patil Enterprises)", ip: "10.18.4.21", ts: "Apr 19, 09:14 AM", severity: "danger" },
+  { id: "AU-94221", actor: "admin@bankingpoint-24.com", action: "Approved KYC", target: "Vivek Joshi (KYC-004)", ip: "10.18.4.21", ts: "Apr 19, 10:22 AM", severity: "info" },
+  { id: "AU-94220", actor: "neha.k@bankingpoint-24.com", action: "Override commission", target: "DMT IMPS · JNPD2017", ip: "49.207.211.4", ts: "Apr 19, 09:51 AM", severity: "warn" },
+  { id: "AU-94219", actor: "admin@bankingpoint-24.com", action: "Suspended retailer", target: "JNPR3217 (Patil Enterprises)", ip: "10.18.4.21", ts: "Apr 19, 09:14 AM", severity: "danger" },
   { id: "AU-94218", actor: "system", action: "Biller routing failover", target: "DTH · Tata Play → fallback", ip: "n/a", ts: "Apr 19, 08:42 AM", severity: "warn" },
-  { id: "AU-94217", actor: "rohit.v@transpe.net", action: "Approved fund request", target: "FR-9003 · ₹15,000", ip: "182.65.21.99", ts: "Apr 18, 06:30 PM", severity: "info" },
+  { id: "AU-94217", actor: "rohit.v@bankingpoint-24.com", action: "Approved fund request", target: "FR-9003 · ₹15,000", ip: "182.65.21.99", ts: "Apr 18, 06:30 PM", severity: "info" },
   { id: "AU-94216", actor: "system", action: "Settlement run", target: "T+1 · ₹8.42 Cr · 12,481 txns", ip: "n/a", ts: "Apr 18, 11:05 PM", severity: "info" }
 ];
 
@@ -1584,11 +1583,11 @@ export type QrCodeItem = {
 };
 
 export const qrCodes: QrCodeItem[] = [
-  { id: "QR-5001", type: "Static", label: "Shop Counter 1", vpa: "transpe.desai@icici", created: "May 02, 2026", payments: 1841, collected: 1284500, status: "Active" },
-  { id: "QR-5002", type: "Static", label: "Shop Counter 2", vpa: "transpe.desai2@icici", created: "May 02, 2026", payments: 644, collected: 412800, status: "Active" },
-  { id: "QR-5014", type: "Dynamic", label: "Invoice #4421", vpa: "transpe.desai@icici", amount: 12400, created: "Jun 12, 2026", payments: 1, collected: 12400, status: "Expired" },
-  { id: "QR-5015", type: "Dynamic", label: "Invoice #4427", vpa: "transpe.desai@icici", amount: 8600, created: "Jun 12, 2026", payments: 0, collected: 0, status: "Active" },
-  { id: "QR-5009", type: "Static", label: "Delivery Van", vpa: "transpe.desai3@icici", created: "May 22, 2026", payments: 102, collected: 89200, status: "Disabled" }
+  { id: "QR-5001", type: "Static", label: "Shop Counter 1", vpa: "BankingPoint24.desai@icici", created: "May 02, 2026", payments: 1841, collected: 1284500, status: "Active" },
+  { id: "QR-5002", type: "Static", label: "Shop Counter 2", vpa: "BankingPoint24.desai2@icici", created: "May 02, 2026", payments: 644, collected: 412800, status: "Active" },
+  { id: "QR-5014", type: "Dynamic", label: "Invoice #4421", vpa: "BankingPoint24.desai@icici", amount: 12400, created: "Jun 12, 2026", payments: 1, collected: 12400, status: "Expired" },
+  { id: "QR-5015", type: "Dynamic", label: "Invoice #4427", vpa: "BankingPoint24.desai@icici", amount: 8600, created: "Jun 12, 2026", payments: 0, collected: 0, status: "Active" },
+  { id: "QR-5009", type: "Static", label: "Delivery Van", vpa: "BankingPoint24.desai3@icici", created: "May 22, 2026", payments: 102, collected: 89200, status: "Disabled" }
 ];
 
 export type QrPayment = {

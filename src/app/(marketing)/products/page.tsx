@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check } from "@phosphor-icons/react/dist/ssr";
 import { Container, Section } from "@/components/ui/Container";
@@ -49,7 +49,7 @@ const products: Product[] = [
     index: "02",
     name: "POS Terminals",
     headline: "A card machine that pays for itself in a week.",
-    text: "Android terminals on monthly rental. Card, UPI, BharatQR and tap-to-pay on one device, with every sale in your TRANSPE wallet by next morning.",
+    text: "Android terminals on monthly rental. Card, UPI, BharatQR and tap-to-pay on one device, with every sale in your BankingPoint24 wallet by next morning.",
     specs: [
       "Rental from ₹499 a month, no deposit",
       "Cards, UPI, BharatQR and Tap & Pay",
@@ -81,7 +81,7 @@ const products: Product[] = [
     text: "Share one account number and IFSC with distributors and customers. Every IMPS, NEFT or UPI credit lands in your wallet, named and reconciled.",
     specs: [
       "Unique account number + IFSC in minutes",
-      "Instant credit to your TRANSPE wallet",
+      "Instant credit to your BankingPoint24 wallet",
       "Zero charge on incoming transfers"
     ],
     href: "/dashboard/virtual-account",
@@ -112,21 +112,21 @@ export default function ProductsPage() {
   return (
     <>
       <PageHero
-        variant="dark"
+        variant="light"
         eyebrow="Platform"
         breadcrumbs={[{ label: "Platform", href: "/products" }]}
         title={
           <>
-            Every way to get paid.
-            <br className="hidden md:block" /> One wallet to collect it.
+            One platform.
+            <br className="hidden md:block" /> Six revenue streams.
           </>
         }
-        description="Four acceptance products, one TRANSPE wallet. Pick what fits your counter today; switch the rest on from the dashboard when you grow."
+        description="Payment Gateway, POS terminals, QR Collect, AePS, Money Transfer and Virtual Accounts — all flowing into one BankingPoint24 float. Start with one and add the rest as your counter grows."
         stats={[
-          { value: "4", label: "Ways to get paid" },
+          { value: "6", label: "Products, one float" },
           { value: "0%", label: "MDR on UPI" },
-          { value: "T+1", label: "Settlement" },
-          { value: "₹0", label: "Setup fee" }
+          { value: "T+1", label: "Bank settlement" },
+          { value: "₹0", label: "Joining cost" }
         ]}
         actions={
           <>
@@ -137,12 +137,7 @@ export default function ProductsPage() {
               </Button>
             </Link>
             <a href="#compare" className="rounded-2xl focus-energy">
-              <Button
-                size="lg"
-                variant="outline"
-                tabIndex={-1}
-                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
+              <Button size="lg" variant="outline" tabIndex={-1}>
                 Compare products
               </Button>
             </a>
@@ -290,14 +285,14 @@ export default function ProductsPage() {
         <Container>
           <SectionIntro
             eyebrow="Compare"
-            title="Pick the one that fits your counter."
-            description="All four pay into the same TRANSPE wallet. Start with one, add the rest from the dashboard."
+            title="Pick what your counter needs today."
+            description="Every product feeds the same BankingPoint24 float. Activate one; unlock the rest from your dashboard as your business scales."
           />
           <Reveal>
             <div className="overflow-hidden rounded-3xl border border-ink-100 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-                  <caption className="sr-only">Comparison of TRANSPE payment products</caption>
+                  <caption className="sr-only">Comparison of BankingPoint24 payment products</caption>
                   <thead>
                     <tr className="border-b-2 border-ink-950">
                       <th

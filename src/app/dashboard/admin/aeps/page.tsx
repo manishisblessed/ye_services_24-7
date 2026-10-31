@@ -315,7 +315,7 @@ export default function AepsCentrePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Acquiring & Devices"
         title="AEPS Centre"
         description="Aadhaar-enabled payments control — merchant onboarding, settlement account approvals, float and settlement history."
         actions={

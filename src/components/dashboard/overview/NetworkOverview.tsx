@@ -127,7 +127,7 @@ export function NetworkOverview() {
       <SectionHeader
         icon={TreeStructure}
         tone="royal"
-        title="Network Business Overview"
+        title="Zone Business Summary"
         description={
           <>
             {isToday ? "Today's" : "Selected period's"} transaction activity across your{" "}
@@ -167,8 +167,8 @@ export function NetworkOverview() {
             compact
             icon={WarningCircle}
             tone="coral"
-            title="Couldn't load the network overview"
-            body="Give it another go — your network data is safe."
+            title="Zone data unavailable right now"
+            body="Give it another go — your zone data is safe and will reload."
             action={
               <button onClick={load} className="text-sm font-semibold text-coral-700 underline-offset-4 hover:underline">
                 Try again
@@ -233,7 +233,7 @@ export function NetworkOverview() {
             {/* Service-wise breakdown */}
             <StaggerItem>
               <div className="h-full rounded-3xl border border-ink-100 bg-white p-6 shadow-sm">
-                <SectionHeader size="sm" icon={Stack} tone="brand" title="Service-wise breakdown" className="mb-4" />
+                <SectionHeader size="sm" icon={Stack} tone="brand" title="Service breakdown" className="mb-4" />
                 <ServiceBreakdownList rows={data.serviceBreakdown} />
               </div>
             </StaggerItem>
@@ -246,8 +246,8 @@ export function NetworkOverview() {
                     size="sm"
                     icon={UsersThree}
                     tone="royal"
-                    title="Member-wise activity"
-                    description={`Direct ${childLabel} · click a row for full transaction details`}
+                    title="Partner Activity"
+                    description={`Your direct ${childLabel} · click a row for full transaction details`}
                   />
                   <Link
                     href="/dashboard/network"
@@ -260,8 +260,8 @@ export function NetworkOverview() {
                   <EmptyState
                     icon={UsersThree}
                     tone="royal"
-                    title={`No ${childLabel} yet`}
-                    body="Invite your first partner and their activity will roll up here."
+                    title={`No ${childLabel} in your zone yet`}
+                    body="Add your first partner and their transactions will appear here."
                   />
                 ) : (
                   <div className="overflow-x-auto">

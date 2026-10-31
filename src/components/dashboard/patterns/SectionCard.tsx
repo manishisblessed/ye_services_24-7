@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { cn } from "@/lib/utils";
 
 type Padding = "none" | "sm" | "md" | "lg";
@@ -23,7 +23,7 @@ const tones: Record<Tone, string> = {
 };
 
 /**
- * TRANSPE SectionCard — the standard rounded-3xl surface for dashboard
+ * BankingPoint24 SectionCard — the standard rounded-3xl surface for dashboard
  * sections. Optional header row (title / description / action) sits above
  * the body with a hairline divider. `padding` controls the body only so
  * tables can go edge-to-edge with `padding="none"`.

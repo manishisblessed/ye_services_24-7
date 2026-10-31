@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Shared helper to (re)send an onboarding link over email + SMS. Used by the
  * network (parent-facing) invite actions so the delivery logic isn't
  * re-implemented per route. Email failure is surfaced; SMS is best-effort.
  *
  * On white-label tenants the link uses the tenant's own domain so the invitee
- * lands on a branded experience rather than the main TRANSPE portal.
+ * lands on a branded experience rather than the main BankingPoint24 portal.
  */
 
 import { env } from "@/lib/env";
@@ -45,7 +45,7 @@ export async function sendInviteLink(
 ): Promise<{ onboardingLink: string; emailSent: boolean; emailError?: string }> {
   const onboardingLink = await onboardingLinkForTenant(invite.token, invite.platformOwnerId);
   const brand = await resolveNotificationBrand(invite.platformOwnerId);
-  const platformName = brand?.brandName ?? invite.brandName ?? "TRANSPE";
+  const platformName = brand?.brandName ?? invite.brandName ?? "bankingpoint24";
   let emailSent = false;
   let emailError: string | undefined;
 

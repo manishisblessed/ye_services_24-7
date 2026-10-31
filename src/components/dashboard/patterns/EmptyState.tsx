@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
@@ -7,7 +7,7 @@ import { IconTile, type IconTone } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE EmptyState — friendly, retailer-first empty / zero-data block.
+ * BankingPoint24 EmptyState — friendly, retailer-first empty / zero-data block.
  * Drop it inside a SectionCard body or render standalone (`bordered`).
  */
 export function EmptyState({

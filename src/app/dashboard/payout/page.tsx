@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -341,7 +341,7 @@ export default function PayoutPage() {
             {rows.length > 0 && (
               <ReportActions
                 filename="payouts"
-                title="JMP TRANSPE · Payouts"
+                title="JMP BankingPoint24 · Payouts"
                 subtitle="My payouts"
                 columns={[
                   { key: "id", header: "Payout ID" },
@@ -1505,8 +1505,8 @@ function PayoutReceipt({
   const [copied, setCopied] = useState(false);
   const { session } = useAuth();
   const payBy = session?.userCode
-    ? `Pay by TRANSPE by RT Code - ${session.userCode}`
-    : "Pay by TRANSPE";
+    ? `Pay by BankingPoint24 by RT Code - ${session.userCode}`
+    : "Pay by BankingPoint24";
 
   // A payout is disbursed asynchronously (approval → worker → provider), so the
   // status returned at submit time is almost always non-terminal. Poll the live
@@ -1795,7 +1795,7 @@ function printReceipt(result: PayoutResult, text: string, gradient: string, payB
   </head>
   <body>
     <div class="head">
-      <div style="font-weight:700">JMP TRANSPE · Payout</div>
+      <div style="font-weight:700">JMP BankingPoint24 · Payout</div>
       <div class="amt">₹${result.amount.toFixed(2)}</div>
     </div>
     <div class="div"></div>
@@ -1809,7 +1809,7 @@ function printReceipt(result: PayoutResult, text: string, gradient: string, payB
       })
       .join("")}
     <div class="div"></div>
-    <div class="foot"><div style="font-weight:600;color:#059669;margin-bottom:4px">${payBy}</div>JMP TRANSPE · Payout Receipt</div>
+    <div class="foot"><div style="font-weight:600;color:#059669;margin-bottom:4px">${payBy}</div>JMP BankingPoint24 · Payout Receipt</div>
   </body>
 </html>`);
   printWindow.document.close();

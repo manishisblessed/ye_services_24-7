@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
@@ -22,29 +22,29 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Company",
   description:
-    "TRANSPE turns neighbourhood retail shops into bank counters. Here is why we exist, the numbers that matter and what we stand for."
+    "BankingPoint24 turns every neighbourhood shop into a full-service banking counter. Born in Anand, Gujarat — here is why we exist, our journey and what we stand for."
 };
 
 const milestones = [
   {
     when: "Jan 2026",
-    title: "The idea",
-    text: "Two hundred shop visits across Maharashtra and Western India. Same answer everywhere: the nearest bank is far, the customer is right here."
+    title: "Born in Anand, Gujarat",
+    text: "From a notebook full of shop-owner conversations across Gujarat and Western India — the same gap everywhere: the nearest branch is far away, but the shop is right here."
   },
   {
     when: "Mar 2026",
-    title: "First 1,000 shops",
-    text: "AePS and money transfer go live for pilot retailers in Pune, Nashik and Kolhapur."
+    title: "First 1,000 counters live",
+    text: "Cash Withdrawal (AePS) and Send Money (DMT) go live for pilot retailers across Anand, Ahmedabad and Surat. Commission on the first transaction paid within seconds."
   },
   {
     when: "Jun 2026",
-    title: "NPCI rails live",
-    text: "UPI, BBPS and AePS certified directly on NPCI. Bills and recharges join the counter."
+    title: "Certified on NPCI rails",
+    text: "UPI, BBPS and AePS certified directly on NPCI infrastructure. Bill payments and recharges join the counter, giving retailers 30+ earning streams in one dashboard."
   },
   {
     when: "Oct 2026",
-    title: "72K shops",
-    text: "Payment gateway, POS and QR roll out. The distributor programme opens across 28 states."
+    title: "68,000+ counters across India",
+    text: "Payment gateway, POS terminals and QR collections roll out. The distributor programme expands BankingPoint24 across 28 states and counting."
   }
 ];
 
@@ -55,28 +55,28 @@ const values: {
   text: string;
 }[] = [
   {
+    icon: Lightning,
+    tone: "coral",
+    title: "Speed is the product",
+    text: "Thirty seconds per transaction is non-negotiable. If a feature slows your counter, it does not ship."
+  },
+  {
     icon: Storefront,
     tone: "brand",
-    title: "Retailer first",
-    text: "Every screen is designed on a real shop counter, for one person, with a queue waiting."
+    title: "Counter first, always",
+    text: "Every screen is designed on a real shop counter, for one person, with a queue forming behind the customer."
   },
   {
     icon: Eye,
     tone: "accent",
-    title: "Every rupee visible",
-    text: "You see the fee and your commission before you press confirm. No PDFs, no surprises."
-  },
-  {
-    icon: Lightning,
-    tone: "coral",
-    title: "Fast beats fancy",
-    text: "Thirty seconds per transaction is the bar. If a feature slows you down, it does not ship."
+    title: "No hidden numbers",
+    text: "Fees and your exact commission are shown before you tap confirm. Never in a PDF buried somewhere."
   },
   {
     icon: WifiHigh,
     tone: "royal",
-    title: "Built for weak networks",
-    text: "Works on a 2G signal during a power cut. Offline queueing and smart retries are standard."
+    title: "Works on 2G",
+    text: "Offline queueing, smart retries and graceful fallbacks. If there is any signal at all, your transaction goes through."
   }
 ];
 
@@ -86,16 +86,16 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
-        variant="dark"
+        variant="light"
         eyebrow="Company"
         breadcrumbs={[{ label: "Company", href: "/about" }]}
         title={
           <>
-            The trust is yours.
-            <br className="hidden md:block" /> The rails are ours.
+            Built for the counter.
+            <br className="hidden md:block" /> Designed for India.
           </>
         }
-        description="TRANSPE is a fintech distribution platform from Pune. We give neighbourhood retail shops the rails of a bank branch: cash withdrawal, money transfer, bills, recharges, payments and travel — all from one counter."
+        description="BankingPoint24 is a fintech distribution platform from Anand, Gujarat. We put the rails of a full bank branch inside every neighbourhood shop — cash, transfers, bills, recharges, travel and more. One counter. Sixty revenue streams."
         actions={
           <>
             <Link href="/register" className="rounded-2xl focus-energy">
@@ -105,12 +105,7 @@ export default function AboutPage() {
               </Button>
             </Link>
             <Link href="/contact" className="rounded-2xl focus-energy">
-              <Button
-                size="lg"
-                variant="outline"
-                tabIndex={-1}
-                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
+              <Button size="lg" variant="outline" tabIndex={-1}>
                 Talk to us
               </Button>
             </Link>
@@ -118,13 +113,11 @@ export default function AboutPage() {
         }
       >
         {/* Founders' note — full-width band under the headline */}
-        <div className="grain relative overflow-hidden rounded-4xl border border-white/10 bg-white/[0.04] backdrop-blur-sm">
+        <div className="grain relative overflow-hidden rounded-4xl bg-brand-950 shadow-xl">
           <div className="grid gap-8 p-7 md:grid-cols-[auto_1fr_auto] md:items-center md:p-10">
             <Quotes size={44} weight="fill" aria-hidden className="text-accent-400/50" />
             <blockquote className="font-display text-2xl font-semibold leading-[1.18] tracking-[-0.02em] text-white md:text-3xl">
-              If a shopkeeper can&rsquo;t finish a transaction in thirty
-              seconds, on a weak signal, in their own language — we have
-              failed.
+              The counter owner runs on trust and speed. We exist to give them both — on every signal, in every language, at every hour.
             </blockquote>
             <div className="flex items-center gap-3 md:flex-col md:items-end md:gap-2">
               <div className="flex -space-x-2">
@@ -132,7 +125,7 @@ export default function AboutPage() {
                   <span
                     key={m}
                     className={cn(
-                      "grid h-9 w-9 place-items-center rounded-full font-display text-[10px] font-semibold text-white ring-2 ring-ink-950",
+                      "grid h-9 w-9 place-items-center rounded-full font-display text-[10px] font-semibold text-white ring-2 ring-brand-950",
                       ["bg-brand-600", "bg-royal-600", "bg-accent-600"][i]
                     )}
                   >
@@ -141,7 +134,7 @@ export default function AboutPage() {
                 ))}
               </div>
               <span className="text-xs text-white/55">
-                Founders&rsquo; note · Pune, {company.incorporated}
+                Founders&rsquo; note · Anand, Gujarat, {company.incorporated}
               </span>
             </div>
           </div>
@@ -164,9 +157,9 @@ export default function AboutPage() {
 
           <Stagger className="mx-auto mt-14 grid max-w-5xl gap-6 md:grid-cols-3">
             {[
-              "For 400 million Indians, the nearest branch means a bus ride, a lost half-day and a queue. The shop at the corner is open 14 hours a day and already knows every customer by name.",
-              "TRANSPE turns that shop into the branch. Withdraw cash on a fingerprint, send money anywhere in seconds, clear a pending bill, book a bus home. The shopkeeper earns on every single transaction.",
-              "Zero joining fee. Transparent charges on every screen. Same-day settlement straight to your bank. That is the TRANSPE promise."
+              "For hundreds of millions of Indians, the nearest bank branch is a bus ride, a lost half-day and a long queue. The shop at the corner is open 14 hours, runs on trust and already knows every customer by name.",
+              "BankingPoint24 converts that shop into the branch. Withdraw cash on a fingerprint, send money anywhere in seconds, pay any bill, book a bus or flight. The shopkeeper earns a commission on every single transaction.",
+              "Zero joining fee. Every charge shown before you confirm. Commission credited the moment a transaction settles. That is the BankingPoint24 promise — unchanged since day one in Anand, Gujarat."
             ].map((p, i) => (
               <StaggerItem
                 key={i}
@@ -233,8 +226,8 @@ export default function AboutPage() {
         <Container>
           <SectionIntro
             eyebrow="Our journey"
-            title="One year. Four turning points."
-            description="From a notebook full of shop visits to a network across 28 states."
+            title="From Anand to 28 states."
+            description="Four moments that shaped BankingPoint24 — from a Gujarat shop visit to a national network."
           />
           <div className="mx-auto max-w-4xl space-y-4">
             {milestones.map((m, i) => (
@@ -265,11 +258,11 @@ export default function AboutPage() {
         <Container>
           <div className="grid gap-12 lg:grid-cols-12">
             <div className="lg:col-span-4">
-              <SectionIntro
-                eyebrow="What we stand for"
-                title="Four rules we don't bend."
-                className="mb-0 lg:sticky lg:top-32"
-              />
+          <SectionIntro
+            eyebrow="What we stand for"
+            title="Four things we will never compromise on."
+            className="mb-0 lg:sticky lg:top-32"
+          />
             </div>
             <Stagger className="space-y-4 lg:col-span-8">
               {values.map((v, i) => (

@@ -314,9 +314,9 @@ export default function SchemeManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Pricing"
-        title="Scheme management"
-        description="Create and manage schemes with charges, MDR rates, and commission values. Admin assigns schemes to Super Distributors (SD) only — SD then assigns to MD, MD to DT, DT to RT. Commissions apply only to PG/POS/QR transactions."
+        eyebrow="Growth Studio"
+        title="Rate Schemes"
+        description="Create and manage pricing schemes — charges, MDR rates and commission values. Assigned top-down: Admin → SD → MD → DT → Retailer. Commissions apply to PG, POS and QR transactions."
         actions={
           <>
             <Button variant="outline" onClick={load} disabled={loading}>

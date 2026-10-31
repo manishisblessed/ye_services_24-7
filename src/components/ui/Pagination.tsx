@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE Pagination — v2 pill style.
+ * BankingPoint24 Pagination — v2 pill style.
  *
  * Prev / Next are `rounded-2xl` pills, page numbers render as a compact
  * window (1 … 4 5 6 … 20) with the active page in solid ink. API unchanged:

@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -euo pipefail
 
 echo "=========================================="
-echo "  TRANSPE — Redeploy"
+echo "  BankingPoint24 — Redeploy"
 echo "=========================================="
 
-cd /home/ubuntu/TRANSPE
+cd /home/ubuntu/bankingpoint24
 
 echo "[1/6] Pulling latest code..."
 git pull origin main

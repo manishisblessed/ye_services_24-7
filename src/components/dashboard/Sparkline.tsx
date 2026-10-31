@@ -2,7 +2,7 @@ import { useId } from "react";
 
 /**
  * Sparkline — minimal trend line with a gradient stroke and a soft area fill.
- * Pass a brand hex in `color`; the stroke fades toward the TRANSPE coral so a
+ * Pass a brand hex in `color`; the stroke fades toward the BankingPoint24 coral so a
  * flat series still reads as "alive".
  */
 export function Sparkline({
@@ -49,7 +49,7 @@ export function Sparkline({
         </linearGradient>
         <linearGradient id={strokeId} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor="#17b8a6" />
+          <stop offset="100%" stopColor="#61a93a" />
         </linearGradient>
       </defs>
       <polygon points={area} fill={`url(#${fillId})`} />

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -69,7 +69,7 @@ async function shareInviteLink(link: string, name?: string | null) {
   if (typeof navigator !== "undefined" && "share" in navigator) {
     try {
       await navigator.share({
-        title: "TRANSPE Onboarding",
+        title: "BankingPoint24 Onboarding",
         text: name ? `Onboarding link for ${name}` : "Complete your onboarding",
         url: link,
       });
@@ -95,10 +95,10 @@ const CHILD_META = {
     singular: "master distributor",
     plural: "master distributors",
     header: "Master Distributor",
-    eyebrow: "Network tree",
-    title: "Master distributors under you",
+    eyebrow: "Master Dist. List",
+    title: "Your Master Distributors",
     description:
-      "Direct master distributors. Override commissions, top-up wallets, freeze or graduate accounts.",
+      "Your direct Master Distributors. Manage overrides, top-up float, freeze or upgrade accounts.",
     hasDownline: true,
   },
   "master-distributor": {
@@ -106,10 +106,10 @@ const CHILD_META = {
     singular: "distributor",
     plural: "distributors",
     header: "Distributor",
-    eyebrow: "Network tree",
-    title: "Distributors under you",
+    eyebrow: "Distributor List",
+    title: "Your Distributors",
     description:
-      "Direct distributors. Override commissions, top-up wallets, freeze or graduate accounts.",
+      "Your direct Distributors. Manage overrides, top-up float, freeze or upgrade accounts.",
     hasDownline: true,
   },
   distributor: {
@@ -117,10 +117,10 @@ const CHILD_META = {
     singular: "retailer",
     plural: "retailers",
     header: "Retailer",
-    eyebrow: "My retailers",
-    title: "Retailers under you",
+    eyebrow: "Retailer List",
+    title: "Your Retailers",
     description:
-      "Retailers in your network. Approve fund requests, set commissions, and watch turnover.",
+      "Retailers in your zone. Approve float requests, set commission rates, and track zone turnover.",
     hasDownline: false,
   },
 } as const;
@@ -309,14 +309,14 @@ export default function NetworkPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={`Network · ${meta.eyebrow}`}
+        eyebrow={`My Zone · ${meta.eyebrow}`}
         title={meta.title}
         description={meta.description}
         actions={
           <>
             <ReportActions
               filename={`my-${meta.plural.replace(/ /g, "-")}`}
-              title={`JMP TRANSPE · My ${meta.plural.replace(/\b\w/g, (c) => c.toUpperCase())}`}
+              title={`JMP BankingPoint24 · My ${meta.plural.replace(/\b\w/g, (c) => c.toUpperCase())}`}
               subtitle={`${users.length} record${users.length === 1 ? "" : "s"}`}
               columns={[
                 { key: "id", header: "Code" },

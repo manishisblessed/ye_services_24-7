@@ -469,7 +469,7 @@ export async function POST(
 
   const tenantBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
   const tenantBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
-  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const platformName = tenantBrand?.brandName ?? "BankingPoint24";
   const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
   const loginUrl = `${tenantBaseUrl}/login`;
 
@@ -490,10 +490,11 @@ export async function POST(
         },
       });
 
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.bankingpoint-24.com";
       const emailProvider = getPartner("email");
       await emailProvider.send({
         to: inviter.email,
-        subject: `TRANSPE — New Registration: ${data.name} awaits approval`,
+        subject: `BankingPoint24 — New Registration: ${data.name} awaits approval`,
         html: `
           <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
             <h1 style="color:#1e293b;font-size:22px;margin:0 0 16px;">New Registration Awaiting Approval</h1>
@@ -514,7 +515,7 @@ export async function POST(
             </div>
             <p style="color:#64748b;font-size:13px;">${["MASTER_ADMIN", "ADMIN", "SUPPORT"].includes(inviter.role) ? "Please review and approve within 48–72 working hours." : "An admin will review and activate the account within 48–72 working hours."}</p>
             <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
-            <p style="color:#94a3b8;font-size:12px;text-align:center;">TRANSPE</p>
+            <p style="color:#94a3b8;font-size:12px;text-align:center;">BankingPoint24</p>
           </div>
         `,
       });
@@ -651,7 +652,7 @@ export async function POST(
             <tr>
               <td style="padding:24px 32px 28px;background:#0f172a;color:#94a3b8;font-size:12px;line-height:1.6;text-align:center;">
                 <p style="margin:0 0 4px;color:#f1f5f9;font-weight:700;letter-spacing:0.4px;">${platformName}</p>
-                ${tenantBrand ? `<p style="margin:0 0 4px;color:#cbd5e1;font-size:11px;">Powered by TRANSPE</p>` : `<p style="margin:0 0 10px;color:#cbd5e1;">transpe.net</p>`}
+                ${tenantBrand ? `<p style="margin:0 0 4px;color:#cbd5e1;font-size:11px;">Powered by BankingPoint24</p>` : `<p style="margin:0 0 10px;color:#cbd5e1;">bankingpoint-24.com</p>`}
                 <p style="margin:0;color:#64748b;">&copy; ${year} ${platformName}. All rights reserved.<br />This is an automated message &mdash; please do not reply.</p>
               </td>
             </tr>

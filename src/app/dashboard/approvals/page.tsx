@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -126,7 +126,7 @@ export default function ApprovalsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Approvals"
+        eyebrow="Action Pending"
         title="Declaration approvals"
         description="Review and sign onboarding declarations and transfer requests from your network."
         actions={
@@ -643,7 +643,7 @@ function ApprovalReviewPage({ approval, onBack }: { approval: Approval; onBack: 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Approvals"
+        eyebrow="Action Pending"
         title={`Review: ${approval.onboardeeName}`}
         description={`${approval.onboardeeRole.replace(/_/g, " ").toLowerCase()} onboarding declaration approval`}
         actions={
@@ -1065,7 +1065,7 @@ function TransferReviewPage({ transfer, onBack }: { transfer: TransferRequest; o
     if (!blob) return null;
     const fd = new FormData();
     fd.append("file", blob, "transfer-signature.png");
-    fd.append("folder", "TRANSPE/declarations/transfer");
+    fd.append("folder", "BankingPoint24/declarations/transfer");
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) return null;
     const data = await res.json();
@@ -1077,7 +1077,7 @@ function TransferReviewPage({ transfer, onBack }: { transfer: TransferRequest; o
     const blob = await fetch(selfieDataUrl).then((r) => r.blob());
     const fd = new FormData();
     fd.append("file", blob, "transfer-selfie.jpg");
-    fd.append("folder", "TRANSPE/declarations/transfer");
+    fd.append("folder", "BankingPoint24/declarations/transfer");
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) return null;
     const data = await res.json();
@@ -1241,7 +1241,7 @@ function TransferReviewPage({ transfer, onBack }: { transfer: TransferRequest; o
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Transfer approval"
+        eyebrow="Action Pending"
         title={`Accept ${transfer.user.name}?`}
         description={`Master Admin wants to transfer this ${transfer.user.role.replace(/_/g, " ").toLowerCase()} under your account.`}
         actions={

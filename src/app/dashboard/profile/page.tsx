@@ -224,8 +224,8 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Profile"
+        eyebrow="My Profile"
+        title="My Profile"
         description="Your details, KYC status and account identity in one place."
       />
 

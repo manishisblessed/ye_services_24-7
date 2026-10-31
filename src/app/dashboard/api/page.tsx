@@ -219,7 +219,7 @@ export default function ApiKeysPage() {
   if (forbidden) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Platform · Developers" title="API keys & webhooks" description="Programmatic access to the platform." />
+        <PageHeader eyebrow="Partner Hub" title="API keys & webhooks" description="Programmatic access to the platform." />
         <EmptyState
           bordered
           icon={LockKey}
@@ -244,7 +244,7 @@ export default function ApiKeysPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Platform · Developers"
+        eyebrow="Partner Hub"
         title="API keys & webhooks"
         description="Issue scoped keys for the partner API and receive signed event notifications on your servers."
         actions={

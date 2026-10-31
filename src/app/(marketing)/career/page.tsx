@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
   ArrowRight,
@@ -23,7 +23,7 @@ import { company } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Careers",
   description:
-    "Build the counter that brings banking to every Indian shop. Open roles at TRANSPE across engineering, design, sales, operations and compliance."
+    "Build the counter that brings banking to every Indian shop. Open roles at BankingPoint24 across engineering, design, sales, operations and compliance."
 };
 
 const openings = [
@@ -36,7 +36,7 @@ const openings = [
   {
     title: "Product Designer (Retailer App)",
     team: "Design",
-    location: "Pune",
+    location: "Anand / Remote",
     type: "Full-time"
   },
   {
@@ -48,7 +48,7 @@ const openings = [
   {
     title: "Customer Success Lead",
     team: "Operations",
-    location: "Pune",
+    location: "Anand",
     type: "Full-time"
   },
   {
@@ -119,7 +119,7 @@ export default function CareerPage() {
   return (
     <>
       <PageHero
-        variant="dark"
+        variant="light"
         eyebrow="Careers"
         breadcrumbs={[{ label: "Careers", href: "/career" }]}
         title={
@@ -128,12 +128,12 @@ export default function CareerPage() {
             <br className="hidden md:block" /> of your career, for India.
           </>
         }
-        description="We are a small team in Pune with people in the field across India. Engineers, designers, salespeople and compliance folks who have all stood behind a shop counter."
+        description="We are a small team in Anand, Gujarat with people in the field across India. Engineers, designers, salespeople and compliance folks who have all stood behind a shop counter."
         stats={[
-          { value: String(openings.length), label: "Open roles" },
-          { value: "5", label: "Teams hiring" },
-          { value: "28", label: "States we work in" },
-          { value: "1 week", label: "Decision time" }
+          { value: String(openings.length), label: "Roles open right now" },
+          { value: "5", label: "Teams growing" },
+          { value: "22", label: "States on the map" },
+          { value: "7 days", label: "Offer turnaround" }
         ]}
         actions={
           <a href="#roles" className="rounded-2xl focus-energy">

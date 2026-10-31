@@ -89,8 +89,8 @@ export default function AdminWhitelabelPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Platform · Admin"
-        title="White-label tenants"
+        eyebrow="Partner Network"
+        title="Partner Brands"
         description="View, activate, and suspend white-label portals across the platform."
         actions={
           <Button variant="secondary" onClick={load} disabled={loading}>
@@ -159,7 +159,7 @@ export default function AdminWhitelabelPage() {
               const liveUrl = t.customDomain
                 ? `https://${t.customDomain}`
                 : t.subdomain
-                  ? `https://${t.subdomain}.${process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "transpe.in"}`
+                  ? `https://${t.subdomain}.${process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com"}`
                   : null;
               return (
                 <tr key={t.id} className="hover:bg-ink-50/50">
@@ -197,7 +197,7 @@ export default function AdminWhitelabelPage() {
                       )}
                       {t.subdomain && (
                         <p className="font-mono text-xs text-ink-400">
-                          {t.subdomain}.{process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "transpe.in"}
+                          {t.subdomain}.{process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com"}
                         </p>
                       )}
                       {!t.customDomain && !t.subdomain && (
@@ -240,7 +240,7 @@ export default function AdminWhitelabelPage() {
                       {t.status !== "SUSPENDED" && (
                         <Button
                           size="sm"
-                          variant="destructive"
+                          variant="danger"
                           onClick={() => updateStatus(t.id, "SUSPENDED")}
                           disabled={acting === t.id}
                         >

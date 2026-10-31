@@ -1,81 +1,55 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  Bank,
-  CaretRight,
   CheckCircle,
+  CreditCard,
   DeviceMobile,
   Fingerprint,
-  Lightning,
   PaperPlaneTilt,
-  QrCode,
   Receipt,
   SealCheck,
-  ShieldCheck,
+  Storefront,
+  TrendUp,
   type Icon
 } from "@phosphor-icons/react";
-import { services, trustBadges } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { trustBadges } from "@/lib/data";
 import { ButtonLink } from "./_shared/ButtonLink";
 import { CountUp } from "./_shared/CountUp";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
-/* Live feed shown inside the counter console. Cycles forever. */
-type FeedItem = {
+/* Day-summary lines printed on the counter receipt. */
+type ReceiptLine = {
   icon: Icon;
   label: string;
-  sub: string;
-  amount: string;
+  count: string;
   commission: string;
 };
 
-const FEED: FeedItem[] = [
-  {
-    icon: Fingerprint,
-    label: "AePS withdrawal",
-    sub: "Aadhaar ••6214 · Bank of Baroda",
-    amount: "₹2,500",
-    commission: "+₹6.00"
-  },
-  {
-    icon: PaperPlaneTilt,
-    label: "Money transfer",
-    sub: "IMPS · HDFC ••0193",
-    amount: "₹10,000",
-    commission: "+₹8.00"
-  },
-  {
-    icon: QrCode,
-    label: "UPI collect",
-    sub: "ramesh.k@oksbi",
-    amount: "₹1,250",
-    commission: "+₹2.50"
-  },
-  {
-    icon: Receipt,
-    label: "Electricity bill",
-    sub: "MSEDCL · Consumer 48812",
-    amount: "₹1,840",
-    commission: "+₹14.70"
-  },
-  {
-    icon: DeviceMobile,
-    label: "Mobile recharge",
-    sub: "Jio · 98•• ••4421",
-    amount: "₹299",
-    commission: "+₹8.97"
-  },
-  {
-    icon: Bank,
-    label: "Virtual account credit",
-    sub: "NEFT · Settlement T+1",
-    amount: "₹48,200",
-    commission: "auto-credited"
-  }
+const RECEIPT_LINES: ReceiptLine[] = [
+  { icon: Fingerprint, label: "AePS cash withdrawals", count: "× 22", commission: "₹132.00" },
+  { icon: PaperPlaneTilt, label: "Money transfers", count: "× 14", commission: "₹112.00" },
+  { icon: Receipt, label: "Bill payments (BBPS)", count: "× 26", commission: "₹167.40" },
+  { icon: DeviceMobile, label: "Recharges & data", count: "× 31", commission: "₹93.20" },
+  { icon: CreditCard, label: "Card taps on POS", count: "× 12", commission: "₹58.10" }
+];
+
+/* Shop types that run a BankingPoint24 counter — scrolls under the hero. */
+const SHOP_TYPES = [
+  "Kirana stores",
+  "Mobile & recharge shops",
+  "Travel agencies",
+  "Medical stores",
+  "Stationery shops",
+  "Cyber cafés",
+  "Photo studios",
+  "Electronics counters",
+  "Tea stalls",
+  "Garment shops",
+  "Hardware stores",
+  "Dairy booths"
 ];
 
 export function HeroConsole() {
@@ -88,79 +62,66 @@ export function HeroConsole() {
   });
 
   return (
-    <section
-      data-nav-theme="dark"
-      className="grain relative overflow-hidden bg-ink-950 text-white"
-    >
-      {/* Backdrop */}
+    <section className="relative overflow-hidden bg-[#f6faf2] text-ink-900">
+      {/* Backdrop — light paper, faint grid, green + navy washes */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="grid-bg mask-fade-y absolute inset-0 opacity-[0.07] invert" />
-        <div className="aurora-glow absolute -left-56 top-[-180px] h-[560px] w-[560px] rounded-full" />
-        <div className="aurora-glow absolute -right-48 bottom-[-220px] h-[620px] w-[620px] rounded-full [animation-direction:reverse]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 to-transparent" />
+        <div className="grid-bg mask-fade-y absolute inset-0 opacity-[0.5]" />
+        <div className="absolute -left-40 top-[-160px] h-[480px] w-[480px] rounded-full bg-accent-200/50 blur-3xl" />
+        <div className="absolute -right-32 top-24 h-[420px] w-[420px] rounded-full bg-royal-100/60 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
       </div>
 
-      <div className="container-x relative z-10 pb-10 pt-28 md:pt-36">
-        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+      <div className="container-x relative z-10 pb-12 pt-28 md:pt-36">
+        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-8">
           {/* ── Copy ── */}
           <div className="lg:col-span-6">
             <motion.p
               {...enter(0)}
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.06] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75 backdrop-blur"
+              className="inline-flex items-center gap-2.5 rounded-full border border-accent-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-700 shadow-sm"
             >
-              <Lightning size={13} weight="fill" className="text-accent-400" aria-hidden />
-              Banking rails for every counter in India
+              <Storefront size={13} weight="fill" className="text-accent-500" aria-hidden />
+              India&rsquo;s neighbourhood banking network
             </motion.p>
 
             <motion.h1
               {...enter(1)}
-              className="mt-6 font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.025em] sm:text-5xl lg:text-[3.6rem]"
+              className="mt-6 font-display text-[2.6rem] font-semibold leading-[1.04] tracking-[-0.025em] text-brand-900 sm:text-5xl lg:text-[3.5rem]"
             >
-              Run a bank-grade
-              <br />
-              counter.{" "}
-              <span className="gradient-text [background-image:linear-gradient(110deg,#58d7bf,#2cc4a7,#8bb3f6)]">
-                Keep the margin.
+              One counter.{" "}
+              <span className="gradient-text [background-image:linear-gradient(110deg,#4a8a2b,#61a93a,#1f3b8b)]">
+                Sixty ways to earn.
               </span>
             </motion.h1>
 
             <motion.p
               {...enter(2)}
-              className="mt-6 max-w-xl text-base leading-relaxed text-white/65 md:text-lg"
+              className="mt-6 max-w-xl text-base leading-relaxed text-ink-600 md:text-lg"
             >
-              TRANSPE turns your shop into a full financial point — cash
-              withdrawals, transfers, bills, recharges and travel on one
-              dashboard. Commission lands in your wallet the second a
-              transaction succeeds.
+              Cash withdrawals, money transfers, 1,600+ billers, recharges, travel and
+              card payments — served from the counter you already own. Commission lands
+              in your wallet the second a transaction clears.
             </motion.p>
 
             <motion.div {...enter(3)} className="mt-9 flex flex-wrap items-center gap-3">
               <ButtonLink href="/register" size="lg">
-                Open your counter
+                Become a partner
                 <ArrowRight size={16} weight="bold" aria-hidden />
               </ButtonLink>
-              <ButtonLink
-                href="/services"
-                size="lg"
-                variant="outline"
-                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
-                Explore 60+ services
+              <ButtonLink href="/services" size="lg" variant="outline">
+                See services &amp; rates
               </ButtonLink>
             </motion.div>
 
             <motion.ul
               {...enter(4)}
-              className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/55"
+              className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-500"
             >
-              {["Free to join", "KYC in 5 minutes", "Same-day first transaction"].map(
-                (t) => (
-                  <li key={t} className="inline-flex items-center gap-1.5">
-                    <CheckCircle size={14} weight="fill" className="text-accent-400" aria-hidden />
-                    {t}
-                  </li>
-                )
-              )}
+              {["₹0 joining fee", "e-KYC in 5 minutes", "Earn from day one"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5">
+                  <CheckCircle size={14} weight="fill" className="text-accent-500" aria-hidden />
+                  {t}
+                </li>
+              ))}
             </motion.ul>
 
             {/* Trust badges */}
@@ -168,51 +129,54 @@ export function HeroConsole() {
               {trustBadges.map((b) => (
                 <li
                   key={b.label}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold text-white/60"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[11px] font-semibold text-ink-500 shadow-sm"
                 >
-                  <SealCheck size={13} weight="duotone" className="text-accent-400" aria-hidden />
+                  <SealCheck size={13} weight="duotone" className="text-accent-600" aria-hidden />
                   {b.label}
                 </li>
               ))}
             </motion.ul>
           </div>
 
-          {/* ── Counter console ── */}
+          {/* ── Counter receipt ── */}
           <div className="lg:col-span-6">
             <motion.div
-              initial={reduce ? false : { opacity: 0, y: 40, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={reduce ? false : { opacity: 0, y: 40, rotate: 0 }}
+              animate={{ opacity: 1, y: 0, rotate: 1.2 }}
               transition={{ duration: 0.8, ease: easeOut, delay: 0.25 }}
-              className="relative mx-auto max-w-lg"
+              className="relative mx-auto max-w-md"
             >
-              <ConsoleCard reduce={Boolean(reduce)} />
+              <ReceiptCard reduce={Boolean(reduce)} />
 
-              {/* Floating commission toast */}
+              {/* Floating payout chip */}
               <motion.div
                 initial={reduce ? false : { opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, ease: easeOut, delay: 1 }}
-                className="absolute -right-3 top-16 hidden rounded-2xl border border-white/10 bg-ink-900/90 px-4 py-3 shadow-energy backdrop-blur sm:block"
+                className="absolute -right-6 top-10 hidden -rotate-2 rounded-2xl border border-accent-200 bg-white px-4 py-3 shadow-energy-sm sm:block"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
-                  Commission credited
+                <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+                  <TrendUp size={12} weight="bold" className="text-accent-600" aria-hidden />
+                  Payout received
                 </p>
-                <p className="mt-0.5 font-display text-lg font-semibold text-accent-300">
-                  <CountUp value="₹1,284" /> <span className="text-xs font-sans text-white/45">today</span>
+                <p className="mt-0.5 font-display text-lg font-semibold text-accent-700">
+                  <CountUp value="₹9,420" />
                 </p>
               </motion.div>
 
-              {/* Floating settlement chip */}
+              {/* Floating network chip */}
               <motion.div
                 initial={reduce ? false : { opacity: 0, x: -24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, ease: easeOut, delay: 1.2 }}
-                className="absolute -left-4 bottom-20 hidden items-center gap-2 rounded-2xl border border-white/10 bg-ink-900/90 px-4 py-3 shadow-energy-sm backdrop-blur sm:flex"
+                className="absolute -left-8 bottom-16 hidden rotate-1 items-center gap-2.5 rounded-2xl bg-brand-900 px-4 py-3 text-white shadow-energy sm:flex"
               >
-                <ShieldCheck size={18} weight="duotone" className="text-accent-400" aria-hidden />
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/10">
+                  <Storefront size={16} weight="duotone" className="text-accent-300" aria-hidden />
+                </span>
                 <div>
-                  <p className="text-xs font-semibold text-white">T+1 settlement</p>
-                  <p className="text-[10px] text-white/45">Licensed sponsor banks</p>
+                  <p className="text-xs font-semibold">New counter live</p>
+                  <p className="text-[10px] text-white/50">Mogri, Anand · 2 min ago</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -220,17 +184,17 @@ export function HeroConsole() {
         </div>
       </div>
 
-      {/* Service marquee — replaces a separate ticker section */}
-      <div className="relative z-10 border-t border-white/[0.07] py-4">
+      {/* Who runs a counter — light marquee of shop types */}
+      <div className="relative z-10 border-t border-ink-100/70 bg-white/60 py-4 backdrop-blur-sm">
         <div className="mask-fade-x overflow-hidden">
           <div className="flex w-max animate-marquee gap-8 pr-8">
-            {[...services, ...services].map((s, i) => (
+            {[...SHOP_TYPES, ...SHOP_TYPES].map((t, i) => (
               <span
-                key={`${s.slug}-${i}`}
-                className="inline-flex items-center gap-2 whitespace-nowrap text-xs font-semibold uppercase tracking-[0.12em] text-white/40"
+                key={`${t}-${i}`}
+                className="inline-flex items-center gap-2 whitespace-nowrap text-xs font-semibold uppercase tracking-[0.12em] text-ink-400"
               >
-                <span className="h-1 w-1 rounded-full bg-accent-400" aria-hidden />
-                {s.title}
+                <span className="h-1 w-1 rounded-full bg-accent-500" aria-hidden />
+                {t}
               </span>
             ))}
           </div>
@@ -240,96 +204,88 @@ export function HeroConsole() {
   );
 }
 
-/* ── Console card with cycling live feed ── */
-function ConsoleCard({ reduce }: { reduce: boolean }) {
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setTick((v) => v + 1), 2600);
-    return () => clearInterval(t);
-  }, [reduce]);
-
-  // The 4 most recent feed rows, newest first.
-  const rows = Array.from({ length: 4 }, (_, i) => {
-    const idx = ((tick - i) % FEED.length + FEED.length) % FEED.length;
-    return { ...FEED[idx], key: tick - i };
-  });
-
+/* ── The printed "day summary" receipt ───────────────────────────── */
+function ReceiptCard({ reduce }: { reduce: boolean }) {
   return (
-    <div className="gradient-ring relative overflow-hidden rounded-4xl border border-white/10 bg-ink-900/70 shadow-energy backdrop-blur" data-active="true">
+    <div className="relative overflow-hidden rounded-t-3xl bg-white shadow-energy ring-1 ring-ink-100">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-            Counter wallet
-          </p>
-          <p className="mt-1 font-display text-3xl font-semibold tracking-[-0.02em] text-white">
-            <CountUp value="₹24,860" />
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-accent-400/10 px-3 py-1.5 text-[11px] font-semibold text-accent-300">
-          <span className="relative flex h-1.5 w-1.5" aria-hidden>
-            <span className="absolute inline-flex h-full w-full animate-ping-soft rounded-full bg-accent-400" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent-400" />
+      <div className="border-b border-dashed border-ink-200 px-6 pb-4 pt-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-accent-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-500" aria-hidden />
+              BankingPoint24 · Day summary
+            </p>
+            <p className="mt-1.5 font-display text-base font-semibold text-ink-900">
+              Shree Umiya General Store
+            </p>
+            <p className="text-[11px] text-ink-400">Anand, Gujarat · Counter BP-10482</p>
+          </div>
+          <span className="rounded-xl bg-accent-50 px-2.5 py-1.5 text-center ring-1 ring-inset ring-accent-200">
+            <span className="block text-[9px] font-bold uppercase tracking-wider text-accent-700">Today</span>
+            <span className="block font-display text-sm font-semibold text-accent-800">105 txns</span>
           </span>
-          Live
-        </span>
+        </div>
       </div>
 
-      {/* Feed */}
-      <ul className="space-y-1.5 px-4 py-4" aria-label="Live transactions (demo)">
-        <AnimatePresence initial={false} mode="popLayout">
-          {rows.map((row, i) => {
-            const RowIcon = row.icon;
-            return (
-              <motion.li
-                key={row.key}
-                layout
-                initial={reduce ? false : { opacity: 0, y: -18, scale: 0.98 }}
-                animate={{ opacity: 1 - i * 0.18, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 14, scale: 0.98 }}
-                transition={{ duration: 0.45, ease: easeOut }}
-                className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.04] px-3.5 py-3"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.07] text-accent-300">
-                  <RowIcon size={18} weight="duotone" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-white">
-                    {row.label}
-                  </span>
-                  <span className="block truncate text-[11px] text-white/45">{row.sub}</span>
-                </span>
-                <span className="text-right">
-                  <span className="block text-sm font-semibold tabular-nums text-white">
-                    {row.amount}
-                  </span>
-                  <span
-                    className={cn(
-                      "block text-[11px] font-semibold tabular-nums",
-                      row.commission.startsWith("+") ? "text-accent-300" : "text-white/45"
-                    )}
-                  >
-                    {row.commission}
-                  </span>
-                </span>
-              </motion.li>
-            );
-          })}
-        </AnimatePresence>
+      {/* Lines */}
+      <ul className="px-6 py-4" aria-label="Today's counter earnings (demo)">
+        {RECEIPT_LINES.map((line, i) => {
+          const LineIcon = line.icon;
+          return (
+            <motion.li
+              key={line.label}
+              initial={reduce ? false : { opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.45, ease: easeOut, delay: 0.5 + i * 0.12 }}
+              className="flex items-center gap-3 border-b border-ink-50 py-2.5 last:border-0"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-50 text-brand-700">
+                <LineIcon size={16} weight="duotone" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold text-ink-800">{line.label}</span>
+                <span className="block text-[11px] tabular-nums text-ink-400">{line.count}</span>
+              </span>
+              <span className="text-sm font-semibold tabular-nums text-accent-700">{line.commission}</span>
+            </motion.li>
+          );
+        })}
       </ul>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-white/[0.07] px-6 py-4 text-[11px] text-white/45">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent-400" aria-hidden />
-          99.98% uptime · NPCI rails
-        </span>
-        <span className="inline-flex items-center gap-1 font-semibold text-white/65">
-          Open dashboard <CaretRight size={12} weight="bold" aria-hidden />
-        </span>
+      {/* Total */}
+      <div className="border-t border-dashed border-ink-200 px-6 py-4">
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
+              Commission earned today
+            </p>
+            <p className="mt-1 font-display text-3xl font-semibold tracking-[-0.02em] text-brand-900">
+              <CountUp value="₹562.70" />
+            </p>
+          </div>
+          <p className="pb-1 text-right text-[11px] leading-snug text-ink-400">
+            Float left: <span className="font-semibold tabular-nums text-ink-600">₹31,240</span>
+            <br />
+            Settles T+1, 9 AM
+          </p>
+        </div>
+
+        {/* Barcode strip */}
+        <div
+          aria-hidden
+          className="mt-4 h-8 w-full rounded-sm opacity-70 [background:repeating-linear-gradient(90deg,#0e1626_0px,#0e1626_2px,transparent_2px,transparent_5px,#0e1626_5px,#0e1626_6px,transparent_6px,transparent_10px)]"
+        />
+        <p className="mt-1.5 text-center text-[9px] font-medium uppercase tracking-[0.3em] text-ink-300">
+          bankingpoint-24.com
+        </p>
       </div>
+
+      {/* Torn receipt bottom edge */}
+      <div
+        aria-hidden
+        className="h-3 w-full bg-white [mask:radial-gradient(circle_at_6px_0,transparent_5px,#000_5.5px)] [mask-size:12px_100%] [mask-repeat:repeat-x]"
+      />
     </div>
   );
 }

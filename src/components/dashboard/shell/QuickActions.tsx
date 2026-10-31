@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { IconTile, type IconTone } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils";
 
 /**
- * QuickActions — TRANSPE treatment: horizontal "counter button" rows (icon
+ * QuickActions — BankingPoint24 treatment: horizontal "counter button" rows (icon
  * left, label + hint right, arrow on hover) instead of vertical tiles. Each
  * overview passes the 4–8 actions that matter for its role. Scrolls
  * horizontally on small screens, spreads out as a grid on desktop.

@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { Badge, type BadgeProps } from "@/components/ui/Badge";
 
 type Variant = NonNullable<BadgeProps["variant"]>;
@@ -123,7 +123,7 @@ export function statusToVariant(status: string | null | undefined): Variant {
 }
 
 /**
- * TRANSPE StatusChip — maps common status strings to Badge variants, with a
+ * BankingPoint24 StatusChip — maps common status strings to Badge variants, with a
  * soft ping dot for in-progress states. Pass `label` to override the
  * display text while keeping the status-driven colour, or `variant`/`dot`
  * to force a specific look.

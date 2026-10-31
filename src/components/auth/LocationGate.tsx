@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -199,7 +199,7 @@ export function LocationGate({ children }: LocationGateProps) {
             Location isn&apos;t available here
           </h2>
           <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-ink-500">
-            Your browser doesn&apos;t support geolocation. Please open TRANSPE in a
+            Your browser doesn&apos;t support geolocation. Please open BankingPoint24 in a
             modern browser like Chrome, Edge or Safari to sign in.
           </p>
           <Button size="lg" className="mt-6 w-full" onClick={requestLocation}>

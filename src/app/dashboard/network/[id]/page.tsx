@@ -434,7 +434,7 @@ export default function NetworkMemberDetailPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Member"
+        eyebrow="My Zone"
         title={u?.name ?? "Member"}
         description={
           u

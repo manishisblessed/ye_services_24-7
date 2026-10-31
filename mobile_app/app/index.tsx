@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -45,10 +45,10 @@ export default function Splash() {
         <View style={styles.logoBadge}>
           <Text style={styles.logoP}>P</Text>
         </View>
-        <Text style={styles.brand}>TRANSPE</Text>
+        <Text style={styles.brand}>BankingPoint24</Text>
         <Text style={styles.tagline}>Banking that builds Bharat</Text>
       </View>
-      <Text style={styles.foot}>Powered by TRANSPE</Text>
+      <Text style={styles.foot}>Powered by BankingPoint24</Text>
     </LinearGradient>
   );
 }

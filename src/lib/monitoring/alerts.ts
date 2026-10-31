@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+﻿import * as Sentry from "@sentry/nextjs";
 import { Role } from "@prisma/client";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/db";
@@ -36,7 +36,7 @@ const SEVERITY_PREFIX: Record<OpsAlertSeverity, string> = {
 };
 
 function formatAlertText(alert: OpsAlert): string {
-  const lines = [`${SEVERITY_PREFIX[alert.severity]} TRANSPE — ${alert.title}`];
+  const lines = [`${SEVERITY_PREFIX[alert.severity]} BankingPoint24 — ${alert.title}`];
   for (const [key, value] of Object.entries(alert.details ?? {})) {
     if (value === undefined || value === null) continue;
     lines.push(`• ${key}: ${value}`);

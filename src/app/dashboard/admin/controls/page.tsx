@@ -135,7 +135,7 @@ export default function PlatformControlsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Service Switchboard"
         title="Platform Controls"
         description="Runtime-changeable operational knobs — caps, thresholds, and engine switches. Changes apply instantly, no deploy needed. Master Admin only."
         actions={

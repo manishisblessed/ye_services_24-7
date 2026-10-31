@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export type KeyValueItem = {
@@ -11,7 +11,7 @@ export type KeyValueItem = {
 };
 
 /**
- * TRANSPE KeyValueList — label/value rows for detail panels.
+ * BankingPoint24 KeyValueList — label/value rows for detail panels.
  *
  * `layout="rows"` renders hairline-divided rows (label left, value right);
  * `layout="grid"` renders a two-column tile grid (label above value) which

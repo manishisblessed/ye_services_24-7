@@ -165,7 +165,7 @@ export default function SchemeEditorPage() {
       </Link>
 
       <PageHeader
-        eyebrow="Admin · Pricing"
+        eyebrow="Growth Studio · Rate Schemes"
         title={scheme.name}
         description={scheme.description ?? "Per-service charge & commission slabs."}
         actions={

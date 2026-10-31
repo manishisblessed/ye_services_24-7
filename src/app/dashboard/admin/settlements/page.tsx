@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -103,7 +103,7 @@ function CyclesTab() {
       <div className="flex justify-end gap-2">
         <ReportActions
           filename="settlements"
-          title="JMP TRANSPE · Settlements"
+          title="JMP BankingPoint24 · Settlements"
           subtitle="T+1 nodal settlements ledger"
           columns={[
             { key: "id", header: "Cycle ID" },
@@ -698,9 +698,9 @@ export default function AdminSettlementsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Money & Ops"
+        eyebrow="Money Desk"
         title="Settlements"
-        description="Live bank transfers from the Same Day partner wallet, plus derived T+1 settlement cycles."
+        description="Live bank transfers from the same-day partner float, plus derived T+1 settlement cycles across all rails."
       />
 
       <div className="flex gap-2">

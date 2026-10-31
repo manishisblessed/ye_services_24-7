@@ -1,10 +1,10 @@
-module.exports = {
+﻿module.exports = {
   apps: [
     {
-      name: "TRANSPE",
+      name: "bankingpoint24",
       script: "node_modules/.bin/next",
       args: "start -p 3000",
-      cwd: "/home/ubuntu/TRANSPE",
+      cwd: "/home/ubuntu/bankingpoint24",
       instances: "max",
       exec_mode: "cluster",
       env: {
@@ -13,8 +13,8 @@ module.exports = {
       },
       max_memory_restart: "768M",
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
-      error_file: "/home/ubuntu/logs/TRANSPE-error.log",
-      out_file: "/home/ubuntu/logs/TRANSPE-out.log",
+      error_file: "/home/ubuntu/logs/BankingPoint24-error.log",
+      out_file: "/home/ubuntu/logs/BankingPoint24-out.log",
       merge_logs: true,
       autorestart: true,
       watch: false,
@@ -25,10 +25,10 @@ module.exports = {
       // Background queue worker (pg-boss): payout initiation + reconciliation.
       // Single instance (fork) — pg-boss handles concurrency internally and a
       // single scheduler avoids duplicate cron fan-out.
-      name: "TRANSPE-worker",
+      name: "bankingpoint24-worker",
       script: "node_modules/.bin/tsx",
       args: "scripts/worker.ts",
-      cwd: "/home/ubuntu/TRANSPE",
+      cwd: "/home/ubuntu/bankingpoint24",
       instances: 1,
       exec_mode: "fork",
       env: {
@@ -36,8 +36,8 @@ module.exports = {
       },
       max_memory_restart: "384M",
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
-      error_file: "/home/ubuntu/logs/TRANSPE-worker-error.log",
-      out_file: "/home/ubuntu/logs/TRANSPE-worker-out.log",
+      error_file: "/home/ubuntu/logs/bankingpoint24-worker-error.log",
+      out_file: "/home/ubuntu/logs/bankingpoint24-worker-out.log",
       merge_logs: true,
       autorestart: true,
       watch: false,

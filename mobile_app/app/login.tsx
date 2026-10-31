@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -21,7 +21,7 @@ import { api, ApiError } from "@/lib/api";
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("retailer@transpe.net");
+  const [email, setEmail] = useState("retailer@bankingpoint-24.com");
   const [password, setPassword] = useState("Demo@1234");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,7 @@ export default function Login() {
       const enrolled = await LocalAuth.isEnrolledAsync();
       if (!has || !enrolled) return signIn();
       const r = await LocalAuth.authenticateAsync({
-        promptMessage: "Sign in to TRANSPE",
+        promptMessage: "Sign in to BankingPoint24",
         cancelLabel: "Use password",
         disableDeviceFallback: false
       });
@@ -145,7 +145,7 @@ export default function Login() {
           <View style={styles.demo}>
             <Text style={styles.demoText}>
               <Text style={{ fontWeight: "800" }}>Demo · </Text>
-              retailer@transpe.net / Demo@1234
+              retailer@bankingpoint-24.com / Demo@1234
             </Text>
           </View>
         </View>

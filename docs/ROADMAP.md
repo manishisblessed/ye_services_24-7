@@ -1,4 +1,4 @@
-# TRANSPE — Build Roadmap
+﻿# BankingPoint24 — Build Roadmap
 
 A compact summary of the 11 delivery phases (0–10). All phases are **COMPLETE**
 and production-ready. Each phase built on the Phase 0 primitives — money math,

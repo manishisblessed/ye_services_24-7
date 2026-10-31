@@ -1,8 +1,8 @@
--- ============================================================
+﻿-- ============================================================
 -- Phase A — White-label tenant isolation
 -- Adds platformOwnerId + isTenantOwner to User and
 -- platformOwnerId to Invite so every user / invite is scoped
--- to its white-label tenant. NULL = native TRANSPE user.
+-- to its white-label tenant. NULL = native BankingPoint24 user.
 -- ============================================================
 
 -- AlterTable: User — tenant fields

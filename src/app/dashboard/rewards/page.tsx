@@ -124,9 +124,9 @@ export default function RewardsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Account · Rewards"
-        title="Monthly rewards & cashback"
-        description="Earn reverse cashback as your monthly business grows. Instant (T+0) and T+1 business earn separately — switch the view to see each on its own or both together. Rewards auto-credit to your wallet on the last day of the month."
+        eyebrow="My Kiosk"
+        title="Star Points"
+        description="Earn cashback as your monthly business grows. Instant and next-day transactions earn separately — switch the view to see each. Points auto-credit to your float on the last day of the month."
         actions={
           <PillTabs
             aria-label="Settlement leg"

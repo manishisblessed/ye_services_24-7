@@ -1,4 +1,4 @@
-/**
+﻿/**
  * One-time setup: configure CORS on the S3 KYC bucket so browsers can PUT
  * liveness videos directly via presigned URLs.
  *
@@ -54,7 +54,7 @@ if (!bucket) {
 // ---------------------------------------------------------------------------
 // Build allowed origins (app URL + common local dev ports)
 // ---------------------------------------------------------------------------
-const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://transpe.net").replace(/\/$/, "");
+const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://www.bankingpoint-24.com").replace(/\/$/, "");
 
 const allowedOrigins = [
   appUrl,
@@ -68,7 +68,7 @@ const allowedOrigins = [
 const corsConfig = {
   CORSRules: [
     {
-      ID: "transpe-liveness-video-upload",
+      ID: "BankingPoint24-liveness-video-upload",
       /** Content-Type is the only header the browser sends on the presigned PUT. */
       AllowedHeaders: ["content-type", "x-amz-*"],
       AllowedMethods: ["PUT"],

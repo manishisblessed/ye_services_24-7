@@ -265,7 +265,7 @@ export default function AdminPosSlipsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Acquiring & Devices"
         title="External POS Slips"
         description="Verify retailer-uploaded transaction slips for External POS terminals (no live API, e.g. Yes Bank). Approving pushes the transaction into POS Fleet and the shared settlement engine (payin, MDR, instant/T+1, commission & TDS) exactly like an API-sourced capture."
         actions={

@@ -141,7 +141,7 @@ export default function AgreementsVaultPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Risk & Compliance"
         title="Agreements Vault"
         description="Signed onboarding agreements across the network — access is signed, short-lived, and audit-logged."
         actions={

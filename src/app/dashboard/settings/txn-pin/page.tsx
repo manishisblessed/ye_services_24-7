@@ -102,7 +102,7 @@ export default function TxnPinPage() {
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <PageHeader
-        eyebrow="Account · Security"
+        eyebrow="My Profile"
         title={isChange ? "Change transaction PIN" : "Set transaction PIN"}
         description="A 4-digit PIN confirmed on every payment. It's separate from your login password — never share it."
       />

@@ -28,12 +28,10 @@ export function ClosingSlab() {
             </p>
 
             <h2 className="relative z-10 mx-auto mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.04] tracking-[-0.025em] md:text-6xl">
-              The queue outside your shop is a revenue line.
+              Every customer in your queue is a commission waiting to land.
             </h2>
             <p className="relative z-10 mx-auto mt-5 max-w-xl text-sm text-white/75 md:text-base">
-              Join before 10 AM and most partners complete their first paid
-              transaction the same day. Free to start, nothing to install at
-              the counter.
+              Register now — BankingPoint24 partners process their first paid transaction the same day, often within the hour. Free to start, no installation required at the counter.
             </p>
 
             <div className="relative z-10 mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -52,7 +50,7 @@ export function ClosingSlab() {
                 variant="outline"
                 className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
-                Partner login
+                Sign in to dashboard
               </ButtonLink>
             </div>
 

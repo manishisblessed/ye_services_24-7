@@ -18,7 +18,7 @@ const PAGE_MARGIN = 48;
 /**
  * Optional brand override for white-label PDF generation.
  * When provided, the platform name and brand color are replaced with the
- * tenant's. "Powered by TRANSPE" is appended to the disclaimer.
+ * tenant's. "Powered by BankingPoint24" is appended to the disclaimer.
  */
 export type PdfBrandOptions = {
   /** e.g. "KapoorPay" */
@@ -49,7 +49,7 @@ function createBuilder(
   brand?: PdfBrandOptions
 ) {
   const BRAND = brand?.primaryColor ?? DEFAULT_BRAND_COLOR;
-  const platformName = brand?.brandName ?? "TRANSPE";
+  const platformName = brand?.brandName ?? "BankingPoint24";
 
   const doc: Doc = new PDFDocument({
     size: "A4",
@@ -296,8 +296,8 @@ function createBuilder(
 }
 
 function buildDisclaimer(brand?: PdfBrandOptions): string {
-  const name = brand?.brandName ?? "TRANSPE";
-  const suffix = brand ? ` · Powered by TRANSPE` : "";
+  const name = brand?.brandName ?? "BankingPoint24";
+  const suffix = brand ? ` · Powered by BankingPoint24` : "";
   return `This is a system-generated declaration. ${name}.${suffix}`;
 }
 
@@ -329,7 +329,7 @@ export async function generateSelfDeclarationPdf(
 
   const name = data.onboardeeName || "_______________";
   b.paragraph(
-    `मैं, ${name}, ${onboardeeLabel}, यह घोषित करता/करती हूँ कि TRANSPE (TRANSPE) पर पंजीकरण हेतु मेरे द्वारा दी गई समस्त जानकारी एवं दस्तावेज़ (KYC, PAN, Aadhaar, बैंक, GST आदि) सत्य, सही एवं मेरे स्वयं के हैं। मैं निम्नलिखित शर्तों से पूर्णतः सहमत हूँ—`
+    `मैं, ${name}, ${onboardeeLabel}, यह घोषित करता/करती हूँ कि BankingPoint24 पर पंजीकरण हेतु मेरे द्वारा दी गई समस्त जानकारी एवं दस्तावेज़ (KYC, PAN, Aadhaar, बैंक, GST आदि) सत्य, सही एवं मेरे स्वयं के हैं। मैं निम्नलिखित शर्तों से पूर्णतः सहमत हूँ—`
   );
 
   const clauses = [
@@ -397,7 +397,7 @@ export async function generateSuccessorDeclarationPdf(
 
   const clauses = [
     `1. यदि उक्त ${onboardeeLabel} द्वारा किसी भी प्रकार का Chargeback, Fraud Transaction, Dispute, Unauthorized Transaction, Money Laundering, Gaming Transaction, Betting Transaction, Crypto Related Transaction, Unaccounted/Unsourced Fund, Foreign Remittance Misuse, Third Party Fund Misuse अथवा किसी भी प्रकार की अवैध या संदिग्ध वित्तीय गतिविधि की जाती है, तो उसकी जिम्मेदारी ${onboardeeLabel} के साथ-साथ मेरी भी होगी।`,
-    `2. यदि ${onboardeeLabel} किसी भी कारण से कंपनी का बकाया, चार्जबैक, पेनल्टी, नुकसान या देय राशि जमा करने में असमर्थ रहता है, तो मैं (${creatorLabel}) उक्त राशि 15 (पंद्रह) दिनों के भीतर TRANSPE को बिना किसी आपत्ति के जमा कराऊँगा/कराऊँगी।`,
+    `2. यदि ${onboardeeLabel} किसी भी कारण से कंपनी का बकाया, चार्जबैक, पेनल्टी, नुकसान या देय राशि जमा करने में असमर्थ रहता है, तो मैं (${creatorLabel}) उक्त राशि 15 (पंद्रह) दिनों के भीतर BankingPoint24 को बिना किसी आपत्ति के जमा कराऊँगा/कराऊँगी।`,
     "3. कंपनी द्वारा मांगे जाने पर मैं आवश्यक दस्तावेज़, जानकारी एवं जांच में पूर्ण सहयोग दूँगा/दूँगी।",
     `4. यदि मैं निर्धारित समय में राशि जमा नहीं करता/करती हूँ, तो कंपनी को मेरा ${creatorLabel} ID, Wallet Balance, Security Deposit, Commission अथवा अन्य देय राशि समायोजित (Adjust) करने तथा आवश्यक कानूनी कार्यवाही करने का पूर्ण अधिकार होगा।`,
     `5. मैं यह भी स्वीकार करता/करती हूँ कि कंपनी केवल सेवा प्रदाता (Service Provider) है तथा ${onboardeeLabel} की गतिविधियों के लिए अंतिम जिम्मेदारी ${creatorLabel} एवं ${onboardeeLabel} की होगी।`,
@@ -408,7 +408,7 @@ export async function generateSuccessorDeclarationPdf(
 
   b.heading("Indemnity");
   b.paragraph(
-    `मैं, ${creatorLabel}, यह वचन देता/देती हूँ कि ${onboardeeLabel} की किसी भी गतिविधि से TRANSPE को होने वाले वित्तीय नुकसान, चार्जबैक, पेनल्टी, कानूनी खर्च अथवा अन्य किसी भी प्रकार की हानि की भरपाई करने के लिए उत्तरदायी रहूँगा/रहूँगी।`
+    `मैं, ${creatorLabel}, यह वचन देता/देती हूँ कि ${onboardeeLabel} की किसी भी गतिविधि से BankingPoint24 को होने वाले वित्तीय नुकसान, चार्जबैक, पेनल्टी, कानूनी खर्च अथवा अन्य किसी भी प्रकार की हानि की भरपाई करने के लिए उत्तरदायी रहूँगा/रहूँगी।`
   );
   b.doc.y += 6;
 

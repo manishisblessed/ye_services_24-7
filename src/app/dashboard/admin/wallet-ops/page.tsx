@@ -163,9 +163,9 @@ export default function WalletOpsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Money"
-        title="Wallet Command"
-        description="Platform liability at a glance, user-wise balances, and audited admin credit/debit that executes immediately."
+        eyebrow="Money Desk"
+        title="Float Control"
+        description="Platform float liability at a glance, member-wise balances, and audited credit/debit that executes instantly."
         actions={
           <>
             <Button variant="outline" onClick={() => setMasked((m) => !m)}>

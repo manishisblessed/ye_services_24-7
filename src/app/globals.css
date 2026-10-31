@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Transpe brand typography — Clash Display headlines + Satoshi body.
+  /* BankingPoint24 brand typography — Clash Display headlines + Satoshi body.
      Loaded via Fontshare in src/app/layout.tsx. */
   --font-sans: "Satoshi", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-display: "Clash Display", "Satoshi", "Inter", system-ui, sans-serif;
@@ -63,7 +63,7 @@ button {
     opacity var(--dur-fast) var(--ease-out-quart);
 }
 
-/* Subtle, branded selection — Transpe navy */
+/* Subtle, branded selection — BankingPoint24 navy */
 ::selection {
   background: rgb(23 43 107 / 0.18);
   color: rgb(14 22 38);
@@ -87,7 +87,7 @@ button {
     180deg,
     rgba(23, 43, 107, 0.5),
     rgba(31, 59, 139, 0.5),
-    rgba(23, 184, 166, 0.5)
+    rgba(97, 169, 58, 0.5)
   );
   border-radius: 999px;
   border: 2px solid transparent;
@@ -98,7 +98,7 @@ button {
     180deg,
     rgba(23, 43, 107, 0.8),
     rgba(31, 59, 139, 0.8),
-    rgba(23, 184, 166, 0.8)
+    rgba(97, 169, 58, 0.8)
   );
   background-clip: padding-box;
   border: 2px solid transparent;
@@ -129,7 +129,7 @@ button {
     @apply inline-flex items-center gap-2 rounded-full border border-royal-200 bg-royal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-royal-700;
   }
 
-  /* Transpe headlines — Clash Display is already compressed/condensed-ish, so we
+  /* BankingPoint24 headlines — Clash Display is already compressed/condensed-ish, so we
      tighten tracking further and lift sizes for extra editorial impact. */
   .heading-xl {
     @apply font-display text-4xl font-semibold leading-[1.04] tracking-[-0.025em] text-ink-900 md:text-5xl lg:text-[3.75rem];
@@ -147,19 +147,19 @@ button {
     @apply text-base text-ink-600 md:text-lg md:leading-[1.6];
   }
 
-  /* Default card surface — Transpe uses rounded-3xl + inner highlight stroke. */
+  /* Default card surface — BankingPoint24 uses rounded-3xl + inner highlight stroke. */
   .card-base {
     @apply rounded-3xl border border-ink-100 bg-white p-6 shadow-sm transition hover:shadow-energy-sm hover:-translate-y-0.5;
   }
 
-  /* Signature Transpe gradient text — navy → royal → teal, animated sweep.
+  /* Signature BankingPoint24 gradient text — navy → royal → teal, animated sweep.
      Used on hero headlines, logo tagline and section eyebrows. */
   .gradient-text {
     background-image: linear-gradient(
       110deg,
       #172b6b 0%,
       #1f3b8b 45%,
-      #17b8a6 100%
+      #61a93a 100%
     );
     background-size: 220% auto;
     -webkit-background-clip: text;
@@ -243,7 +243,7 @@ button {
   .text-glow {
     text-shadow:
       0 0 24px rgba(23, 43, 107, 0.35),
-      0 0 60px rgba(23, 184, 166, 0.18);
+      0 0 60px rgba(97, 169, 58, 0.18);
   }
 
   .glass {
@@ -265,13 +265,13 @@ button {
   }
 
   .conic-glow {
-    /* Transpe premium conic: navy → royal → teal loop */
+    /* BankingPoint24 premium conic: navy → royal → teal loop */
     background: conic-gradient(
       from 140deg at 50% 50%,
       #172b6b 0deg,
       #1f3b8b 95deg,
-      #17b8a6 205deg,
-      #58d7bf 300deg,
+      #61a93a 205deg,
+      #a5d67f 300deg,
       #172b6b 360deg
     );
     filter: blur(56px);
@@ -284,8 +284,8 @@ button {
       from 140deg at 50% 50%,
       #172b6b 0deg,
       #1f3b8b 95deg,
-      #17b8a6 205deg,
-      #58d7bf 300deg,
+      #61a93a 205deg,
+      #a5d67f 300deg,
       #172b6b 360deg
     );
     filter: blur(64px);
@@ -322,7 +322,7 @@ button {
     bottom: 6px;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(90deg, #172b6b, #1f3b8b, #17b8a6);
+    background: linear-gradient(90deg, #172b6b, #1f3b8b, #61a93a);
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform 320ms var(--ease-out-quart);
@@ -369,7 +369,7 @@ button {
   }
 
   /* ──────────────────────────────────────────────────────────────────
-     Transpe signature utilities
+     BankingPoint24 signature utilities
      ────────────────────────────────────────────────────────────────── */
 
   /* Fine film-grain overlay — pair with any gradient surface to give it a
@@ -401,7 +401,7 @@ button {
     inset: 0;
     padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, #172b6b 0%, #1f3b8b 50%, #17b8a6 100%);
+    background: linear-gradient(135deg, #172b6b 0%, #1f3b8b 50%, #61a93a 100%);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -425,13 +425,13 @@ button {
     box-shadow:
       0 0 0 2px rgb(255 255 255),
       0 0 0 4px rgba(23, 43, 107, 0.55),
-      0 10px 30px -8px rgba(23, 184, 166, 0.35);
+      0 10px 30px -8px rgba(97, 169, 58, 0.35);
   }
 
   /* Sidebar / tab active indicator — a thick pill with the signature gradient.
      Pair with framer-motion `layoutId` for the liquid-move feel. */
   .pill-active {
-    background-image: linear-gradient(135deg, rgba(23, 43, 107, 0.14), rgba(23, 184, 166, 0.12));
+    background-image: linear-gradient(135deg, rgba(23, 43, 107, 0.14), rgba(97, 169, 58, 0.12));
     box-shadow: inset 0 0 0 1px rgba(23, 43, 107, 0.18);
     color: #172b6b;
   }
@@ -443,7 +443,7 @@ button {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, #172b6b, #17b8a6);
+    background: linear-gradient(135deg, #172b6b, #61a93a);
     box-shadow: 0 0 0 3px rgba(23, 43, 107, 0.15);
   }
 }

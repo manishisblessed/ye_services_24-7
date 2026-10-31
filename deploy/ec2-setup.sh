@@ -1,6 +1,6 @@
-#!/bin/bash
+﻿#!/bin/bash
 # ══════════════════════════════════════════════════════════════════
-#  TRANSPE — EC2 First-Time Setup Script
+#  BankingPoint24 — EC2 First-Time Setup Script
 #  Run once on a fresh Ubuntu 22.04 / 24.04 / 26.04 LTS instance.
 #  Installs: Node 20 LTS, PM2, Nginx, ffmpeg, ufw, swap, clones repo.
 # ══════════════════════════════════════════════════════════════════
@@ -20,7 +20,7 @@ fail() { echo -e "\n${RED}✖  $1${NC}"; exit 1; }
 
 echo ""
 echo -e "${CYAN}══════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  TRANSPE — EC2 Setup  $(date '+%Y-%m-%d %H:%M:%S %Z')${NC}"
+echo -e "${CYAN}  BankingPoint24 — EC2 Setup  $(date '+%Y-%m-%d %H:%M:%S %Z')${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════${NC}"
 
 # ── 1. System update ─────────────────────────────────────────────
@@ -72,34 +72,34 @@ sudo ufw --force enable   >/dev/null
 ok "UFW enabled — SSH + HTTP (80) + HTTPS (443) open"
 
 # ── 6. Clone repository ──────────────────────────────────────────
-log "Cloning repository → /home/ubuntu/TRANSPE..."
-if [ -d /home/ubuntu/TRANSPE/.git ]; then
+log "Cloning repository → /home/ubuntu/bankingpoint24..."
+if [ -d /home/ubuntu/bankingpoint24/.git ]; then
   warn "Repo already exists — pulling latest..."
-  cd /home/ubuntu/TRANSPE
+  cd /home/ubuntu/bankingpoint24
   git fetch origin
   git reset --hard origin/main
   ok "Repo updated to $(git rev-parse --short HEAD)"
 else
-  git clone https://github.com/manishisblessed/maha_trans.git /home/ubuntu/TRANSPE
-  ok "Repo cloned — commit $(git -C /home/ubuntu/TRANSPE rev-parse --short HEAD)"
+  git clone https://github.com/manishisblessed/maha_trans.git /home/ubuntu/bankingpoint24
+  ok "Repo cloned — commit $(git -C /home/ubuntu/bankingpoint24 rev-parse --short HEAD)"
 fi
 mkdir -p /home/ubuntu/logs
 
 # ── 7. Copy .env ─────────────────────────────────────────────────
-log "Placing production .env at /home/ubuntu/env-TRANSPE..."
-if [ -f /home/ubuntu/env-TRANSPE ]; then
-  ok "/home/ubuntu/env-TRANSPE already exists — keeping it"
-elif [ -f /home/ubuntu/transpe.env ]; then
-  cp /home/ubuntu/transpe.env /home/ubuntu/env-TRANSPE
-  chmod 600 /home/ubuntu/env-TRANSPE
-  ok "Copied /home/ubuntu/transpe.env → /home/ubuntu/env-TRANSPE"
+log "Placing production .env at /home/ubuntu/env-bankingpoint24..."
+if [ -f /home/ubuntu/env-bankingpoint24 ]; then
+  ok "/home/ubuntu/env-bankingpoint24 already exists — keeping it"
+elif [ -f /home/ubuntu/bankingpoint24.env ]; then
+  cp /home/ubuntu/bankingpoint24.env /home/ubuntu/env-bankingpoint24
+  chmod 600 /home/ubuntu/env-bankingpoint24
+  ok "Copied /home/ubuntu/bankingpoint24.env → /home/ubuntu/env-bankingpoint24"
 else
-  warn "No .env uploaded yet — you must place it at /home/ubuntu/env-TRANSPE before running deploy.sh"
+  warn "No .env uploaded yet — you must place it at /home/ubuntu/env-bankingpoint24 before running deploy.sh"
 fi
 
 # ── 8. Nginx reverse-proxy config ────────────────────────────────
-log "Writing Nginx config for transpe.net..."
-sudo tee /etc/nginx/sites-available/transpe >/dev/null <<'NGINXEOF'
+log "Writing Nginx config for bankingpoint-24.com..."
+sudo tee /etc/nginx/sites-available/BankingPoint24 >/dev/null <<'NGINXEOF'
 # ---------- Rate limiting zones ----------
 limit_req_zone $binary_remote_addr zone=api:10m  rate=60r/m;
 limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
@@ -108,7 +108,7 @@ limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
 server {
     listen 80;
     listen [::]:80;
-    server_name transpe.net www.transpe.net;
+    server_name bankingpoint-24.com www.bankingpoint-24.com;
 
     # Allow Let's Encrypt ACME challenge (needed before first cert issue)
     location /.well-known/acme-challenge/ { root /var/www/html; }
@@ -126,11 +126,11 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name transpe.net www.transpe.net;
+    server_name bankingpoint-24.com www.bankingpoint-24.com;
 
     # --- SSL (managed by certbot) ---
-    # ssl_certificate /etc/letsencrypt/live/transpe.net/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/transpe.net/privkey.pem;
+    # ssl_certificate /etc/letsencrypt/live/bankingpoint-24.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/bankingpoint-24.com/privkey.pem;
     # include /etc/letsencrypt/options-ssl-nginx.conf;
     # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -172,12 +172,12 @@ server {
 NGINXEOF
 
 sudo rm -f /etc/nginx/sites-enabled/default
-sudo ln -sf /etc/nginx/sites-available/transpe /etc/nginx/sites-enabled/transpe
+sudo ln -sf /etc/nginx/sites-available/BankingPoint24 /etc/nginx/sites-enabled/BankingPoint24
 
 # Temporarily comment out the HTTPS server block so Nginx starts without certs
 sudo python3 -c "
 import re, pathlib
-p = pathlib.Path('/etc/nginx/sites-available/transpe')
+p = pathlib.Path('/etc/nginx/sites-available/BankingPoint24')
 content = p.read_text()
 # Comment out the HTTPS server block lines that reference ssl directives
 # so Nginx starts cleanly before certbot runs
@@ -223,18 +223,18 @@ echo ""
 echo -e "${YELLOW}══ NEXT STEPS (in order) ══════════════════════════════${NC}"
 echo ""
 echo -e "  ${CYAN}1. DNS${NC}  — Point your domain registrar:"
-echo "       transpe.net      A  →  3.106.88.91"
-echo "       www.transpe.net  A  →  3.106.88.91"
+echo "       bankingpoint-24.com      A  →  3.106.88.91"
+echo "       www.bankingpoint-24.com  A  →  3.106.88.91"
 echo ""
 echo -e "  ${CYAN}2. SSL${NC}  — After DNS propagates (2–5 min), run:"
-echo "       sudo certbot --nginx -d transpe.net -d www.transpe.net \\"
-echo "         --non-interactive --agree-tos -m admin@transpe.net"
+echo "       sudo certbot --nginx -d bankingpoint-24.com -d www.bankingpoint-24.com \\"
+echo "         --non-interactive --agree-tos -m admin@bankingpoint-24.com"
 echo ""
 echo -e "  ${CYAN}3. DEPLOY${NC} — Run the deploy script:"
-echo "       cd /home/ubuntu/TRANSPE && ./deploy.sh"
+echo "       cd /home/ubuntu/bankingpoint24 && ./deploy.sh"
 echo ""
 echo -e "  ${CYAN}4. VERIFY${NC}"
 echo "       pm2 status"
 echo "       pm2 logs --lines 50"
-echo "       curl -I https://transpe.net/api/healthz"
+echo "       curl -I https://www.bankingpoint-24.com/api/healthz"
 echo ""

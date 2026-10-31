@@ -1,4 +1,4 @@
-import crypto from "crypto";
+﻿import crypto from "crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { decryptField } from "@/lib/crypto/fieldEncryption";
@@ -108,7 +108,7 @@ export async function deliverWebhook(deliveryId: string): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "TRANSPE-Webhooks/1.0",
+        "User-Agent": "BankingPoint24-Webhooks/1.0",
         "X-NGP-Event": delivery.event,
         "X-NGP-Delivery": delivery.id,
         "X-NGP-Signature": signWebhookBody(secret, body),

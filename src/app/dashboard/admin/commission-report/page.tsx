@@ -131,7 +131,7 @@ export default function CommissionReportPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Money Desk"
         title="Commission Distribution Report"
         description="What the company distributes to the network (DT/MD/SD) per transaction — funded from the Revenue Wallet, net of 2% TDS."
         actions={

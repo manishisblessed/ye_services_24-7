@@ -192,7 +192,7 @@ export default function AdminPosPage() {
   return (
     <div className="min-w-0 space-y-6">
       <PageHeader
-        eyebrow="Admin · Money & Ops"
+        eyebrow="Acquiring & Devices"
         title="Terminal Fleet"
         description="Machine inventory, live transactions, exports and device health across all terminals."
       />

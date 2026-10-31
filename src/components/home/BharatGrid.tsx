@@ -1,4 +1,4 @@
-import { MapPinArea, Translate } from "@phosphor-icons/react/dist/ssr";
+﻿import { MapPinArea, Translate } from "@phosphor-icons/react/dist/ssr";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { coverageZones, indiaMissions, languagesSupported } from "@/lib/data";
 import { SectionHeading } from "./_shared/SectionHeading";
@@ -13,9 +13,9 @@ export function BharatGrid() {
     <section className="section bg-white" id="bharat">
       <div className="container-x">
         <SectionHeading
-          eyebrow="Built for India"
-          title="From metro high streets to Gram Panchayats"
-          sub="Wherever there is a counter and a customer, TRANSPE runs — in nine languages, across every zone of the country."
+          eyebrow="India-wide network"
+          title="From metro high streets to every village panchayat."
+          sub="Wherever there is a shop and a customer, BankingPoint24 is ready — nine languages, every state, every zone."
         />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-12">

@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE StatCard — v3 "Commission ticket".
+ * BankingPoint24 StatCard — v3 "Commission ticket".
  *
  * A ticket-shaped card: tone-coloured 3px top edge, uppercase label with a
  * small inline icon chip, Clash Display value with an rAF count-up, a baseline
@@ -49,12 +49,12 @@ const TONE_CHIP: Record<IconTone, string> = {
 
 const TONE_STROKE: Record<IconTone, [string, string]> = {
   brand: ["#1f3b8b", "#60a5fa"],
-  accent: ["#0f9789", "#4ade80"],
-  royal: ["#172b6b", "#58d7bf"],
-  coral: ["#0f9789", "#2cc4a7"],
+  accent: ["#4a8a2b", "#4ade80"],
+  royal: ["#172b6b", "#a5d67f"],
+  coral: ["#4a8a2b", "#82c155"],
   amber: ["#d97706", "#fbbf24"],
   ink: ["#34445d", "#7388a6"],
-  energy: ["#172b6b", "#17b8a6"],
+  energy: ["#172b6b", "#61a93a"],
 };
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;

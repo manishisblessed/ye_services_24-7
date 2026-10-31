@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -21,7 +21,7 @@ export const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps>(
       ref={ref}
       className={cn(
         "relative w-full overflow-hidden rounded-4xl bg-white p-6 shadow-soft ring-1 ring-ink-100 md:p-8",
-        // Signature TRANSPE keyline across the top edge of every auth card.
+        // Signature BankingPoint24 keyline across the top edge of every auth card.
         "before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-energy-gradient-x before:content-['']",
         size === "md" ? "max-w-md" : "max-w-2xl",
         className

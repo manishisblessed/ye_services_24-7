@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -126,7 +126,7 @@ export default function Home() {
           >
             <View style={styles.walletTop}>
               <View>
-                <Text style={styles.walletLabel}>TRANSPE Wallet</Text>
+                <Text style={styles.walletLabel}>BankingPoint24 Wallet</Text>
                 <Text style={styles.walletAmt}>{formatINR(balance)}</Text>
               </View>
               <View style={styles.walletBadge}>

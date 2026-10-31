@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -378,7 +378,7 @@ export default function WalletPage() {
     <div className="mx-auto max-w-6xl">
       <ServicePageHeader
         icon={Wallet}
-        title="TRANSPE Wallet"
+        title="BankingPoint24 Wallet"
         description="Add money in seconds via UPI or cards, and keep an eye on every rupee in and out."
       />
 

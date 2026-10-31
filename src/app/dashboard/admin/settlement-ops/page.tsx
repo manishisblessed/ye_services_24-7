@@ -188,7 +188,7 @@ export default function SettlementOpsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Money Desk"
         title="Settlement Ops"
         description="T+1 AEPS → primary wallet settlement — engine controls, daily cycle status, run history and alerts."
         actions={

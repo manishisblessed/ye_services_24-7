@@ -360,8 +360,8 @@ export default function AdminEarningsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Revenue"
-        title="Per-Transaction Earnings"
+        eyebrow="Money Desk"
+        title="Earnings Report"
         description="What the company earns on every capture across all rails (POS / PG / QR / UPI), and the commission distributed to DT / MD / SD per transaction. Net earning = company MDR margin − commission distributed."
       />
 

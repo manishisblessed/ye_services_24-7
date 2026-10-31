@@ -183,7 +183,7 @@ export async function GET(req: Request) {
               userId: { in: downlineIds },
               isSettlement: false,
               createdAt: { gt: cutoff },
-              status: { in: ["SUCCESS", "FAILED", "PENDING"] },
+              status: { in: ["SUCCESS", "FAILED", "INITIATED", "PROCESSING"] },
             },
             orderBy: { createdAt: "asc" },
             take: MAX_EVENTS,

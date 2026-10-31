@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { CreditCard } from "lucide-react";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * so the artwork is never stretched or distorted.
  *
  * When no logo matches — or the asset fails to load — it degrades to the
- * generic credit-card glyph on the TRANSPE energy gradient, exactly as
+ * generic credit-card glyph on the BankingPoint24 energy gradient, exactly as
  * required by the fallback spec.
  */
 export function BankLogo({
@@ -62,7 +62,7 @@ export function BankLogo({
           className="object-contain"
         />
       ) : (
-        // Generic fallback — TRANSPE energy gradient tile with a card glyph.
+        // Generic fallback — BankingPoint24 energy gradient tile with a card glyph.
         <span className="grid h-full w-full place-items-center bg-energy-gradient text-white">
           <CreditCard style={{ width: size * 0.5, height: size * 0.5 }} strokeWidth={1.75} />
         </span>

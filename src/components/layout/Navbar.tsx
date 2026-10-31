@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,13 +10,11 @@ import {
   ArrowUpRight,
   CaretDown,
   Fingerprint,
-  Headset,
   List,
   PaperPlaneTilt,
   Phone,
   QrCode,
   Receipt,
-  SealCheck,
   SquaresFour,
   X,
   type Icon as PhosphorIcon
@@ -30,8 +28,9 @@ import { cn } from "@/lib/utils";
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
 /** Routes whose first section is dark & full-bleed. Pages can also opt in by
- *  emitting `data-nav-theme="dark"` on their first section. */
-const DARK_ROUTES = new Set(["/"]);
+ *  emitting `data-nav-theme="dark"` on their first section. The BankingPoint24
+ *  home hero is light paper, so no route is dark by default. */
+const DARK_ROUTES = new Set<string>([]);
 
 /** Mega-menu metadata for the "Services" children (keyed by href). */
 const serviceMeta: Record<
@@ -41,27 +40,27 @@ const serviceMeta: Record<
   "/services#aadhaar-pay": {
     icon: Fingerprint,
     tone: "brand",
-    desc: "Cash out, balance check and mini statement on a fingerprint."
+    desc: "Your counter becomes the nearest ATM — a thumb is all it takes."
   },
   "/services#money-transfer": {
     icon: PaperPlaneTilt,
     tone: "accent",
-    desc: "Send money to any bank account, 24x7, settled in seconds."
+    desc: "IMPS to any bank in the country, even on a Sunday night."
   },
   "/services#upi": {
     icon: QrCode,
     tone: "royal",
-    desc: "Collect on UPI and pay from your wallet without a POS."
+    desc: "One float wallet behind your QR, collect requests and payouts."
   },
   "/services#bills": {
     icon: Receipt,
     tone: "coral",
-    desc: "Recharges plus 1,200+ billers on BBPS, with commission on each."
+    desc: "1,600+ billers and every recharge, each with its own commission."
   },
   "/services#travel": {
     icon: Airplane,
     tone: "amber",
-    desc: "Flights, buses and hotels at agent rates from your counter."
+    desc: "Bus, air and hotel bookings at trade fares — margin stays with you."
   }
 };
 
@@ -74,14 +73,12 @@ function useIsActive(pathname: string) {
 }
 
 /**
- * TRANSPE public navigation — an anchored, full-width two-deck header:
+ * BankingPoint24 public navigation — a single-deck header (no utility strip):
  *
- *  · Deck 1: utility strip (support line + compliance note). Collapses away
- *    the moment you scroll.
- *  · Deck 2: main bar — logo left, tabs centre, CTAs right. Transparent over
- *    dark heroes, frosted white once scrolled. Active tab is marked by a
- *    gradient underline that glides between links.
- *  · "Services" opens a full-width mega panel, not a floating card.
+ *  · Logo left, five tabs centre, support chip + sign-in + CTA right.
+ *    Transparent over dark heroes, frosted white once scrolled. Active tab is
+ *    marked by a gradient underline that glides between links.
+ *  · "Service board" opens a full-width mega panel, not a floating card.
  *  · Mobile: right-hand slide-in drawer.
  */
 export function Navbar() {
@@ -190,45 +187,7 @@ export function Navbar() {
           scheduleCloseMega();
         }}
       >
-        {/* ── Deck 1 · utility strip ── */}
-        <AnimatePresence initial={false}>
-          {!scrolled && (
-            <motion.div
-              initial={reduce ? false : { height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={reduce ? undefined : { height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: easeOut }}
-              className={cn(
-                "hidden overflow-hidden text-[11px] font-medium lg:block",
-                onDark
-                  ? "border-b border-white/[0.08] text-white/55"
-                  : "border-b border-ink-100 bg-ink-950 text-white/60"
-              )}
-            >
-              <div className="container-x flex h-8 items-center justify-between">
-                <p className="inline-flex items-center gap-1.5">
-                  <SealCheck size={12} weight="duotone" className="text-accent-400" aria-hidden />
-                  Regulated partner rails · T+1 settlement · 99.98% uptime
-                </p>
-                <div className="flex items-center gap-5">
-                  <a
-                    href={`tel:+91${company.phone}`}
-                    className="inline-flex items-center gap-1.5 transition hover:text-white"
-                  >
-                    <Phone size={12} weight="duotone" aria-hidden />
-                    +91 {company.phone}
-                  </a>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Headset size={12} weight="duotone" aria-hidden />
-                    Mon–Sat · 10 AM–6 PM IST
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Deck 2 · main bar ── */}
+        {/* ── Main bar (single deck — no utility strip) ── */}
         <motion.div
           initial={false}
           animate={{
@@ -325,23 +284,44 @@ export function Navbar() {
               </ul>
             </nav>
 
-            {/* Right CTAs (lg+) */}
-            <div className="hidden items-center gap-2 lg:flex">
+            {/* Right rail (lg+): support chip · divider · sign in · CTA */}
+            <div className="hidden items-center gap-3 lg:flex">
+              <a
+                href={`tel:+91${company.phone}`}
+                className={cn(
+                  "hidden whitespace-nowrap items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition focus-energy xl:inline-flex",
+                  onDark
+                    ? "border-white/15 text-white/75 hover:border-white/35 hover:text-white"
+                    : "border-accent-200 bg-accent-50/60 text-ink-700 hover:border-accent-400 hover:text-ink-950"
+                )}
+              >
+                <Phone size={13} weight="duotone" aria-hidden className={onDark ? "text-accent-300" : "text-accent-600"} />
+                <span>
+                  <span className={cn("mr-1.5 font-normal", onDark ? "text-white/45" : "text-ink-400")}>
+                    Counter help
+                  </span>
+                  +91 {company.phone}
+                </span>
+              </a>
+              <span
+                aria-hidden
+                className={cn("hidden h-5 w-px xl:block", onDark ? "bg-white/15" : "bg-ink-200")}
+              />
               <Link href="/login" className="rounded-2xl focus-energy">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   tabIndex={-1}
                   className={cn(
-                    onDark && "text-white/85 hover:bg-white/10 hover:text-white"
+                    onDark && "border-white/25 bg-transparent text-white/90 hover:bg-white/10 hover:text-white"
                   )}
                 >
-                  Partner login
+                  Sign in
                 </Button>
               </Link>
               <Link href="/register" className="rounded-2xl focus-energy">
                 <Button size="sm" tabIndex={-1} className="px-5">
-                  Open your counter
+                  Become a partner
                   <ArrowRight size={14} weight="bold" aria-hidden />
                 </Button>
               </Link>
@@ -454,7 +434,7 @@ function MegaPanel({
             role="menuitem"
             className="group flex items-center gap-3.5 rounded-2xl border border-dashed border-ink-200 p-4 text-sm font-semibold text-ink-600 transition hover:border-royal-300 hover:text-royal-800 focus-energy"
           >
-            See all 60+ services
+            Browse all 63 switches on the board
             <ArrowRight size={14} weight="bold" aria-hidden className="transition group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -471,13 +451,13 @@ function MegaPanel({
           />
           <div className="relative z-10">
             <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
-              <span className="brand-dot" aria-hidden /> Already a partner?
+              <span className="brand-dot" aria-hidden /> Partner already?
             </span>
             <p className="mt-3 font-display text-xl font-semibold leading-tight tracking-[-0.02em]">
-              Open the dashboard
+              Jump to your counter
             </p>
             <p className="mt-1.5 text-xs leading-relaxed text-white/60">
-              Wallet, settlements and every service in one place.
+              Float, rate card and every switch on one screen.
             </p>
           </div>
           <span className="relative z-10 mt-6 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink-950 transition group-hover:bg-accent-400">
@@ -595,18 +575,18 @@ function MobileDrawer({
           <div className="grid gap-2">
             <Link href="/register" onClick={onClose} className="rounded-2xl focus-energy">
               <Button size="lg" tabIndex={-1} className="w-full">
-                Open your counter
+                Become a partner
                 <ArrowRight size={16} weight="bold" aria-hidden />
               </Button>
             </Link>
             <Link href="/login" onClick={onClose} className="rounded-2xl focus-energy">
               <Button variant="outline" size="lg" tabIndex={-1} className="w-full">
-                Partner login
+                Sign in
               </Button>
             </Link>
           </div>
           <p className="mt-4 text-center text-[11px] text-ink-400">
-            Free to join · KYC in under five minutes · +91 {company.phone}
+            ₹0 to join · Live the same day · Counter help +91 {company.phone}
           </p>
         </div>
       </motion.div>

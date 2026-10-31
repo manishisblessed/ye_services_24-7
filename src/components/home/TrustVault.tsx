@@ -9,9 +9,10 @@ import { SectionHeading } from "./_shared/SectionHeading";
  */
 export function TrustVault() {
   return (
-    <section className="grain relative overflow-hidden bg-ink-950 text-white" id="trust">
+    <section className="grain relative overflow-hidden bg-[#0d2410] text-white" id="trust">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="conic-glow absolute -left-40 top-1/3 h-[480px] w-[480px] rounded-full" />
+        <div className="absolute -right-32 bottom-0 h-[380px] w-[380px] rounded-full bg-accent-700/20 blur-3xl" />
       </div>
 
       <div className="container-x section relative z-10">
@@ -19,9 +20,9 @@ export function TrustVault() {
           <div className="lg:col-span-4">
             <SectionHeading
               dark
-              eyebrow="The vault"
-              title="Regulated at every layer"
-              sub="Money moves only on licensed rails. Here is the full paper trail — every authority, every audit, in the open."
+              eyebrow="Compliance & trust"
+              title="Licensed on every rail."
+              sub="Money moves only through RBI-authorised and NPCI-certified channels. Every licence and audit, fully visible — no fine print."
             />
             <Reveal delay={0.15} className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
               <p className="font-display text-5xl font-semibold tracking-[-0.02em] text-accent-300">
@@ -38,7 +39,7 @@ export function TrustVault() {
               {certifications.map((c) => (
                 <StaggerItem
                   key={c.code}
-                  className="group bg-ink-950 p-6 transition hover:bg-ink-900"
+                  className="group bg-[#0d2410] p-6 transition hover:bg-[#123016]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex rounded-lg border border-white/15 bg-white/[0.06] px-2.5 py-1 font-display text-xs font-bold tracking-wider text-white">

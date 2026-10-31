@@ -61,7 +61,7 @@ async function shareOnboardingLink(link: string, name?: string | null) {
   if (typeof navigator !== "undefined" && "share" in navigator) {
     try {
       await navigator.share({
-        title: "TRANSPE Onboarding",
+        title: "BankingPoint24 Onboarding",
         text: name ? `Onboarding link for ${name}` : "Complete your onboarding",
         url: link,
       });
@@ -279,8 +279,8 @@ export default function AdminInvitesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · People"
-        title="Onboarding invites"
+        eyebrow="Partner Network"
+        title="Send Invites"
         description="Create and manage onboarding invites for any network role."
         actions={
           <Button onClick={() => setShowCreate(true)}>

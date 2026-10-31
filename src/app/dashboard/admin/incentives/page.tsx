@@ -150,8 +150,8 @@ export default function IncentivesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Revenue"
-        title="Reward Incentives"
+        eyebrow="Growth Studio"
+        title="Incentive Manager"
         description="Encourage retailers with monthly volume rewards — e.g. QR ₹20 lakh → 0.10% reverse cashback on the MDR they paid. Define tiered slab rates, set per-user thresholds, and the engine auto-credits on the last day of each month."
         actions={
           <>

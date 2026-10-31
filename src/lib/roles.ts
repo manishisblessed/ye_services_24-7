@@ -1,4 +1,4 @@
-import {
+﻿import {
   LayoutDashboard,
   Wallet,
   Send,
@@ -69,40 +69,39 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-// TRANSPE nav labels — the "counter" vocabulary. Wallet-first ordering so the
-// money surfaces sit at the top of the rail. Routes remain unchanged so
-// bookmarks and muscle memory are preserved.
+// BankingPoint24 nav labels — unique vocabulary for every role.
+// Routes are unchanged so bookmarks and backend slugs stay stable.
 const baseServices: NavItem[] = [
-  { href: "/dashboard/wallet", label: "Counter Wallet", icon: Wallet },
-  { href: "/dashboard/aadhaar-pay", label: "AePS · Cash Point", icon: Fingerprint },
-  { href: "/dashboard/money-transfer", label: "Money Transfer", icon: Send },
-  { href: "/dashboard/payout", label: "Instant Payout", icon: Landmark, badge: "New" },
-  { href: "/dashboard/upi", label: "UPI Collect", icon: Send },
-  { href: "/dashboard/qr", label: "My QR Codes", icon: QrCode, badge: "New" },
-  { href: "/dashboard/pg", label: "Payment Gateway", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/pos", label: "Card Terminals", icon: Monitor, badge: "New" },
-  { href: "/dashboard/recharge/mobile", label: "Recharges", icon: Smartphone },
-  { href: "/dashboard/travel/flight", label: "Travel Bookings", icon: Plane },
-  { href: "/dashboard/virtual-account", label: "Virtual Account", icon: Building2 }
+  { href: "/dashboard/wallet", label: "My Float", icon: Wallet },
+  { href: "/dashboard/aadhaar-pay", label: "Cash Withdrawal", icon: Fingerprint },
+  { href: "/dashboard/money-transfer", label: "Send Money", icon: Send },
+  { href: "/dashboard/payout", label: "Quick Payout", icon: Landmark, badge: "New" },
+  { href: "/dashboard/upi", label: "UPI Receive", icon: Send },
+  { href: "/dashboard/qr", label: "Payment QR", icon: QrCode, badge: "New" },
+  { href: "/dashboard/pg", label: "Online Collect", icon: CreditCard, badge: "New" },
+  { href: "/dashboard/pos", label: "POS Machine", icon: Monitor, badge: "New" },
+  { href: "/dashboard/recharge/mobile", label: "Recharge & Data", icon: Smartphone },
+  { href: "/dashboard/travel/flight", label: "Bus · Flight · Hotel", icon: Plane },
+  { href: "/dashboard/virtual-account", label: "Fixed Account", icon: Building2 }
 ];
 
 const bbpsServices: NavItem[] = [
-  { href: "/dashboard/bill-pay/credit-card", label: "Credit Card Bill", icon: CreditCard, badge: "New" },
+  { href: "/dashboard/bill-pay/credit-card", label: "Credit Card Pay", icon: CreditCard, badge: "New" },
   { href: "/dashboard/bill-pay/cc-pay", label: "Credit Card Bill · Rail 2", icon: CreditCard, badge: "New" },
   { href: "/dashboard/bill-pay/offline-cc-pay", label: "Offline CC Bill", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/bill-pay/bbps-1", label: "Bharat BillPay (BBPS)", icon: Receipt, badge: "New" },
+  { href: "/dashboard/bill-pay/bbps-1", label: "Electricity & Utilities", icon: Receipt, badge: "New" },
   { href: "/dashboard/bill-pay/bbps-2", label: "Unified Bill Platform", icon: Receipt, badge: "New" },
 ];
 
-/** All BBPS / bill-payment services collapsed under a single "Bill Desk" tab. */
+/** All BBPS / bill-payment services collapsed under a single "Bill Payments" tab. */
 const bbpsGroup: NavItem = {
   href: "/dashboard/bill-pay/credit-card",
-  label: "Bill Desk",
+  label: "Bill Payments",
   icon: Receipt,
   children: bbpsServices,
 };
 
-/** RT gets all services including the collapsible BBPS tab */
+/** RT gets all services including the collapsible Bill Payments tab */
 const retailerServices: NavItem[] = [...baseServices, bbpsGroup];
 
 /** DT/MD/SD no longer have a Run Services section; this array is kept only for
@@ -110,12 +109,12 @@ const retailerServices: NavItem[] = [...baseServices, bbpsGroup];
 const networkServices: NavItem[] = baseServices.filter((s) => s.href !== "/dashboard/wallet");
 
 const account: NavItem[] = [
-  { href: "/dashboard/transactions", label: "Transaction Hub", icon: History },
-  { href: "/dashboard/ledger", label: "Digital Passbook", icon: BookOpenCheck, badge: "New" },
-  { href: "/dashboard/performance", label: "My Scorecard", icon: Activity },
-  { href: "/dashboard/profile", label: "My Identity", icon: User },
-  { href: "/dashboard/settings", label: "Preferences", icon: Settings },
-  { href: "/dashboard/disputes", label: "Help & Care", icon: LifeBuoy, badge: "New" }
+  { href: "/dashboard/transactions", label: "All Transactions", icon: History },
+  { href: "/dashboard/ledger", label: "My Passbook", icon: BookOpenCheck, badge: "New" },
+  { href: "/dashboard/performance", label: "Performance", icon: Activity },
+  { href: "/dashboard/profile", label: "My Profile", icon: User },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/disputes", label: "Support", icon: LifeBuoy, badge: "New" }
 ];
 
 /**
@@ -128,54 +127,54 @@ export const BUSINESS_OVERVIEW_TAB = "business-overview";
 /** Canonical tab slugs (without role prefix) used for permission assignment */
 export const ASSIGNABLE_ADMIN_TABS = [
   { href: BUSINESS_OVERVIEW_TAB, label: "Today's Business Overview" },
-  { href: "invites", label: "Onboarding Invites" },
-  { href: "join-requests", label: "Join Requests" },
-  { href: "users", label: "Users" },
-  { href: "network", label: "Network Manager" },
-  { href: "sub-admins", label: "Staff Desk" },
-  { href: "wallet-ops", label: "Wallet Command" },
-  { href: "ledger", label: "Ledger Lens" },
-  { href: "pg", label: "Gateway Hub" },
-  { href: "pos", label: "Terminal Fleet" },
-  { href: "pos-rental", label: "Terminal Rentals" },
-  { href: "pos-bookings", label: "Terminal Orders" },
-  { href: "kyc", label: "KYC Approvals" },
-  { href: "schemes", label: "Scheme Studio" },
-  { href: "incentives", label: "Reward Engine" },
-  { href: "brands", label: "Brand & Rate Desk" },
-  { href: "settlement-ops", label: "Settlement Engine" },
-  { href: "pos-settlement", label: "Terminal Settlement" },
-  { href: "pos-slips", label: "Slip Inbox" },
-  { href: "pos-reversals", label: "Terminal Reversals" },
-  { href: "reversals", label: "Reversal Bay" },
-  { href: "needs-review", label: "Review Queue" },
-  { href: "payout-review", label: "Payout Hold Desk" },
-  { href: "money-at-risk", label: "Exposure Watch" },
-  { href: "aeps", label: "AePS Control" },
-  { href: "qr", label: "QR Collect Hub" },
-  { href: "disputes", label: "Care Centre" },
-  { href: "aml", label: "Risk Radar" },
-  { href: "commission-report", label: "Commission Flow" },
-  { href: "earnings", label: "Earning Stream" },
-  { href: "analytics", label: "Insight Studio" },
-  { href: "agreements", label: "Document Vault" },
-  { href: "verify", label: "Verify Suite" },
-  { href: "services", label: "Service Switchboard" },
-  { href: "controls", label: "Master Switch" },
-  { href: "limits", label: "Limit Manager" },
-  { href: "slider", label: "Banner Studio" },
-  { href: "audit", label: "Audit Trail" },
-  { href: "system", label: "Pulse Monitor" },
-  { href: "whitelabel", label: "White-label Tenants" },
+  { href: "invites", label: "Send Invites" },
+  { href: "join-requests", label: "Entry Gate" },
+  { href: "users", label: "Member Directory" },
+  { href: "network", label: "Network Map" },
+  { href: "sub-admins", label: "Team Access" },
+  { href: "wallet-ops", label: "Float Control" },
+  { href: "ledger", label: "Account Ledger" },
+  { href: "pg", label: "PG Dashboard" },
+  { href: "pos", label: "POS Fleet" },
+  { href: "pos-rental", label: "POS Rentals" },
+  { href: "pos-bookings", label: "POS Orders" },
+  { href: "kyc", label: "ID Verification" },
+  { href: "schemes", label: "Rate Schemes" },
+  { href: "incentives", label: "Incentive Manager" },
+  { href: "brands", label: "Rate Manager" },
+  { href: "settlement-ops", label: "Settlements" },
+  { href: "pos-settlement", label: "POS Settlements" },
+  { href: "pos-slips", label: "POS Slips" },
+  { href: "pos-reversals", label: "POS Reversals" },
+  { href: "reversals", label: "Reversals" },
+  { href: "needs-review", label: "Needs Review" },
+  { href: "payout-review", label: "Held Payouts" },
+  { href: "money-at-risk", label: "Risk Exposure" },
+  { href: "aeps", label: "AePS Manager" },
+  { href: "qr", label: "QR Manager" },
+  { href: "disputes", label: "Helpdesk" },
+  { href: "aml", label: "AML Watch" },
+  { href: "commission-report", label: "Commission Report" },
+  { href: "earnings", label: "Earnings Report" },
+  { href: "analytics", label: "Analytics" },
+  { href: "agreements", label: "Agreements" },
+  { href: "verify", label: "Verification" },
+  { href: "services", label: "Toggle Services" },
+  { href: "controls", label: "Service Controls" },
+  { href: "limits", label: "Txn Limits" },
+  { href: "slider", label: "Banner Manager" },
+  { href: "audit", label: "Activity Log" },
+  { href: "system", label: "System Health" },
+  { href: "whitelabel", label: "Partner Brands" },
 ] as const;
 
 /** Tabs a master-admin creator can assign to another master-admin.
  *  Includes everything from ASSIGNABLE_ADMIN_TABS + the "admins" tab. */
 export const ASSIGNABLE_MASTER_ADMIN_TABS = [
-  { href: "admins", label: "Manage Admins" },
-  // "Company Earnings" (Revenue Wallet) is owner-only — assignable to master
+  { href: "admins", label: "Admin Roster" },
+  // "Company Revenue" (Revenue Wallet) is owner-only — assignable to master
   // admins, but never to plain admins/sub-admins (not in ASSIGNABLE_ADMIN_TABS).
-  { href: "revenue", label: "Revenue Vault" },
+  { href: "revenue", label: "Company Revenue" },
   ...ASSIGNABLE_ADMIN_TABS,
 ] as const;
 
@@ -184,206 +183,233 @@ export const ASSIGNABLE_MASTER_ADMIN_TABS = [
  *  view-only for the SUPPORT role via the per-endpoint requireRole guards. */
 export const ASSIGNABLE_SUB_ADMIN_TABS = ASSIGNABLE_ADMIN_TABS;
 
-/** Money / operations tabs shared by master-admin and admin.
- *  TRANSPE "upgraded" vocabulary — unique names, routes unchanged. */
-const adminMoneyOps: NavItem[] = [
-  { href: "/dashboard/admin/wallet-ops", label: "Wallet Command", icon: Wallet, badge: "New" },
-  { href: "/dashboard/admin/ledger", label: "Ledger Lens", icon: BookOpenCheck, badge: "New" },
-  { href: "/dashboard/admin/brands", label: "Brand & Rate Desk", icon: Tag, badge: "New" },
-  { href: "/dashboard/admin/settlement-ops", label: "Settlement Engine", icon: Timer, badge: "New" },
-  { href: "/dashboard/admin/reversals", label: "Reversal Bay", icon: Undo2, badge: "New" },
-  { href: "/dashboard/admin/needs-review", label: "Review Queue", icon: AlertTriangle, badge: "New" },
-  { href: "/dashboard/admin/payout-review", label: "Payout Hold Desk", icon: Landmark, badge: "New" },
-  { href: "/dashboard/admin/money-at-risk", label: "Exposure Watch", icon: ShieldAlert, badge: "New" },
-  { href: "/dashboard/admin/aeps", label: "AePS Control", icon: Fingerprint, badge: "New" },
-  { href: "/dashboard/admin/pos-rental", label: "Terminal Rentals", icon: ReceiptText, badge: "New" },
-  { href: "/dashboard/admin/pos-bookings", label: "Terminal Orders", icon: PackagePlus, badge: "New" },
-  { href: "/dashboard/admin/pos-settlement", label: "Terminal Settlement", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/admin/pos-slips", label: "Slip Inbox", icon: ListChecks, badge: "New" },
-  { href: "/dashboard/admin/pos-reversals", label: "Terminal Reversals", icon: RotateCcw, badge: "New" },
-  // NOTE: "Revenue Vault" (the Revenue Wallet) is deliberately NOT here — it
-  // is owner-only and injected into the master-admin menu via masterAdminMoneyOps.
-  { href: "/dashboard/admin/commission-report", label: "Commission Flow", icon: HandCoins, badge: "New" },
-  { href: "/dashboard/admin/earnings", label: "Earning Stream", icon: TrendingUp, badge: "New" },
-  { href: "/dashboard/admin/analytics", label: "Insight Studio", icon: LineChart, badge: "New" },
-  { href: "/dashboard/admin/agreements", label: "Document Vault", icon: FileSignature, badge: "New" },
-  { href: "/dashboard/admin/verify", label: "Verify Suite", icon: ScanSearch, badge: "New" },
-  { href: "/dashboard/admin/controls", label: "Master Switch", icon: SlidersHorizontal, badge: "New" },
-  { href: "/dashboard/admin/limits", label: "Limit Manager", icon: Gauge, badge: "New" },
+/* ────────────────────────────────────────────────────────────────────
+ * BankingPoint24 staff navigation — seven purpose-built desks instead
+ * of two catch-all menus. Routes are unchanged; only grouping, order
+ * and labels are BankingPoint24-specific.
+ * ──────────────────────────────────────────────────────────────────── */
+
+/** Desk 1 — Command Deck: home, oversight, reporting, platform health. */
+const adminCommandDeck: NavItem[] = [
+  { href: "/dashboard", label: "Platform Home", icon: LayoutDashboard },
+  { href: "/dashboard/admin/sub-admins", label: "Team Access", icon: UserCog },
+  { href: "/dashboard/admin/analytics", label: "Analytics", icon: LineChart },
+  { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
+  { href: "/dashboard/admin/audit", label: "Activity Log", icon: ScrollText },
+  { href: "/dashboard/admin/system", label: "System Health", icon: ServerCog },
 ];
 
-/** Money / operations tabs for the platform OWNER (master-admin). Identical to
- *  adminMoneyOps but ALSO surfaces "Revenue Vault" (the Revenue Wallet) —
- *  company earnings are owner-only and never shown to plain admins/sub-admins. */
-const masterAdminMoneyOps: NavItem[] = adminMoneyOps.flatMap((item) =>
-  item.href === "/dashboard/admin/pos-settlement"
-    ? [item, { href: "/dashboard/admin/revenue", label: "Revenue Vault", icon: CircleDollarSign, badge: "New" }]
+/** Command Deck for the platform OWNER — adds the Admin Roster. */
+const masterAdminCommandDeck: NavItem[] = adminCommandDeck.flatMap((item) =>
+  item.href === "/dashboard"
+    ? [item, { href: "/dashboard/admin/admins", label: "Admin Roster", icon: ShieldCheck }]
     : [item]
 );
 
-/** Onboarding / network-management tabs — flat list (no collapsible parent).
- *  Each item is a direct top-level link. Shared by master-admin, admin and sub-admin. */
-const onboardingItems: NavItem[] = [
-  { href: "/dashboard/admin/invites", label: "Onboarding Invites", icon: PackagePlus, badge: "New" },
-  { href: "/dashboard/admin/join-requests", label: "Join Requests", icon: Inbox, badge: "New" },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/network", label: "Network Manager", icon: Users, badge: "New" },
-  { href: "/dashboard/admin/kyc", label: "KYC Approvals", icon: ShieldCheck, badge: "8" },
-  { href: "/dashboard/admin/identity-exceptions", label: "Identity Exceptions", icon: Fingerprint, badge: "New" },
+/** Desk 2 — Partner Network: everyone who joins, sells or brands under us. */
+const adminPartnerNetwork: NavItem[] = [
+  { href: "/dashboard/admin/invites", label: "Send Invites", icon: PackagePlus },
+  { href: "/dashboard/admin/join-requests", label: "Entry Gate", icon: Inbox },
+  { href: "/dashboard/admin/users", label: "Member Directory", icon: Users },
+  { href: "/dashboard/admin/network", label: "Network Map", icon: Users },
+  { href: "/dashboard/admin/kyc", label: "ID Verification", icon: ShieldCheck },
+  { href: "/dashboard/admin/identity-exceptions", label: "Exception Log", icon: Fingerprint },
+  { href: "/dashboard/admin/disputes", label: "Helpdesk", icon: LifeBuoy },
+  { href: "/dashboard/admin/whitelabel", label: "Partner Brands", icon: Globe, badge: "New" },
 ];
 
-/** Workspace tabs shared by admin and sub-admin. Sub-admins are scoped down
- *  through their allowedTabs; with none set they inherit the full menu. */
-const adminWorkspace: NavItem[] = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  ...onboardingItems,
-  { href: "/dashboard/admin/sub-admins", label: "Staff Desk", icon: UserCog },
-  { href: "/dashboard/admin/pg", label: "Gateway Hub", icon: CreditCard, badge: "New" },
-  { href: "/dashboard/admin/pos", label: "Terminal Fleet", icon: Monitor, badge: "New" },
-  { href: "/dashboard/admin/qr", label: "QR Collect Hub", icon: QrCode, badge: "New" },
-  { href: "/dashboard/admin/schemes", label: "Scheme Studio", icon: Layers, badge: "New" },
-  { href: "/dashboard/admin/incentives", label: "Reward Engine", icon: Gift, badge: "New" },
-  { href: "/dashboard/admin/disputes", label: "Care Centre", icon: LifeBuoy, badge: "New" },
-  { href: "/dashboard/admin/aml", label: "Risk Radar", icon: ShieldAlert, badge: "New" },
-  { href: "/dashboard/payout-approvals", label: "Payout Gate", icon: ListChecks },
-  { href: "/dashboard/admin/services", label: "Service Switchboard", icon: Power, badge: "New" },
-  { href: "/dashboard/admin/slider", label: "Banner Studio", icon: Images, badge: "New" },
-  { href: "/dashboard/admin/audit", label: "Audit Trail", icon: ScrollText },
-  { href: "/dashboard/admin/system", label: "Pulse Monitor", icon: ServerCog },
-  { href: "/dashboard/admin/whitelabel", label: "White-label Tenants", icon: Globe, badge: "New" },
-  { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+/** Desk 3 — Money Desk: float, ledgers, settlements and earnings. */
+const adminMoneyDesk: NavItem[] = [
+  { href: "/dashboard/admin/wallet-ops", label: "Float Control", icon: Wallet },
+  { href: "/dashboard/admin/ledger", label: "Account Ledger", icon: BookOpenCheck },
+  { href: "/dashboard/admin/settlement-ops", label: "Settlements", icon: Timer },
+  // NOTE: "Company Revenue" (Revenue Wallet) is deliberately NOT here — it
+  // is owner-only and injected into the master-admin menu below.
+  { href: "/dashboard/payout-approvals", label: "Payout Approvals", icon: ListChecks },
+  { href: "/dashboard/admin/commission-report", label: "Commission Report", icon: HandCoins },
+  { href: "/dashboard/admin/earnings", label: "Earnings Report", icon: TrendingUp },
+];
+
+/** Money Desk for the platform OWNER — adds "Company Revenue" (Revenue
+ *  Wallet). Company earnings are never shown to plain admins/sub-admins. */
+const masterAdminMoneyDesk: NavItem[] = adminMoneyDesk.flatMap((item) =>
+  item.href === "/dashboard/admin/settlement-ops"
+    ? [item, { href: "/dashboard/admin/revenue", label: "Company Revenue", icon: CircleDollarSign }]
+    : [item]
+);
+
+/** Desk 4 — Acquiring & Devices: PG, QR, AePS and the POS fleet lifecycle. */
+const adminAcquiringDesk: NavItem[] = [
+  { href: "/dashboard/admin/pg", label: "PG Dashboard", icon: CreditCard },
+  { href: "/dashboard/admin/qr", label: "QR Manager", icon: QrCode },
+  { href: "/dashboard/admin/aeps", label: "AePS Manager", icon: Fingerprint },
+  { href: "/dashboard/admin/pos", label: "POS Fleet", icon: Monitor },
+  { href: "/dashboard/admin/pos-bookings", label: "POS Orders", icon: PackagePlus },
+  { href: "/dashboard/admin/pos-rental", label: "POS Rentals", icon: ReceiptText },
+  { href: "/dashboard/admin/pos-settlement", label: "POS Settlements", icon: CreditCard },
+  { href: "/dashboard/admin/pos-slips", label: "POS Slips", icon: ListChecks },
+  { href: "/dashboard/admin/pos-reversals", label: "POS Reversals", icon: RotateCcw },
+];
+
+/** Desk 5 — Growth Studio: pricing, incentives and promotion. */
+const adminGrowthStudio: NavItem[] = [
+  { href: "/dashboard/admin/schemes", label: "Rate Schemes", icon: Layers },
+  { href: "/dashboard/admin/brands", label: "Rate Manager", icon: Tag },
+  { href: "/dashboard/admin/incentives", label: "Incentive Manager", icon: Gift },
+  { href: "/dashboard/admin/slider", label: "Banner Manager", icon: Images },
+];
+
+/** Desk 6 — Risk & Compliance: everything that can hurt the platform. */
+const adminRiskDesk: NavItem[] = [
+  { href: "/dashboard/admin/needs-review", label: "Needs Review", icon: AlertTriangle },
+  { href: "/dashboard/admin/payout-review", label: "Held Payouts", icon: Landmark },
+  { href: "/dashboard/admin/reversals", label: "Reversals", icon: Undo2 },
+  { href: "/dashboard/admin/money-at-risk", label: "Risk Exposure", icon: ShieldAlert },
+  { href: "/dashboard/admin/aml", label: "AML Watch", icon: ShieldAlert },
+  { href: "/dashboard/admin/agreements", label: "Agreements", icon: FileSignature },
+  { href: "/dashboard/admin/verify", label: "Verification", icon: ScanSearch },
+];
+
+/** Desk 7 — Service Switchboard: rails on/off, routing controls, limits. */
+const adminSwitchboard: NavItem[] = [
+  { href: "/dashboard/admin/services", label: "Toggle Services", icon: Power },
+  { href: "/dashboard/admin/controls", label: "Service Controls", icon: SlidersHorizontal },
+  { href: "/dashboard/admin/limits", label: "Txn Limits", icon: Gauge },
+];
+
+/** The staff desks shared by admin and sub-admin. Sub-admins are scoped down
+ *  through their allowedTabs; empty desks disappear from the rail entirely. */
+const adminDesks: NavGroup[] = [
+  { heading: "Command Deck", items: adminCommandDeck },
+  { heading: "Partner Network", items: adminPartnerNetwork },
+  { heading: "Money Desk", items: adminMoneyDesk },
+  { heading: "Acquiring & Devices", items: adminAcquiringDesk },
+  { heading: "Growth Studio", items: adminGrowthStudio },
+  { heading: "Risk & Compliance", items: adminRiskDesk },
+  { heading: "Service Switchboard", items: adminSwitchboard },
+];
+
+/** Partner Hub — self-serve growth tools for distribution partners.
+ *  White-label + API access is enforced server-side for MD/SD accounts. */
+const partnerHub: NavItem[] = [
+  { href: "/dashboard/whitelabel", label: "My Brand Portal", icon: Globe, badge: "New" },
+  { href: "/dashboard/api", label: "API & Webhooks", icon: KeyRound, badge: "New" },
+  { href: "/dashboard/marketing", label: "Marketing Studio", icon: Megaphone, badge: "New" },
 ];
 
 export const navByRole: Record<Role, NavGroup[]> = {
   "master-admin": [
-    {
-      heading: "Control room",
-      items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/admin/admins", label: "Admins", icon: ShieldCheck, badge: "New" },
-        ...onboardingItems,
-        { href: "/dashboard/admin/sub-admins", label: "Staff Desk", icon: UserCog },
-        { href: "/dashboard/admin/pg", label: "Gateway Hub", icon: CreditCard, badge: "New" },
-        { href: "/dashboard/admin/pos", label: "Terminal Fleet", icon: Monitor, badge: "New" },
-        { href: "/dashboard/admin/qr", label: "QR Collect Hub", icon: QrCode, badge: "New" },
-        { href: "/dashboard/admin/schemes", label: "Scheme Studio", icon: Layers, badge: "New" },
-        { href: "/dashboard/admin/incentives", label: "Reward Engine", icon: Gift, badge: "New" },
-        { href: "/dashboard/admin/disputes", label: "Care Centre", icon: LifeBuoy, badge: "New" },
-        { href: "/dashboard/admin/aml", label: "Risk Radar", icon: ShieldAlert, badge: "New" },
-        { href: "/dashboard/payout-approvals", label: "Payout Gate", icon: ListChecks },
-        { href: "/dashboard/admin/services", label: "Service Switchboard", icon: Power, badge: "New" },
-        { href: "/dashboard/admin/slider", label: "Banner Studio", icon: Images, badge: "New" },
-        { href: "/dashboard/admin/audit", label: "Audit Trail", icon: ScrollText },
-        { href: "/dashboard/admin/system", label: "Pulse Monitor", icon: ServerCog },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
-      ]
-    },
-    { heading: "Treasury & ops", items: masterAdminMoneyOps },
-    { heading: "My account", items: account }
+    { heading: "Command Deck", items: masterAdminCommandDeck },
+    { heading: "Partner Network", items: adminPartnerNetwork },
+    { heading: "Money Desk", items: masterAdminMoneyDesk },
+    { heading: "Acquiring & Devices", items: adminAcquiringDesk },
+    { heading: "Growth Studio", items: adminGrowthStudio },
+    { heading: "Risk & Compliance", items: adminRiskDesk },
+    { heading: "Service Switchboard", items: adminSwitchboard },
+    { heading: "My Profile", items: account }
   ],
 
   retailer: [
     {
-      heading: "My counter",
+      heading: "My Kiosk",
       items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
-        { href: "/dashboard/funds-request", label: "Load Wallet", icon: HandCoins },
-        { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/rewards", label: "Rewards Club", icon: Gift, badge: "New" },
-        { href: "/dashboard/pos-booking", label: "Get a Terminal", icon: PackagePlus, badge: "New" },
-        { href: "/dashboard/pos-rental", label: "Terminal Billing", icon: ReceiptText, badge: "New" },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/dashboard/earnings", label: "Commission Board", icon: CircleDollarSign, badge: "New" },
+        { href: "/dashboard/funds-request", label: "Add Float", icon: HandCoins },
+        { href: "/dashboard/my-scheme", label: "My Rate Card", icon: Layers, badge: "New" },
+        { href: "/dashboard/rewards", label: "Star Points", icon: Gift, badge: "New" },
+        { href: "/dashboard/pos-booking", label: "Request POS", icon: PackagePlus, badge: "New" },
+        { href: "/dashboard/pos-rental", label: "Terminal Dues", icon: ReceiptText, badge: "New" },
+        { href: "/dashboard/reports", label: "My Reports", icon: BarChart3 }
       ]
     },
-    { heading: "Sell & earn", items: retailerServices },
-    { heading: "My account", items: account }
+    { heading: "Counter Services", items: retailerServices },
+    { heading: "My Profile", items: account }
   ],
 
   distributor: [
     {
-      heading: "My network",
+      heading: "My Retailers",
       items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
-        { href: "/dashboard/network", label: "My Retailers", icon: Users },
-        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
-        { href: "/dashboard/network/onboard", label: "Invite Retailer", icon: PackagePlus },
-        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
-        { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
-        { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/dashboard/earnings", label: "My Commission", icon: CircleDollarSign, badge: "New" },
+        { href: "/dashboard/network", label: "Retailer List", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Zone Dashboard", icon: Gauge, badge: "Live" },
+        { href: "/dashboard/network/onboard", label: "Add Retailer", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Rate Assignment", icon: Layers, badge: "New" },
+        { href: "/dashboard/approvals", label: "Action Pending", icon: FileSignature },
+        { href: "/dashboard/my-scheme", label: "My Rates", icon: Layers, badge: "New" },
+        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
       ]
     },
-    { heading: "My account", items: account }
+    {
+      heading: "Partner Hub",
+      // Distributors get the Marketing Studio; brand portal & API unlock at MD/SD.
+      items: partnerHub.filter((i) => i.href === "/dashboard/marketing")
+    },
+    { heading: "My Profile", items: account }
   ],
 
   "super-distributor": [
     {
-      heading: "My network",
+      heading: "My Zone",
       items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
-        { href: "/dashboard/network", label: "My Network", icon: Users },
-        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
-        { href: "/dashboard/network/onboard", label: "Invite Master Distributor", icon: PackagePlus },
-        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
-        { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
-        { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/dashboard/earnings", label: "My Commission", icon: CircleDollarSign, badge: "New" },
+        { href: "/dashboard/network", label: "Master Dist. List", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Regional Dashboard", icon: Gauge, badge: "Live" },
+        { href: "/dashboard/network/onboard", label: "Recruit MD", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Rate Assignment", icon: Layers, badge: "New" },
+        { href: "/dashboard/approvals", label: "Action Pending", icon: FileSignature },
+        { href: "/dashboard/my-scheme", label: "My Rates", icon: Layers, badge: "New" },
+        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
       ]
     },
-    { heading: "My account", items: account }
+    { heading: "Partner Hub", items: partnerHub },
+    { heading: "My Profile", items: account }
   ],
 
   "master-distributor": [
     {
-      heading: "My network",
+      heading: "My Distributors",
       items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/earnings", label: "My Earnings", icon: CircleDollarSign, badge: "New" },
-        { href: "/dashboard/network", label: "My Distributors", icon: Users },
-        { href: "/dashboard/network/command-center", label: "Network HQ", icon: Gauge, badge: "Live" },
-        { href: "/dashboard/network/onboard", label: "Invite Distributor", icon: PackagePlus },
-        { href: "/dashboard/network/schemes", label: "Assign Schemes", icon: Layers, badge: "New" },
-        { href: "/dashboard/approvals", label: "Approvals", icon: FileSignature },
-        { href: "/dashboard/my-scheme", label: "Scheme & Slabs", icon: Layers, badge: "New" },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/dashboard/earnings", label: "My Commission", icon: CircleDollarSign, badge: "New" },
+        { href: "/dashboard/network", label: "Distributor List", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Zone Dashboard", icon: Gauge, badge: "Live" },
+        { href: "/dashboard/network/onboard", label: "Add Distributor", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Rate Assignment", icon: Layers, badge: "New" },
+        { href: "/dashboard/approvals", label: "Action Pending", icon: FileSignature },
+        { href: "/dashboard/my-scheme", label: "My Rates", icon: Layers, badge: "New" },
+        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
       ]
     },
-    { heading: "My account", items: account }
+    { heading: "Partner Hub", items: partnerHub },
+    { heading: "My Profile", items: account }
   ],
 
-  admin: [
-    { heading: "Control room", items: adminWorkspace },
-    { heading: "Treasury & ops", items: adminMoneyOps },
-    { heading: "My account", items: account }
-  ],
+  admin: [...adminDesks, { heading: "My Profile", items: account }],
 
   finance: [
     {
-      heading: "Finance",
+      heading: "Financial Desk",
       items: [
-        { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-        { href: "/dashboard/admin/wallet-ops", label: "Wallet Command", icon: Wallet },
-        { href: "/dashboard/admin/ledger", label: "Ledger Lens", icon: BookOpenCheck },
+        { href: "/dashboard", label: "Platform Home", icon: LayoutDashboard },
+        { href: "/dashboard/admin/wallet-ops", label: "Float Control", icon: Wallet },
+        { href: "/dashboard/admin/ledger", label: "Account Ledger", icon: BookOpenCheck },
         // Read-only for finance: the queue is viewable but Approve/Reject is
         // gated to master-admin/admin in both the UI and the API.
-        { href: "/dashboard/admin/pos-slips", label: "Slip Inbox", icon: ListChecks },
-        // "Revenue Vault" (Revenue Wallet) is owner-only; finance uses the
-        // Commission Flow + Earning Stream reports instead.
-        { href: "/dashboard/admin/commission-report", label: "Commission Flow", icon: HandCoins },
-        { href: "/dashboard/admin/earnings", label: "Earning Stream", icon: TrendingUp },
-        { href: "/dashboard/admin/analytics", label: "Insight Studio", icon: LineChart },
-        { href: "/dashboard/reports", label: "Report Centre", icon: BarChart3 }
+        { href: "/dashboard/admin/pos-slips", label: "POS Slips", icon: ListChecks },
+        // "Company Revenue" (Revenue Wallet) is owner-only; finance uses the
+        // Commission Report + Earnings Report instead.
+        { href: "/dashboard/admin/commission-report", label: "Commission Report", icon: HandCoins },
+        { href: "/dashboard/admin/earnings", label: "Earnings Report", icon: TrendingUp },
+        { href: "/dashboard/admin/analytics", label: "Analytics", icon: LineChart },
+        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
       ]
     },
-    { heading: "My account", items: account }
+    { heading: "My Profile", items: account }
   ],
 
-  "sub-admin": [
-    { heading: "Control room", items: adminWorkspace },
-    { heading: "Treasury & ops", items: adminMoneyOps },
-    { heading: "My account", items: account }
-  ]
+  "sub-admin": [...adminDesks, { heading: "My Profile", items: account }]
 };

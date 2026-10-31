@@ -24,7 +24,7 @@ export default function MarketingPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Platform · Growth"
+        eyebrow="Partner Hub"
         title="Marketing tools"
         description="WhatsApp / SMS / Email blasts, in-app banners, and ready-made creatives for your network."
         actions={<Button><Megaphone className="h-4 w-4" /> New campaign</Button>}

@@ -97,7 +97,7 @@ export default function IdentityExceptionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Compliance"
+        eyebrow="Partner Network"
         title="Identity Exceptions"
         description="Approve, per identity value and tier, when the same PAN / Aadhaar / bank / GST / Udyam / shop name may onboard more than one account (max 4 — one per tier)."
       />

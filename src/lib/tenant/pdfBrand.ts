@@ -1,6 +1,6 @@
 /**
  * Resolves the PdfBrandOptions for a user's platform tenant (if any).
- * Returns undefined for native TRANSPE users, or a brand override for
+ * Returns undefined for native BankingPoint24 users, or a brand override for
  * white-label tenant members.
  *
  * Usage in PDF-generating API routes:

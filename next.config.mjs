@@ -78,13 +78,13 @@ const nextConfig = {
   // Next.js app. The `hostname` wildcard below ensures Next.js does not reject
   // requests from unknown origins in production.
   // Note: configure your nginx / ALB to route all white-label domains to this
-  // app; AWS ACM wildcard cert covers *.transpe.in; each custom domain owner
-  // must point a CNAME record (kapoorpay.in → transpe.in or the ALB hostname).
+  // app; AWS ACM wildcard cert covers *.bankingpoint-24.com; each custom domain owner
+  // must point a CNAME record (kapoorpay.in → bankingpoint-24.com or the ALB hostname).
 
 };
 
 export default withSentryConfig(nextConfig, {
-  org: "TRANSPE",
+  org: "BankingPoint24",
   project: "javascript-nextjs",
 
   // Build-time secret used to upload source maps so production stack traces are

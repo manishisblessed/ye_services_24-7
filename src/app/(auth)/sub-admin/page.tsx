@@ -62,6 +62,7 @@ function SubAdminLoginForm({ location }: { location: LocationData }) {
   const [userName, setUserName] = useState("");
   const [pinRiskAccepted, setPinRiskAccepted] = useState(false);
   const [canChoose, setCanChoose] = useState(false);
+  const [canAuthenticatorLogin, setCanAuthenticatorLogin] = useState(false);
 
   function resetToCredentials() {
     setStep("credentials");
@@ -114,11 +115,15 @@ function SubAdminLoginForm({ location }: { location: LocationData }) {
         setTempToken(data.tempToken);
         setUserName(data.user?.name || "");
         setPinRiskAccepted(Boolean(data.riskAccepted));
+        setCanAuthenticatorLogin(Boolean(data.canAuthenticator));
         setCanChoose(true);
+        // Jump straight to a preferred method only if it is actually usable.
         setStep(
-          data.preferredMethod === "2fa" || data.preferredMethod === "pinlogin"
-            ? data.preferredMethod
-            : "choose"
+          data.preferredMethod === "pinlogin"
+            ? "pinlogin"
+            : data.preferredMethod === "2fa" && data.canAuthenticator
+              ? "2fa"
+              : "choose"
         );
         setLoading(false);
         return;
@@ -167,6 +172,7 @@ function SubAdminLoginForm({ location }: { location: LocationData }) {
     content = (
       <LoginMethodChoice
         userName={userName}
+        canAuthenticator={canAuthenticatorLogin}
         onChoose={(method) => setStep(method)}
         onBack={resetToCredentials}
       />

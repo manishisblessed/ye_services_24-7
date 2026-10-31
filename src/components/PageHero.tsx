@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import * as React from "react";
 import { CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "@/components/ui/Container";
@@ -24,7 +24,7 @@ export interface PageHeroProps {
 }
 
 /**
- * PageHero — the TRANSPE editorial ledger header, shared by every secondary
+ * PageHero — the BankingPoint24 editorial ledger header, shared by every secondary
  * marketing page.
  *
  * Composition (deliberately asymmetric):
@@ -56,7 +56,7 @@ export function PageHero({
       data-nav-theme={variant}
       className={cn(
         "relative overflow-hidden pb-16 pt-32 md:pb-20 md:pt-40",
-        dark ? "grain bg-ink-950 text-white" : "bg-white text-ink-900",
+        dark ? "grain bg-ink-950 text-white" : "bg-[#f6faf2] text-ink-900",
         className
       )}
     >

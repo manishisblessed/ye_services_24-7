@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check } from "lucide-react";
 
-const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "transpe.in";
+const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com";
 import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -125,7 +125,7 @@ export default function WhitelabelPage() {
   if (forbidden) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Platform · Brand" title="White-label portal" description="Run the platform under your own brand." />
+        <PageHeader eyebrow="Partner Hub" title="White-label portal" description="Run the platform under your own brand." />
         <EmptyState
           bordered
           icon={LockKey}
@@ -170,7 +170,7 @@ export default function WhitelabelPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Platform · Brand"
+        eyebrow="Partner Hub"
         title="White-label portal"
         description="Run the platform under your own brand, domain and colors."
         actions={
@@ -446,7 +446,7 @@ export default function WhitelabelPage() {
                 <div className="grain pointer-events-none absolute inset-0 opacity-20" aria-hidden />
                 <p className="relative text-[11px] font-bold uppercase tracking-[0.18em] opacity-80">{profile.brandName || "Your brand"}</p>
                 <p className="relative mt-3 font-display text-2xl font-semibold tracking-[-0.02em]">{profile.tagline || "Your tagline here"}</p>
-                <p className="relative mt-1 text-sm text-white/85">60+ services · Pan-India · Built on TRANSPE</p>
+                <p className="relative mt-1 text-sm text-white/85">60+ services · Pan-India · Built on BankingPoint24</p>
                 <button type="button" className="relative mt-4 rounded-full bg-white px-4 py-1.5 text-sm font-semibold" style={{ color: profile.primaryColor }}>
                   Login
                 </button>
@@ -456,7 +456,7 @@ export default function WhitelabelPage() {
 
           <SectionCard tone="accent" padding="sm">
             <p className="text-sm text-ink-800">
-              <strong className="font-semibold text-ink-900">Powered by TRANSPE.</strong> Footer attribution is required on all white-labels.
+              <strong className="font-semibold text-ink-900">Powered by BankingPoint24.</strong> Footer attribution is required on all white-labels.
             </p>
           </SectionCard>
         </div>

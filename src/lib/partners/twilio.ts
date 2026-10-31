@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Twilio adapter — covers two separate services:
  *
  * 1. Twilio Verify (managed OTP)
@@ -267,28 +267,28 @@ function contentSidFor(slug: string): string | undefined {
 /**
  * Free-form SMS body builders — used as fallback when no ContentSid is set.
  * Keep each message ≤ 160 chars where possible to avoid multi-part SMS charges.
- * The platform name defaults to "TRANSPE"; callers passing a `_brand` variable
+ * The platform name defaults to "bankingpoint24"; callers passing a `_brand` variable
  * in the variables map will get tenant-branded messages automatically.
  */
 const SMS_BODIES: Record<string, ((v: Record<string, string>) => string) | undefined> = {
   onboard_invite: (v) => {
-    const name = v._brand ?? "TRANSPE";
+    const name = v._brand ?? "bankingpoint24";
     return `${name}: You're invited as ${v.role}. Complete registration: ${v.link}`;
   },
   onboard_success: (v) => {
-    const name = v._brand ?? "TRANSPE";
+    const name = v._brand ?? "bankingpoint24";
     return `${name}: Welcome! Your ${v.role} account is active. Login: ${v.link}`;
   },
   declaration_approval: (v) => {
-    const name = v._brand ?? "TRANSPE";
+    const name = v._brand ?? "bankingpoint24";
     return `${name}: Approve the declaration for your downline member: ${v.link}`;
   },
   declaration_approved: (v) => {
-    const name = v._brand ?? "TRANSPE";
+    const name = v._brand ?? "bankingpoint24";
     return `${name}: Your declaration has been approved. Login to continue.`;
   },
   declaration_rejected: (v) => {
-    const name = v._brand ?? "TRANSPE";
+    const name = v._brand ?? "bankingpoint24";
     return `${name}: Your declaration was rejected. Reason: ${v.reason ?? "See dashboard."}`;
   },
 };
@@ -347,7 +347,7 @@ export const twilioSms: SmsProvider = {
     // must deliver *that exact code* via a plain SMS so it matches what the
     // verify route looks up in the DB. Calling sendVerification would send a
     // *different* Twilio-generated code and permanently break verification.
-    const brandName = (variables as Record<string, string> | undefined)?._brand ?? "TRANSPE";
+    const brandName = (variables as Record<string, string> | undefined)?._brand ?? "bankingpoint24";
     const body = `Your ${brandName} verification code is ${otp}. Valid for 5 minutes. Do not share.`;
     const r = await sendSms({ to: toE164India(phone), body });
     return r;
@@ -361,7 +361,7 @@ export const twilioSms: SmsProvider = {
     }
     // Fall back to a free-form message body built from the slug.
     const builder = SMS_BODIES[templateId];
-    const brandName = (variables as Record<string, string>)._brand ?? "TRANSPE";
+    const brandName = (variables as Record<string, string>)._brand ?? "bankingpoint24";
     const body = builder
       ? builder(variables)
       : `${brandName} notification. Visit your dashboard for details.`;

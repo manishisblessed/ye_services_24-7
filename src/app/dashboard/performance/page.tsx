@@ -130,9 +130,9 @@ export default function PerformancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Performance"
-        description="Your account at a glance — identity, 30-day activity, security posture and recent logins."
+        eyebrow="My Profile"
+        title="Performance Overview"
+        description="Your kiosk at a glance — 30-day activity, identity status, security posture and recent sign-ins."
       />
 
       <ProfileHero

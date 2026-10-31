@@ -277,7 +277,7 @@ export default function BrandsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Growth Studio"
         title="MDR & minimum charges"
         description="Define the cost floor for each rail — POS, PG, QR (acquiring rate cards) and Services (BBPS & Payout: per-provider vendor cost + minimum charge). These are the company minimums: every scheme charge is validated against them, so nothing can ever be priced below the rail's floor."
         actions={

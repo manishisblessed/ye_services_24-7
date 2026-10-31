@@ -1,4 +1,4 @@
-import crypto from "crypto";
+﻿import crypto from "crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { creditWallet, debitWallet } from "@/lib/ledger";
@@ -21,7 +21,7 @@ import { dec, gt, round, type Money } from "@/lib/money";
  * Suspense account pattern (see wallet/suspense.ts).
  */
 
-const TDS_ACCOUNT_EMAIL = "tds-payable@system.TRANSPE";
+const TDS_ACCOUNT_EMAIL = "tds-payable@system.BankingPoint24";
 const TDS_ACCOUNT_PHONE = "+910000000002";
 
 let cachedTdsAccountId: string | null = null;

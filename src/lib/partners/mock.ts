@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Safe in-memory MOCK providers. Used when the corresponding partner
  * `PARTNER_*_ENABLED` flag is "false". They mimic realistic latency and
  * occasionally fail so the UI / state machines exercise both happy and
@@ -68,7 +68,7 @@ export const mockUpi: UpiProvider = {
     const orderId = ref("ORDR");
     return ok({
       orderId,
-      upiIntent: `upi://pay?pa=TRANSPE@axisbank&pn=TRANSPE&am=${input.amount}&tn=${encodeURIComponent(input.note ?? "TRANSPE")}`,
+      upiIntent: `upi://pay?pa=BankingPoint24@axisbank&pn=BankingPoint24&am=${input.amount}&tn=${encodeURIComponent(input.note ?? "bankingpoint24")}`,
       paymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay/${orderId}`
     });
   },

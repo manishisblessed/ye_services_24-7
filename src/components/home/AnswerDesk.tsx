@@ -23,8 +23,8 @@ export function AnswerDesk() {
       <div className="container-x">
         <SectionHeading
           align="center"
-          eyebrow="Straight answers"
-          title="Asked at every onboarding call"
+          eyebrow="Questions & answers"
+          title="Everything partners ask before joining"
         />
 
         <div className="mx-auto mt-12 max-w-3xl">

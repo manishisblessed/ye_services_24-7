@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE PageHeader — v3 "Ruled ledger".
+ * BankingPoint24 PageHeader — v3 "Ruled ledger".
  *
  * Server-safe (no hooks). The header sits on a ruled bottom border that
  * carries a short gradient segment — the same keyline signature used across

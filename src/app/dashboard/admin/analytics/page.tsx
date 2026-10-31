@@ -162,8 +162,8 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Insights"
-        title="Business analytics"
+        eyebrow="Command Deck"
+        title="Analytics"
         description="Service-wise transaction performance, daily volume trend, and top performers — read-only reporting."
         actions={
           <>

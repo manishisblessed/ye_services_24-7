@@ -75,7 +75,7 @@ export async function POST(
 
   // Resolve tenant brand for this invite
   const tenantBrand = await resolveNotificationBrand(invite.platformOwnerId ?? null);
-  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const platformName = tenantBrand?.brandName ?? "BankingPoint24";
   const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
   const tenantBaseUrl = await getEffectivePlatformUrl(invite.platformOwnerId ?? null);
   const approvalUrl = `${tenantBaseUrl}/dashboard/approvals`;
@@ -114,7 +114,7 @@ export async function POST(
           </div>
           <p style="color:#64748b;font-size:13px;">Please review within 24 hours. The applicant cannot complete registration until this is approved.</p>
           <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
-          <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by TRANSPE" : ""}</p>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by BankingPoint24" : ""}</p>
           </div>
         </div>
       `,

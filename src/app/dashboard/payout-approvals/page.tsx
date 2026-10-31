@@ -247,14 +247,14 @@ export default function PayoutApprovalsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Approvals"
+        eyebrow="Money Desk"
         title="Payout approvals"
         description="Network self-withdrawals now auto-approve (a payout debits the requester's own wallet). This queue only holds any earlier requests still awaiting a decision; funds are released back if you reject."
         actions={
           <>
             <ReportActions
               filename="payout-approvals"
-              title="JMP TRANSPE · Payout Approvals"
+              title="JMP BankingPoint24 · Payout Approvals"
               subtitle={filter === "PENDING" ? "Pending queue" : "All payouts"}
               columns={[
                 { key: "id", header: "Payout ID" },

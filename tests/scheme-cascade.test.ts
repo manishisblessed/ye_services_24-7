@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { toFixedString } from "@/lib/money";
 
@@ -22,7 +22,7 @@ vi.mock("@/lib/db", () => ({
     user: {
       findUnique: async ({ where }: { where: { id?: string; email?: string } }) => {
         // getTdsAccountId resolves the system TDS Payable account by email.
-        if (where.email === "tds-payable@system.TRANSPE") return { id: "tdsacct" };
+        if (where.email === "tds-payable@system.BankingPoint24") return { id: "tdsacct" };
         if (where.id) return state.users.get(where.id) ?? null;
         return null;
       },

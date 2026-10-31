@@ -1,12 +1,12 @@
 {
-  "name": "transpe-portal",
+  "name": "bankingpoint24-portal",
   "version": "0.1.0",
   "private": true,
-  "description": "TRANSPE — Fintech distribution platform for digital payments & banking (transpe.net)",
+  "description": "BankingPoint24 — Fintech distribution platform for digital payments & banking (bankingpoint-24.com)",
   "scripts": {
     "dev": "next dev --turbo",
     "dev:all": "concurrently -k -n web,worker -c cyan,magenta \"npm run dev\" \"npm run worker\"",
-    "build": "next build",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
     "start": "next start",
     "start:all": "concurrently -k -n web,worker -c cyan,magenta \"npm run start\" \"npm run worker\"",
     "worker": "tsx scripts/worker.ts",
@@ -83,6 +83,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "concurrently": "^10.0.4",
+    "cross-env": "^10.1.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.5.23",
     "prisma": "^5.22.0",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Building2, Copy, Check, Share2 } from "lucide-react";
 import { Bank, Lightning, QrCode, ShareNetwork } from "@phosphor-icons/react";
@@ -14,14 +14,14 @@ import { cn } from "@/lib/utils";
 const account = {
   ifsc: "YESB0CMSNOC",
   number: "PPRSMV456789012345",
-  beneficiary: "TRANSPE - Aman Sharma",
+  beneficiary: "BankingPoint24 - Aman Sharma",
   branch: "Virtual Branch, Delhi"
 };
 
 const STEPS = [
   { icon: ShareNetwork, text: "Share the account number & IFSC with your customer." },
   { icon: Bank, text: "Customer transfers via UPI / IMPS / NEFT from any bank app." },
-  { icon: Lightning, text: "Funds auto-credit to your TRANSPE wallet within 30 seconds." },
+  { icon: Lightning, text: "Funds auto-credit to your BankingPoint24 wallet within 30 seconds." },
   { icon: QrCode, text: "You earn standard collection commission on every credit." },
 ];
 

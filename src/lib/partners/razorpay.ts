@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Razorpay adapter — UPI Collect (PG) + RazorpayX Payouts.
  *
  * Activate UPI:    PARTNER_UPI_ENABLED=true
@@ -41,7 +41,7 @@ export const razorpayUpi: UpiProvider = {
         amount: Math.round(input.amount * 100),
         currency: "INR",
         accept_partial: false,
-        description: input.note ?? "TRANSPE collect",
+        description: input.note ?? "BankingPoint24 collect",
         customer: { email: input.customerEmail, contact: input.customerPhone },
         notify: { sms: true, email: !!input.customerEmail },
         callback_url: input.callbackUrl,

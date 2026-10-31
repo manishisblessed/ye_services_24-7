@@ -171,7 +171,7 @@ export default function NeedsReviewPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader eyebrow="Risk & Compliance"
         title="Needs Review"
         description="Payments with an INDETERMINATE provider outcome (lost response, timeout, 5xx). Funds are HELD — never auto-refunded — until verified against the provider panel."
         icon={AlertTriangle}

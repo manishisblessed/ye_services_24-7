@@ -101,10 +101,10 @@ export function RetailerBusinessOverview() {
       <SectionHeader
         icon={ChartPieSlice}
         tone="accent"
-        title={isToday ? "Today's Business" : "Business Summary"}
+        title={isToday ? "Today's Counter" : "Counter Summary"}
         description={
           <>
-            Your transaction activity across all services. Volume is{" "}
+            Your transaction activity across all services at your kiosk. Volume is{" "}
             <span className="font-semibold text-ink-700">completed</span> business; pending &amp;
             failed are counted separately.
           </>
@@ -140,8 +140,8 @@ export function RetailerBusinessOverview() {
             compact
             icon={WarningCircle}
             tone="coral"
-            title="Couldn't load your business summary"
-            body="Give it another go — nothing has been lost."
+            title="Counter data unavailable right now"
+            body="Tap retry — your transactions and commission are safe."
             action={
               <button onClick={load} className="text-sm font-semibold text-coral-700 underline-offset-4 hover:underline">
                 Try again
@@ -202,7 +202,7 @@ export function RetailerBusinessOverview() {
 
           <FadeIn delay={0.08}>
             <div className="rounded-3xl border border-ink-100 bg-white p-6 shadow-sm">
-              <SectionHeader size="sm" icon={Stack} tone="brand" title="Service-wise breakdown" className="mb-4" />
+              <SectionHeader size="sm" icon={Stack} tone="brand" title="Service breakdown" className="mb-4" />
               <ServiceBreakdownList
                 rows={data.serviceBreakdown}
                 columns={2}

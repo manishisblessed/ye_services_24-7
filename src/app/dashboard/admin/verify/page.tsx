@@ -152,7 +152,7 @@ export default function IdentityToolkitPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Risk & Compliance"
         title="Identity Toolkit"
         description="On-demand verification suite — PAN, GST, bank account, and company CIN checks with a full audit history."
         actions={

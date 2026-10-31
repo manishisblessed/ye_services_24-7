@@ -214,7 +214,7 @@ export default function NetworkSchemesPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Network · Schemes"
+          eyebrow="My Zone"
           title="Scheme assignment"
           description="This page is not available for your role."
         />
@@ -239,7 +239,7 @@ export default function NetworkSchemesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Schemes"
+        eyebrow="My Zone"
         title={`Assign schemes to your ${meta.plural}`}
         description={`Select a scheme and assign it to your direct ${meta.singular} users. Each ${meta.singular} can have only one active scheme at a time.`}
         actions={

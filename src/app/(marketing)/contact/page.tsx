@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
@@ -22,7 +22,7 @@ import { company, grievanceOfficer, nodalOfficer } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Support",
   description:
-    "Call, WhatsApp or write to TRANSPE. Support, partnerships, grievance and nodal officer contacts, plus our Pune office."
+    "Call, WhatsApp or write to BankingPoint24. Support, partnerships, grievance and nodal officer contacts, plus our Anand, Gujarat office."
 };
 
 /** The three fast lanes shown as hero tiles. */
@@ -58,7 +58,7 @@ const fastLanes: {
     tone: "royal",
     label: "Registered office",
     title: company.shortAddress,
-    href: "https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037",
+    href: "https://www.google.com/maps?q=27+The+Sun+Residency,+Mogri,+Anand,+Gujarat+388345",
     linkText: "Get directions",
     note: company.legalName
   }
@@ -261,11 +261,11 @@ export default function ContactPage() {
                     Visit us
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-ink-900">
-                    Shivtej Nagar, Indira Nagar, Pune
+                    Mogri, Anand, Gujarat
                   </p>
                 </div>
                 <a
-                  href="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037"
+                  href="https://www.google.com/maps?q=27+The+Sun+Residency,+Mogri,+Anand,+Gujarat+388345"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 text-sm font-semibold text-royal-700 hover:text-royal-900 focus-energy"
@@ -275,8 +275,8 @@ export default function ContactPage() {
               </div>
               <div className="aspect-[16/6] w-full bg-ink-100">
                 <iframe
-                  title="TRANSPE HQ — Shivtej Nagar, Indira Nagar, Pune"
-                  src="https://www.google.com/maps?q=Shivtej+Nagar+Indira+Nagar+Pune+Maharashtra+411037&output=embed"
+                  title="BankingPoint24 HQ — Mogri, Anand, Gujarat"
+                  src="https://www.google.com/maps?q=27+The+Sun+Residency,+Mogri,+Anand,+Gujarat+388345&output=embed"
                   className="h-full w-full"
                   loading="lazy"
                 />

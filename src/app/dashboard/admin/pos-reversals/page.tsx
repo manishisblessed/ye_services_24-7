@@ -137,7 +137,7 @@ export default function PosReversalsPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Admin · Money & Ops"
+        eyebrow="Acquiring & Devices"
         title="POS Reversals"
         description="Captures that Same Day later voided or refunded at the terminal. These no longer count as successful — reconcile any that had already been credited to a retailer."
       />

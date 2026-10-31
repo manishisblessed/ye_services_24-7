@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+﻿import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{ts,tsx,js,jsx,mdx}"],
@@ -18,7 +18,7 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand = TRANSPE deep navy (matches the "trans" wordmark)
+        // Brand = BankingPoint24 deep navy (matches the "trans" wordmark)
         brand: {
           50: "#eef2fb",
           100: "#d6def4",
@@ -32,19 +32,20 @@ const config: Config = {
           900: "#0b1740",
           950: "#060e2a"
         },
-        // Accent = TRANSPE teal (matches the "pe" wordmark and app-icon bg)
+        // Accent = BankingPoint24 leaf green (matches the "Point" wordmark and
+        // the growth-arrow swoosh in the logo).
         accent: {
-          50: "#e6fbf7",
-          100: "#c3f3e9",
-          200: "#93e8d7",
-          300: "#58d7bf",
-          400: "#2cc4a7",
-          500: "#17b8a6",
-          600: "#0f9789",
-          700: "#0e786d",
-          800: "#0e5f58",
-          900: "#0d4e49",
-          950: "#04302e"
+          50: "#f3faee",
+          100: "#e3f3d7",
+          200: "#c8e7af",
+          300: "#a5d67f",
+          400: "#82c155",
+          500: "#61a93a",
+          600: "#4a8a2b",
+          700: "#3a6b24",
+          800: "#315620",
+          900: "#2a481e",
+          950: "#14270c"
         },
         // Royal = a lifted navy/sky lane used for secondary highlights, pills,
         // nav links, filter chips. Kept as a separate scale so existing
@@ -63,20 +64,20 @@ const config: Config = {
           900: "#172b6b",
           950: "#0b1740"
         },
-        // Coral = re-tinted to a warm teal/aqua so existing hover-highlight
-        // / alert chips using `coral-400` keep working but land in-brand.
+        // Coral = warm harvest amber. Attention chips, numeric badges and
+        // hover highlights get a warm counterpoint to the navy + green brand.
         coral: {
-          50: "#eafbf7",
-          100: "#cdf4ea",
-          200: "#9ce9d7",
-          300: "#5fd8be",
-          400: "#2fc4a7",
-          500: "#17b8a6",
-          600: "#0f9789",
-          700: "#0e786d",
-          800: "#0d5f58",
-          900: "#0b4e49",
-          950: "#04302e"
+          50: "#fff8eb",
+          100: "#feecc7",
+          200: "#fdd68a",
+          300: "#fcbb4d",
+          400: "#fa9f24",
+          500: "#f4830b",
+          600: "#d86206",
+          700: "#b34509",
+          800: "#92360e",
+          900: "#782d0f",
+          950: "#451503"
         },
         ink: {
           50: "#f5f7fa",
@@ -93,7 +94,7 @@ const config: Config = {
         }
       },
       fontFamily: {
-        // Satoshi is the Transpe body/UI face.
+        // Satoshi is the BankingPoint24 body/UI face.
         sans: [
           '"Satoshi"',
           "ui-sans-serif",
@@ -103,7 +104,7 @@ const config: Config = {
           "Roboto",
           "sans-serif"
         ],
-        // Clash Display is the Transpe headline face — editorial, confident, bold.
+        // Clash Display is the BankingPoint24 headline face — editorial, confident, bold.
         display: [
           '"Clash Display"',
           '"Satoshi"',
@@ -112,29 +113,29 @@ const config: Config = {
           "sans-serif"
         ]
       },
-      // Extended radius scale — Transpe leans on larger, squircle-style corners.
+      // Extended radius scale — BankingPoint24 leans on larger, squircle-style corners.
       borderRadius: {
         "4xl": "2rem",
         "5xl": "2.5rem"
       },
       backgroundImage: {
-        // Transpe premium mesh: navy → royal → teal (quiet, bank-grade)
+        // BankingPoint24 premium mesh: navy → royal → leaf green (growth, bank-grade)
         "hero-radial":
-          "radial-gradient(42% 55% at 18% 12%, rgba(23,43,107,0.22) 0%, rgba(23,43,107,0) 60%), radial-gradient(40% 50% at 82% 20%, rgba(31,59,139,0.18) 0%, rgba(31,59,139,0) 60%), radial-gradient(45% 55% at 25% 100%, rgba(23,184,166,0.16) 0%, rgba(23,184,166,0) 60%), radial-gradient(40% 50% at 90% 95%, rgba(44,196,167,0.14) 0%, rgba(44,196,167,0) 60%)",
+          "radial-gradient(42% 55% at 18% 12%, rgba(23,43,107,0.22) 0%, rgba(23,43,107,0) 60%), radial-gradient(40% 50% at 82% 20%, rgba(31,59,139,0.18) 0%, rgba(31,59,139,0) 60%), radial-gradient(45% 55% at 25% 100%, rgba(97,169,58,0.16) 0%, rgba(97,169,58,0) 60%), radial-gradient(40% 50% at 90% 95%, rgba(130,193,85,0.14) 0%, rgba(130,193,85,0) 60%)",
         "grid-pattern":
           "linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px)",
-        // Primary premium gradient: navy → royal → teal
+        // Primary premium gradient: navy → royal → leaf green
         "brand-gradient":
-          "linear-gradient(120deg, #172b6b 0%, #1f3b8b 45%, #17b8a6 100%)",
-        // Signature TRANSPE "energy" gradient — navy → royal → teal, used on
-        // primary CTAs, active states and focus rings. The single thing that
-        // makes a page feel immediately "Transpe".
+          "linear-gradient(120deg, #172b6b 0%, #1f3b8b 45%, #4a8a2b 100%)",
+        // Signature BankingPoint24 "energy" gradient — navy → royal → leaf green,
+        // used on primary CTAs, active states and focus rings. The single thing
+        // that makes a page feel immediately "bankingpoint24".
         "energy-gradient":
-          "linear-gradient(135deg, #172b6b 0%, #1f3b8b 45%, #17b8a6 100%)",
+          "linear-gradient(135deg, #172b6b 0%, #1f3b8b 45%, #4a8a2b 100%)",
         "energy-gradient-x":
-          "linear-gradient(90deg, #172b6b 0%, #1f3b8b 50%, #17b8a6 100%)",
+          "linear-gradient(90deg, #172b6b 0%, #1f3b8b 50%, #4a8a2b 100%)",
         "aurora-gradient":
-          "conic-gradient(from 140deg at 50% 50%, #172b6b 0deg, #1f3b8b 95deg, #17b8a6 205deg, #58d7bf 300deg, #172b6b 360deg)",
+          "conic-gradient(from 140deg at 50% 50%, #172b6b 0deg, #1f3b8b 95deg, #61a93a 205deg, #a5d67f 300deg, #172b6b 360deg)",
         // Fine SVG noise for premium grain overlays
         "grain":
           "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/></svg>\")"
@@ -143,11 +144,11 @@ const config: Config = {
         soft: "0 10px 30px -12px rgba(15,23,42,0.18)",
         glow: "0 20px 50px -12px rgba(23,43,107,0.45)",
         "glow-brand": "0 20px 50px -12px rgba(31,59,139,0.45)",
-        "glow-coral": "0 20px 50px -12px rgba(23,184,166,0.40)",
-        // Signature Transpe colored shadow — navy→teal spread, used on hover
+        "glow-coral": "0 20px 50px -12px rgba(244,131,11,0.40)",
+        // Signature BankingPoint24 colored shadow — navy→green spread, used on hover
         // of primary surfaces (cards, CTAs).
-        "energy": "0 24px 60px -18px rgba(23,43,107,0.45), 0 10px 24px -12px rgba(23,184,166,0.28)",
-        "energy-sm": "0 12px 28px -14px rgba(23,43,107,0.40), 0 4px 12px -6px rgba(23,184,166,0.22)",
+        "energy": "0 24px 60px -18px rgba(23,43,107,0.45), 0 10px 24px -12px rgba(97,169,58,0.28)",
+        "energy-sm": "0 12px 28px -14px rgba(23,43,107,0.40), 0 4px 12px -6px rgba(97,169,58,0.22)",
         "inner-ring": "inset 0 0 0 1px rgba(255,255,255,0.6)"
       },
       keyframes: {
@@ -187,7 +188,7 @@ const config: Config = {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(-50%)" }
         },
-        // Signature Transpe gradient sweep used on logo + headlines.
+        // Signature BankingPoint24 gradient sweep used on logo + headlines.
         "gradient-sweep": {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" }

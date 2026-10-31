@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -219,20 +219,20 @@ export default function FundsRequestPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={isApprover ? "Approvals" : "Wallet"}
+        eyebrow={isApprover ? "Action Pending" : "My Kiosk"}
         title={
-          isApprover ? "Fund requests from your network" : "Request funds"
+          isApprover ? "Float Requests from Your Network" : "Add Float"
         }
         description={
           isApprover
             ? "Approve incoming wallet top-up requests with bank reference. Auto-credit on approval."
-            : "Submit your bank deposit reference to top up your TRANSPE wallet within minutes."
+            : "Submit your bank deposit reference to top up your BankingPoint24 wallet within minutes."
         }
         actions={
           <>
             <ReportActions
               filename="fund-requests"
-              title="JMP TRANSPE · Fund Requests"
+              title="JMP BankingPoint24 · Fund Requests"
               subtitle={isApprover ? "Incoming approvals" : "My requests"}
               columns={[
                 { key: "id", header: "Request ID" },

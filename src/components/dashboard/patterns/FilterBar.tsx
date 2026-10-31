@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE FilterBar — a calm white bar that wraps a page's existing filter
+ * BankingPoint24 FilterBar — a calm white bar that wraps a page's existing filter
  * controls. Left slot carries a title + live count, right slot carries
  * actions (refresh / export). Controls go in `children` and flow in the
  * middle. Optional `sticky` keeps it pinned below the topbar on scroll.

@@ -1,9 +1,9 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE Badge — Phase 1 redesign.
+ * BankingPoint24 Badge — Phase 1 redesign.
  *
  * Shape language that differentiates from Nextgen:
  *  · Duotone fill — soft tinted background + bold hue text, slightly deeper
@@ -27,7 +27,7 @@ const badgeStyles = cva(
         royal: "bg-royal-50 text-royal-700 ring-royal-200",
         coral: "bg-coral-50 text-coral-700 ring-coral-200",
         /**
-         * Signature TRANSPE "energy" badge — purple→coral gradient fill with
+         * Signature BankingPoint24 "energy" badge — purple→coral gradient fill with
          * white text. Use sparingly for truly-featured items.
          */
         energy:

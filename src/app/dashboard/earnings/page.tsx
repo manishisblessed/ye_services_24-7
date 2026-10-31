@@ -154,9 +154,9 @@ export default function EarningsPage() {
   return (
     <div className="min-w-0 space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="My earnings"
-        description="Commission credited to your wallet from every transaction across your network."
+        eyebrow="My Kiosk"
+        title="Commission Board"
+        description="Every commission credited to your float — broken down by service, tier and date range."
       />
 
       <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -84,7 +84,7 @@ export default function AdminPgPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Money & Ops"
+        eyebrow="Acquiring & Devices"
         title="Payment Gateway"
         description="Merchant onboarding, MDR & scheme configuration, transaction monitoring and settlement control for the PG vertical."
         actions={

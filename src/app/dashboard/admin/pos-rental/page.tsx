@@ -189,7 +189,7 @@ export default function PosRentalPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Acquiring & Devices"
         title="POS Rental & Billing"
         description="Create rental plans, assign machine subscriptions with GST & commission, track monthly invoices, and manage inventory."
         actions={

@@ -194,18 +194,18 @@ export default function NetworkCommandCenterPage() {
   const [tab, setTab] = useState<Tab>("tree");
 
   const callerRole = session?.role ?? "";
-  // Map DB role names to slug form
+  // session.role is already the display slug (see toDisplayRole in lib/auth)
   const callerSlug =
-    callerRole === "super-distributor" || callerRole === "SUPER_DISTRIBUTOR"
+    callerRole === "super-distributor"
       ? "super-distributor"
-      : callerRole === "master-distributor" || callerRole === "MASTER_DISTRIBUTOR"
+      : callerRole === "master-distributor"
       ? "master-distributor"
       : "distributor";
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Command Center"
+        eyebrow="My Zone"
         title="Network HQ"
         description="Real-time visibility into your entire downline — transactions, ledger flows, and business health across every level."
       />

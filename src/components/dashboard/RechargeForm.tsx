@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
@@ -136,7 +136,7 @@ export function RechargeForm({
               rows={[
                 { label: numberLabel, value: number || "—", mono: true, muted: !number },
                 { label: "Operator", value: operator },
-                { label: "Paid from", value: "TRANSPE wallet" },
+                { label: "Paid from", value: "BankingPoint24 wallet" },
               ]}
               total={formatINR(amountNum)}
               totalLabel="You pay"

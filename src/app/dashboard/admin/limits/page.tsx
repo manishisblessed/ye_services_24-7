@@ -119,7 +119,7 @@ export default function LimitsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Service Switchboard"
         title="Limits"
         description="The single place to raise or lower any user-transaction limit — QR claim caps, wallet caps, and settlement defaults. Changes apply instantly, no deploy needed. Master Admin only."
         actions={

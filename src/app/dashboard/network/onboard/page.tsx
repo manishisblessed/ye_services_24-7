@@ -118,7 +118,7 @@ export default function OnboardInvitePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Network · Invite"
+        eyebrow="My Zone"
         title={`Invite a ${childLabel}`}
         description={`Send an onboarding link via email and SMS. The ${childLabel.toLowerCase()} completes their own registration and KYC.`}
       />

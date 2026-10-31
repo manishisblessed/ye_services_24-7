@@ -1,9 +1,9 @@
-import { TOTP, Secret } from "otpauth";
+﻿import { TOTP, Secret } from "otpauth";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { encrypt, decrypt } from "./crypto";
 
-const APP_NAME = "TRANSPE";
+const APP_NAME = "bankingpoint24";
 const TOTP_DIGITS = 6;
 const TOTP_PERIOD = 30;
 const TOTP_WINDOW = 1; // allow 1 period drift (±30s)

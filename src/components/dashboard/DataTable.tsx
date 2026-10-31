@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -16,7 +16,7 @@ export type Column<T> = {
 };
 
 /**
- * TRANSPE DataTable — v3 "Ledger sheet".
+ * BankingPoint24 DataTable — v3 "Ledger sheet".
  *
  * `rounded-2xl` surface with a ruled double-weight header on white, zebra row
  * striping like a printed ledger, a friendly empty state and shimmer loading

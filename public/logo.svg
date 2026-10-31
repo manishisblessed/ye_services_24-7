@@ -1,13 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" fill="none" role="img" aria-label="TRANSPE">
-  <!-- Small up-tick accent above the "T" (echoes rising-growth motif in the Transpe mark) -->
-  <polygon points="22,8 32,8 27,0" fill="#17B8A6"/>
-
-  <!-- Wordmark: "trans" in navy, "pe" in teal — matches the official Transpe lockup -->
-  <g font-family="'Clash Display','Satoshi','Segoe UI',system-ui,sans-serif" font-weight="800" font-size="54" letter-spacing="-1.5">
-    <text x="0"   y="54" fill="#172B6B">trans</text>
-    <text x="167" y="54" fill="#17B8A6">pe</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 72" fill="none" role="img" aria-label="BankingPoint24">
+  <!-- Wordmark: "Banking" + "Point" in navy, "24" in green -->
+  <g font-family="'Clash Display','Satoshi','Segoe UI',system-ui,sans-serif" font-weight="800" font-size="44" letter-spacing="-1">
+    <text x="0"   y="52" fill="#172B6B">Banking</text>
+    <text x="215" y="52" fill="#172B6B">Point</text>
   </g>
-
-  <!-- Subtle rupee tail under the stroke of the first "t" (reads as the ₹ accent in the Transpe logo) -->
-  <path d="M18 36 Q 22 48 32 54 L 22 58 Q 14 50 12 40 Z" fill="#172B6B" opacity="0.9"/>
+  <!-- "24" badge in green circle -->
+  <circle cx="355" cy="30" r="22" fill="none" stroke="#61A93A" stroke-width="3"/>
+  <text x="355" y="38" font-family="'Clash Display','Satoshi',system-ui,sans-serif" font-weight="800" font-size="18" fill="#61A93A" text-anchor="middle">24</text>
 </svg>

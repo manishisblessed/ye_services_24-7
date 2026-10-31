@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
@@ -15,7 +15,7 @@ import dns from "node:dns/promises";
  */
 export const dynamic = "force-dynamic";
 
-const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN ?? "transpe.in";
+const PLATFORM_DOMAIN = process.env.PLATFORM_DOMAIN ?? "bankingpoint-24.com";
 
 export async function POST() {
   let user;

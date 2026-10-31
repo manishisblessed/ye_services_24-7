@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Quick Twilio smoke-test.
  * Usage:  tsx scripts/test-twilio.ts <phone>
  * Example: tsx scripts/test-twilio.ts 9090702705
@@ -84,7 +84,7 @@ async function sendTransactionalSms(phone: string) {
   const params = new URLSearchParams({
     To: toE164(phone),
     MessagingServiceSid: MESSAGING_SID,
-    Body: "TRANSPE: This is a test message. Your platform messaging is working correctly! Ref: smoke-test",
+    Body: "BankingPoint24: This is a test message. Your platform messaging is working correctly! Ref: smoke-test",
   });
   const r = await fetch(url, {
     method: "POST",
@@ -109,7 +109,7 @@ async function main() {
   }
 
   console.log("=================================================");
-  console.log("  TRANSPE — Twilio Smoke Test");
+  console.log("  BankingPoint24 — Twilio Smoke Test");
   console.log("=================================================");
   console.log(`  Account SID  : ${ACCOUNT_SID}`);
   console.log(`  Verify SID   : ${VERIFY_SID || "(empty)"}`);

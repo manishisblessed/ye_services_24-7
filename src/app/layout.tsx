@@ -4,18 +4,19 @@ import { TenantProvider } from "@/components/providers/TenantProvider";
 import { getTenantBrand } from "@/lib/tenant/context";
 import "./globals.css";
 
-// Default (native TRANSPE) metadata — overridden per-request when a white-label
+// Default (native BankingPoint24) metadata — overridden per-request when a white-label
 // tenant is detected via the x-tenant-id header injected by the middleware.
 const DEFAULT_METADATA: Metadata = {
-  title: {
-    default: "TRANSPE — Payments. Powered for India.",
-    template: "%s · TRANSPE",
+    title: {
+    default: "BankingPoint24 — Payments. Powered for India.",
+    template: "%s · BankingPoint24",
   },
   description:
-    "TRANSPE is a fintech distribution platform powering payment gateway, POS terminals, QR collections, AePS, money transfer, recharges and bill payments for retailers and merchants across India.",
+    "BankingPoint24 by RUTVA MULTISERVICES LLP is a fintech distribution platform powering payment gateway, POS terminals, QR collections, AePS, money transfer, recharges and bill payments for retailers and merchants across India.",
   keywords: [
-    "TRANSPE",
-    "transpe.net",
+    "BankingPoint24",
+    "bankingpoint-24.com",
+    "RUTVA MULTISERVICES LLP",
     "payment gateway",
     "POS machine",
     "QR payments",
@@ -28,13 +29,13 @@ const DEFAULT_METADATA: Metadata = {
     "fintech India",
     "agent banking",
   ],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://transpe.net"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://www.bankingpoint-24.com"),
   openGraph: {
-    title: "TRANSPE — Payments. Powered for India.",
+    title: "BankingPoint24 — Payments. Powered for India.",
     description:
       "Payment gateway, POS terminals, QR collections and 60+ financial services for retailers, distributors and merchants across India.",
-    url: "https://transpe.net",
-    siteName: "TRANSPE",
+    url: "https://www.bankingpoint-24.com",
+    siteName: "BankingPoint24",
     type: "website",
   },
 };
@@ -47,8 +48,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const platformHost = brand.customDomain
     ? `https://${brand.customDomain}`
     : brand.subdomain
-      ? `https://${brand.subdomain}.${process.env.PLATFORM_DOMAIN ?? "transpe.in"}`
-      : (process.env.NEXT_PUBLIC_APP_URL ?? "https://transpe.net");
+      ? `https://${brand.subdomain}.${process.env.PLATFORM_DOMAIN ?? "bankingpoint-24.com"}`
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.bankingpoint-24.com");
 
   return {
     title: {
@@ -57,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       brand.tagline ??
-      `${brand.brandName} — a full-service payments and distribution platform powered by TRANSPE.`,
+      `${brand.brandName} — a full-service payments and distribution platform powered by BankingPoint24.`,
     metadataBase: new URL(platformHost),
     openGraph: {
       title: `${brand.brandName} — Payments Platform`,
@@ -82,7 +83,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       {/*
-        TRANSPE brand typography:
+        BankingPoint24 brand typography:
         · Clash Display → display / headlines (--font-display)
         · Satoshi       → body / UI (--font-sans)
         Loaded from Fontshare CDN (OFL, no self-hosting required).

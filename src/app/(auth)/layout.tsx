@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   ArrowLeft,
   CheckCircle,
@@ -124,7 +124,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
               <>
                 <span>© {year} {brand.brandName}</span>
                 <span aria-hidden>·</span>
-                <span className="text-ink-300">Powered by TRANSPE</span>
+                <span className="text-ink-300">Powered by BankingPoint24</span>
               </>
             ) : (
               <>

@@ -47,7 +47,7 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 /**
- * TRANSPE dashboard rail — light "paper" theme. White surface, hairline
+ * BankingPoint24 dashboard rail — light "paper" theme. White surface, hairline
  * border, gradient left-bar on the active tab and a navy user chip at the
  * bottom. (The dark rail belongs to the previous generation of the product.)
  */
@@ -237,7 +237,7 @@ function SidebarContent({
 
   return (
     <div className="relative z-10 flex h-full min-h-0 flex-col">
-      {/* Brand — shows tenant logo on white-label domains, TRANSPE on native */}
+      {/* Brand — shows tenant logo on white-label domains, BankingPoint24 on native */}
       <div
         className={cn(
           "flex h-16 shrink-0 items-center border-b border-ink-100/80 md:h-20",
@@ -270,7 +270,7 @@ function SidebarContent({
             )
           )
         ) : (
-          /* Native TRANSPE logo */
+          /* Native BankingPoint24 logo */
           collapsed ? <LogoMark size={34} /> : <Logo size="sm" />
         )}
         {variant === "mobile" && (
@@ -400,12 +400,12 @@ function SidebarContent({
           <p className="mt-2 text-center text-[10px] font-medium text-ink-400">
             Powered by{" "}
             <a
-              href="https://transpe.net"
+              href="https://www.bankingpoint-24.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-ink-500 hover:text-ink-700"
             >
-              TRANSPE
+              BankingPoint24
             </a>
           </p>
         )}

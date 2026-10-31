@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+﻿import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Header } from "@/components/Header";
@@ -7,11 +7,11 @@ import { Button } from "@/components/Button";
 import { colors, radii } from "@/lib/theme";
 
 const va = {
-  beneficiary: "TRANSPE Retail · Rohan Sharma",
+  beneficiary: "BankingPoint24 Retail · Rohan Sharma",
   account: "PRISM00198754321",
   ifsc: "RATN0VAAPIS",
   bank: "RBL Bank · Virtual Account",
-  upi: "rohan.TRANSPE@rbl"
+  upi: "rohan.BankingPoint24@rbl"
 };
 
 const transfers = [

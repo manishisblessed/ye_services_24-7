@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -34,7 +34,7 @@ export default function PgPage() {
     if (!amount) return;
     const ref = generateRefId("PAY");
     setLink(
-      `https://pay.transpe.net/l/${ref.toLowerCase()}?am=${amount}`
+      `https://pay.bankingpoint-24.com/l/${ref.toLowerCase()}?am=${amount}`
     );
     setCopied(false);
   }

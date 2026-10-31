@@ -4,8 +4,8 @@
  * TenantProvider — injects white-label brand context into the React tree.
  *
  * On white-label domains the middleware resolves the tenant and passes the
- * brand as a serialised prop from the RSC layout. On native TRANSPE domains
- * brand is null and all consumers fall back to TRANSPE defaults.
+ * brand as a serialised prop from the RSC layout. On native BankingPoint24 domains
+ * brand is null and all consumers fall back to BankingPoint24 defaults.
  */
 
 import * as React from "react";

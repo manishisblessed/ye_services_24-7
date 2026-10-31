@@ -45,22 +45,22 @@ import { hrefToServiceKey } from "@/lib/services/catalog";
 import { useEffectiveServices } from "@/hooks/useEffectiveServices";
 
 /** Primary service cards shown on the retailer dashboard. Each links straight
- *  to its rail; BBPS opens the bill-payment hub with all sub-options. */
+ *  to its rail; Bill Payments opens the bill-payment hub with all sub-options. */
 const SERVICE_CARDS: { title: string; description: string; href: string; icon: LucideIcon; tone: string }[] = [
-  { title: "POS", description: "Manage POS terminals & settlements", href: "/dashboard/pos", icon: Monitor, tone: "from-brand-500 to-brand-700" },
-  { title: "Payment Gateway", description: "Collect payments & top up your wallet", href: "/dashboard/wallet", icon: CreditCard, tone: "from-royal-500 to-royal-700" },
-  { title: "QR Payments", description: "Static & dynamic UPI QR collections", href: "/dashboard/qr", icon: QrCode, tone: "from-accent-500 to-accent-700" },
-  { title: "BBPS", description: "Credit card & utility bill payments", href: "/dashboard/bill-pay", icon: Receipt, tone: "from-coral-500 to-coral-600" },
+  { title: "Cash Withdrawal", description: "Aadhaar-based AePS cash for your customers", href: "/dashboard/aadhaar-pay", icon: Fingerprint, tone: "from-brand-500 to-brand-700" },
+  { title: "Bill Payments", description: "Electricity, water, gas & 1,200+ billers", href: "/dashboard/bill-pay", icon: Receipt, tone: "from-royal-500 to-royal-700" },
+  { title: "Payment QR", description: "Static & dynamic UPI QR collections", href: "/dashboard/qr", icon: QrCode, tone: "from-accent-500 to-accent-700" },
+  { title: "POS Machine", description: "Card terminals & daily settlements", href: "/dashboard/pos", icon: Monitor, tone: "from-coral-500 to-coral-600" },
 ];
 
 /** Dock shortcuts for the retailer home. */
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: "Send Money", href: "/dashboard/money-transfer", icon: PaperPlaneTilt, tone: "brand" },
-  { label: "Aadhaar Pay", href: "/dashboard/aadhaar-pay", icon: Fingerprint, tone: "royal" },
-  { label: "Top-up", href: "/dashboard/recharge/mobile", icon: DeviceMobile, tone: "accent" },
+  { label: "Cash Withdrawal", href: "/dashboard/aadhaar-pay", icon: Fingerprint, tone: "brand" },
+  { label: "Send Money", href: "/dashboard/money-transfer", icon: PaperPlaneTilt, tone: "royal" },
   { label: "Pay Bills", href: "/dashboard/bill-pay/credit-card", icon: ReceiptIcon, tone: "coral" },
-  { label: "Add Funds", href: "/dashboard/funds-request", icon: HandCoins, tone: "amber" },
-  { label: "Activity", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
+  { label: "Recharge", href: "/dashboard/recharge/mobile", icon: DeviceMobile, tone: "accent" },
+  { label: "Add Float", href: "/dashboard/funds-request", icon: HandCoins, tone: "amber" },
+  { label: "Transactions", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
 ];
 
 export function RetailerOverview({ session }: { session: Session }) {
@@ -112,17 +112,18 @@ export function RetailerOverview({ session }: { session: Session }) {
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        subtitle="Your counter, at a glance."
-        heroLabel="Wallet balance"
+        eyebrow="BankingPoint24 · My Kiosk"
+        subtitle="Your banking counter, live and ready."
+        heroLabel="Available Float"
         heroValue={session.walletBalance}
         heroHint={
           <Link href="/dashboard/wallet" className="inline-flex items-center gap-1 font-semibold text-ink-200 transition hover:text-white">
-            Manage wallet <ArrowRight className="h-3 w-3" />
+            Manage float <ArrowRight className="h-3 w-3" />
           </Link>
         }
         chips={[
-          { label: "Today", value: loadingTxns ? "…" : formatINR(todayVolume), tone: "accent" },
-          { label: "Txns", value: loadingTxns ? "…" : `${todayCount}`, tone: "brand" },
+          { label: "Today's Volume", value: loadingTxns ? "…" : formatINR(todayVolume), tone: "accent" },
+          { label: "Customers Served", value: loadingTxns ? "…" : `${todayCount}`, tone: "brand" },
         ]}
       />
 
@@ -140,7 +141,7 @@ export function RetailerOverview({ session }: { session: Session }) {
           <>
             <StaggerItem>
               <StatCard
-                label="Wallet Balance"
+                label="Available Float"
                 value={formatINR(session.walletBalance)}
                 icon={Wallet}
                 accent="brand"
@@ -149,7 +150,7 @@ export function RetailerOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Today's Volume"
+                label="Today's Earnings"
                 value={formatINR(todayVolume)}
                 icon={IndianRupee}
                 accent="emerald"
@@ -157,7 +158,7 @@ export function RetailerOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Transactions Today"
+                label="Transactions Done"
                 value={`${todayCount}`}
                 icon={TrendingUp}
                 accent="brand"
@@ -179,8 +180,8 @@ export function RetailerOverview({ session }: { session: Session }) {
 
       <section>
         <SectionHeader
-          title="Services"
-          description="Jump straight into a payment rail"
+          title="Jump Into a Service"
+          description="Your most-used rails — one tap away"
           icon={Storefront}
           tone="brand"
           className="mb-4"
@@ -244,19 +245,19 @@ export function RetailerOverview({ session }: { session: Session }) {
             <div className="relative z-10 flex h-full flex-col">
               <IconTile icon={Rocket} tone="energy" size="md" />
               <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-400">
-                Get started
+                Getting started
               </p>
               <p className="mt-1.5 font-display text-xl font-semibold tracking-[-0.02em]">
-                Run your first live transaction
+                Add float, start earning now
               </p>
               <p className="mt-1.5 text-sm text-ink-300">
-                Top up your wallet, then use Quick services below to process real payments.
+                Load your float, then process your first live transaction to see commission land instantly.
               </p>
               <Link
-                href="/dashboard/wallet"
+                href="/dashboard/funds-request"
                 className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-white transition hover:gap-2.5"
               >
-                Open wallet <ArrowRight className="h-4 w-4" />
+                Add float now <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -265,8 +266,8 @@ export function RetailerOverview({ session }: { session: Session }) {
 
       <section>
         <SectionHeader
-          title="Quick services"
-          description="Most-used services for fast access"
+          title="All Active Services"
+          description="Every service enabled on your account"
           icon={Sparkle}
           tone="royal"
           className="mb-4"
@@ -275,7 +276,7 @@ export function RetailerOverview({ session }: { session: Session }) {
               href="/services"
               className="inline-flex items-center gap-1 text-sm font-semibold text-brand-700 transition hover:text-brand-800"
             >
-              View all <ArrowRight className="h-3.5 w-3.5" />
+              Browse catalogue <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           }
         />
@@ -285,8 +286,8 @@ export function RetailerOverview({ session }: { session: Session }) {
               icon={Storefront}
               tone="ink"
               compact
-              title="No services switched on yet"
-              body="Ask your admin to activate services for your account — you'll see them here the moment they're live."
+              title="No services active yet"
+              body="Your admin will activate services for your kiosk — they'll appear here the moment they go live."
             />
           </div>
         )}
@@ -373,7 +374,7 @@ function PosBookingStrip() {
             <Truck className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">POS Booking</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">Terminal Request</p>
             <p className="font-display text-sm font-semibold tracking-[-0.01em] text-ink-900">
               {booking.plan.name} · {booking.statusLabel}
               {machineLabel && <span className="ml-1 font-mono text-xs font-normal text-ink-500">({machineLabel})</span>}

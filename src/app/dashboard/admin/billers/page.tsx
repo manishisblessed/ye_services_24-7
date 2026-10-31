@@ -73,14 +73,14 @@ export default function AdminBillersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Platform"
-        title="Billers & routing"
+        eyebrow="Service Switchboard"
+        title="Biller Routing"
         description="Manage billers across BBPS, NPCI, NETC and direct integrations. Configure failover routes and monitor uptime."
         actions={
           <>
             <ReportActions
               filename="billers"
-              title="JMP TRANSPE · Billers & Routing"
+              title="JMP BankingPoint24 · Billers & Routing"
               subtitle="Category-level uptime and routing"
               columns={[
                 { key: "category", header: "Category" },

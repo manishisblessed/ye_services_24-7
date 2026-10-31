@@ -381,7 +381,7 @@ export default function RevenuePage() {
   if (status !== "loading" && !isMaster) {
     return (
       <div className="space-y-6">
-        <PageHeader
+        <PageHeader eyebrow="Money Desk"
           title="Company Earnings & Revenue Wallet"
           description="The Revenue Wallet is the platform owner's book."
         />
@@ -396,7 +396,7 @@ export default function RevenuePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Money Desk"
         title="Company Earnings & Revenue Wallet"
         description="Company earnings from the MDR margin (service − vendor) credited to the Revenue Wallet, with upline commissions paid out of it — master-admin only."
         actions={

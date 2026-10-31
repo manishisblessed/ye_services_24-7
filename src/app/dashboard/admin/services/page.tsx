@@ -176,8 +176,8 @@ export default function AdminServicesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Platform"
-        title="On / Off Services"
+        eyebrow="Service Switchboard"
+        title="Toggle Services"
         description="Master kill-switch for every money rail & platform flag. Turning a rail off blocks its mutations across the app immediately — every change is audit logged."
         actions={
           <>

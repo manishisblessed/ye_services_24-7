@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -7,7 +7,7 @@ import { cn, formatINR } from "@/lib/utils";
 /**
  * GreetingBand — the console band at the top of every role overview.
  *
- * TRANSPE treatment: a navy slab with a gradient keyline on top; greeting and
+ * BankingPoint24 treatment: a navy slab with a gradient keyline on top; greeting and
  * date on the left, and the hero number inside an inset frosted "console tile"
  * on the right with the secondary chips rendered as dotted ledger rows —
  * echoing the commission-receipt motif used across the marketing site.

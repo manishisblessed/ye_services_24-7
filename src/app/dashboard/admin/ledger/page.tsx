@@ -269,9 +269,9 @@ export default function LedgerExplorerPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Money"
-        title="Ledger Lens"
-        description="Every rupee that has ever moved, across both wallet books. Filter, inspect and export — the ledger is append-only and never edited."
+        eyebrow="Money Desk"
+        title="Account Ledger"
+        description="Every rupee that has ever moved across both wallet books. Filter, inspect and export — the ledger is append-only and tamper-evident."
         actions={
           <>
             <Button variant="outline" onClick={load} disabled={loading}>
@@ -450,7 +450,7 @@ function PlaceLienModal({
     <Modal
       open
       onClose={onClose}
-      eyebrow="Admin · Money"
+      eyebrow="Money Desk"
       title="Place lien"
       subtitle={`On ${entry.user?.name ?? "user"} · against ${refType} #${refId.slice(0, 14)}`}
       size="md"

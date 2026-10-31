@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Cash withdrawal, money transfer, UPI, recharges, 1,200+ billers and travel. Every service your customers walk in for, from one TRANSPE counter."
+    "Cash withdrawal, money transfer, UPI, recharges, 1,600+ billers and travel. Every service your customers walk in for, from one BankingPoint24 counter."
 };
 
 type Category = ServiceItem["category"];
@@ -28,30 +28,30 @@ const categoryMeta: {
 }[] = [
   {
     id: "banking",
-    label: "Banking",
-    hint: "Cash, transfers, payments",
+    label: "Cash & Transfers",
+    hint: "AePS cash, DMT, UPI, POS, QR",
     tone: "brand",
     blurb:
-      "The services that make your shop a bank counter. Cash on a fingerprint, money sent home in seconds, payments accepted every way a customer can pay.",
-    commission: "Earn up to ₹6 per AePS withdrawal · 0.40% on money transfer"
-  },
-  {
-    id: "recharge",
-    label: "Top-ups",
-    hint: "Mobile, DTH, broadband",
-    tone: "accent",
-    blurb:
-      "Prepaid recharges for every operator. Instant confirmation, cashback on select plans, and a reason for customers to come back every month.",
-    commission: "Earn 0.5% – 3% per recharge, credited instantly"
+      "Your highest-earning services — cash withdrawal on a fingerprint, money sent to any bank in seconds, UPI and card payments accepted every way. Start here.",
+    commission: "Earn up to ₹6 per AePS withdrawal · 0.40% on every money transfer"
   },
   {
     id: "bills",
-    label: "Bills",
-    hint: "1,200+ billers on BBPS",
+    label: "Bill Payments",
+    hint: "1,600+ billers on BBPS",
     tone: "coral",
     blurb:
-      "Electricity, water, gas, credit cards, school fees, insurance. One BBPS connection, 1,200+ billers, receipts the customer can trust.",
+      "Electricity, water, gas, credit cards, school fees, insurance and more. One BBPS connection unlocks 1,600+ billers — receipts your customer can trust.",
     commission: "Earn ₹2 – ₹15 per bill · ₹0 convenience fee on most billers"
+  },
+  {
+    id: "recharge",
+    label: "Recharges",
+    hint: "Mobile, DTH, broadband",
+    tone: "accent",
+    blurb:
+      "Prepaid recharges for every operator — Jio, Airtel, Vi, BSNL and all DTH providers. Instant confirmation and a reason for customers to return every month.",
+    commission: "Earn 0.5% – 3% per recharge, credited the moment it goes through"
   },
   {
     id: "travel",
@@ -65,10 +65,10 @@ const categoryMeta: {
 ];
 
 const heroStats = [
-  { value: "60+", label: "Services live" },
-  { value: "1,200+", label: "BBPS billers" },
-  { value: "T+0", label: "AePS settlement" },
-  { value: "24x7", label: "Money transfer" }
+  { value: "63", label: "Switches on the board" },
+  { value: "1,600+", label: "Billers connected" },
+  { value: "Instant", label: "Wallet credit" },
+  { value: "24x7", label: "IMPS payouts" }
 ];
 
 export default function ServicesPage() {
@@ -80,16 +80,16 @@ export default function ServicesPage() {
   return (
     <>
       <PageHero
-        variant="dark"
+        variant="light"
         eyebrow="Services"
         breadcrumbs={[{ label: "Services", href: "/services" }]}
         title={
           <>
-            Everything a customer
-            <br className="hidden md:block" /> walks in for.
+            60+ services.
+            <br className="hidden md:block" /> Every one earns you commission.
           </>
         }
-        description="Banking, top-ups, bills and travel from one login and one wallet. Every service shows the fee and your commission before you confirm."
+        description="Cash withdrawal, money transfer, 1,600+ billers, recharges and travel — all from one BankingPoint24 dashboard. Fee and commission shown before every confirmation."
         stats={heroStats}
         actions={
           <>
@@ -100,12 +100,7 @@ export default function ServicesPage() {
               </Button>
             </Link>
             <Link href="/legal/charges" className="rounded-2xl focus-energy">
-              <Button
-                size="lg"
-                variant="outline"
-                tabIndex={-1}
-                className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
+              <Button size="lg" variant="outline" tabIndex={-1}>
                 See all charges
               </Button>
             </Link>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -132,7 +132,7 @@ export default function SecuritySettingsPage() {
 
   function downloadBackupCodes() {
     const text = [
-      "TRANSPE — 2FA Backup Codes",
+      "BankingPoint24 — 2FA Backup Codes",
       `Account: ${session?.user?.email}`,
       `Generated: ${new Date().toLocaleDateString()}`,
       "",
@@ -145,7 +145,7 @@ export default function SecuritySettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "TRANSPE-backup-codes.txt";
+    a.download = "BankingPoint24-backup-codes.txt";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -203,7 +203,7 @@ export default function SecuritySettingsPage() {
   return (
     <div className="mx-auto max-w-lg space-y-6">
       <PageHeader
-        eyebrow="Account · Security"
+        eyebrow="My Profile"
         title="Two-factor authentication"
         description="Protect your account and your customers with an authenticator app."
       />

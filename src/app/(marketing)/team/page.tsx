@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, LinkedinLogo } from "@phosphor-icons/react/dist/ssr";
 import { Container, Section } from "@/components/ui/Container";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Team",
   description:
-    "The people behind the TRANSPE counter: payments, field sales, compliance and design, most of whom have run a shop themselves."
+    "The people behind the BankingPoint24 counter: payments, field sales, compliance and design, most of whom have run a shop themselves."
 };
 
 const team = [
@@ -93,7 +93,7 @@ export default function TeamPage() {
             <br className="hidden md:block" /> your counter.
           </>
         }
-        description="Payments, field sales, compliance and design. A small team from Pune with people in shops across 28 states."
+        description="Payments, field sales, compliance and design. A small team from Anand, Gujarat with people in shops across 28 states."
         stats={[
           { value: String(team.length), label: "Leadership team" },
           { value: "85+", label: "Teammates" },

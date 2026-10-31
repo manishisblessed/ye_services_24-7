@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -1343,7 +1343,7 @@ function OnboardContent() {
                 <ShieldCheck className="h-7 w-7" />
               </IconTile>
               <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink-900">
-                Welcome to TRANSPE
+                Welcome to BankingPoint24
               </h2>
               <p className="text-sm text-ink-600">
                 You&apos;ve been invited to register as a{" "}

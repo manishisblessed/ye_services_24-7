@@ -261,8 +261,8 @@ export default function AdminSliderPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Platform"
-        title="Slider & Pop-up Manager"
+        eyebrow="Growth Studio"
+        title="Banner Manager"
         description="Manage colorful dashboard banners (carousel) and pop-up announcements. Schedule them, target specific roles, and reorder — every change is audit logged."
         actions={
           <>

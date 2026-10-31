@@ -265,14 +265,14 @@ export default function AdminKycPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Compliance"
-        title="KYC approvals"
-        description="Review applicant documents, validate PAN/Aadhaar, and approve or reject."
+        eyebrow="Partner Network"
+        title="ID Verification"
+        description="Review applicant documents, validate PAN and Aadhaar — approve or reject with a full audit trail."
         actions={
           <>
             <ReportActions
               filename="kyc-queue"
-              title="JMP TRANSPE · KYC Queue"
+              title="JMP BankingPoint24 · KYC Queue"
               subtitle={`${rows.length} applicants`}
               columns={[
                 { key: "id", header: "KYC ID" },

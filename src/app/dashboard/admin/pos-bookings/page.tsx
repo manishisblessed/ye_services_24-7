@@ -139,7 +139,7 @@ export default function AdminPosBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader eyebrow="Acquiring & Devices"
         title="POS Bookings"
         description="Fulfil retailer POS machine bookings — assign a machine, dispatch it and confirm delivery. Cancelling refunds the applicant automatically."
         actions={

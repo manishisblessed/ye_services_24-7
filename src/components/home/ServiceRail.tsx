@@ -1,172 +1,182 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight } from "@phosphor-icons/react";
 import { IconTile } from "@/components/ui/Icon";
 import { Reveal } from "@/components/motion";
 import { services, type ServiceItem } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./_shared/SectionHeading";
+import { ButtonLink } from "./_shared/ButtonLink";
 import { iconForService, serviceToneByCategory } from "./_shared/serviceIcons";
 
-const CATEGORIES = [
-  { key: "all", label: "Everything" },
-  { key: "banking", label: "Banking & payments" },
-  { key: "bills", label: "Bills & BBPS" },
-  { key: "recharge", label: "Recharges" },
-  { key: "travel", label: "Travel desk" }
-] as const;
+const CATEGORY_LABEL: Record<ServiceItem["category"], string> = {
+  banking: "Cash & transfers",
+  bills: "Bill desk",
+  recharge: "Recharges",
+  travel: "Travel desk",
+  other: "More"
+};
 
-type CategoryKey = (typeof CATEGORIES)[number]["key"];
+const CATEGORY_ORDER: ServiceItem["category"][] = ["banking", "bills", "recharge", "travel"];
 
 /**
- * The service catalogue as a draggable, snap-scrolling rail with category
- * filters — a deliberately different silhouette from any grid layout.
+ * The service switchboard — a board of compact toggle tiles grouped by desk,
+ * with a live detail panel that explains whichever service is selected.
+ * Deliberately nothing like a card carousel: no horizontal scroll, no
+ * uniform card grid.
  */
 export function ServiceRail() {
-  const [cat, setCat] = useState<CategoryKey>("all");
-  const railRef = useRef<HTMLUListElement>(null);
+  const [selectedSlug, setSelectedSlug] = useState(services[0]!.slug);
 
-  const visible = useMemo<ServiceItem[]>(
-    () => (cat === "all" ? services : services.filter((s) => s.category === cat)),
-    [cat]
+  const selected = useMemo(
+    () => services.find((s) => s.slug === selectedSlug) ?? services[0]!,
+    [selectedSlug]
+  );
+  const SelectedIcon = iconForService(selected.slug);
+
+  const groups = useMemo(
+    () =>
+      CATEGORY_ORDER.map((cat) => ({
+        cat,
+        label: CATEGORY_LABEL[cat],
+        items: services.filter((s) => s.category === cat)
+      })).filter((g) => g.items.length > 0),
+    []
   );
 
-  const nudge = (dir: 1 | -1) => {
-    railRef.current?.scrollBy({ left: dir * 640, behavior: "smooth" });
-  };
-
   return (
-    <section className="section overflow-hidden bg-ink-50/60" id="services">
+    <section className="section bg-white" id="services">
       <div className="container-x">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <SectionHeading
-            eyebrow="The catalogue"
-            title={
-              <>
-                Sixty ways your counter
-                <br className="hidden md:block" /> earns every day
-              </>
-            }
-            sub="Every tile below is a live service — switch it on from your dashboard and start charging for it the same afternoon."
-          />
-          <div className="hidden shrink-0 items-center gap-2 md:flex">
-            <button
-              type="button"
-              aria-label="Scroll services left"
-              onClick={() => nudge(-1)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-ink-400 hover:text-ink-950 focus-energy active:scale-95"
-            >
-              <CaretLeft size={16} weight="bold" aria-hidden />
-            </button>
-            <button
-              type="button"
-              aria-label="Scroll services right"
-              onClick={() => nudge(1)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-ink-400 hover:text-ink-950 focus-energy active:scale-95"
-            >
-              <CaretRight size={16} weight="bold" aria-hidden />
-            </button>
+        <SectionHeading
+          eyebrow="The switchboard"
+          title={
+            <>
+              Every switch you flip
+              <br className="hidden md:block" /> is a new income line.
+            </>
+          }
+          sub="Tap any service on the board to see what it does for your counter. All of them run off one dashboard, one float, one login."
+        />
+
+        <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-12">
+          {/* Detail panel — sticky on desktop */}
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-28">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selected.slug}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative overflow-hidden rounded-4xl border border-accent-100 bg-[#f6faf2] p-8 md:p-10"
+                >
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-accent-200/40 blur-3xl"
+                  />
+                  <div className="relative">
+                    <div className="flex items-center justify-between gap-4">
+                      <IconTile
+                        icon={SelectedIcon}
+                        tone={serviceToneByCategory[selected.category] ?? "brand"}
+                        size="lg"
+                      />
+                      <span className="rounded-full border border-accent-200 bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-accent-700">
+                        {CATEGORY_LABEL[selected.category]}
+                      </span>
+                    </div>
+                    <h3 className="mt-6 font-display text-2xl font-semibold tracking-[-0.015em] text-ink-950 md:text-3xl">
+                      {selected.title}
+                    </h3>
+                    <p className="mt-3 text-base leading-relaxed text-ink-600">
+                      {selected.description}
+                    </p>
+                    <div className="mt-8 flex flex-wrap items-center gap-4">
+                      <ButtonLink href="/services" size="md">
+                        See the rate card
+                        <ArrowRight size={15} weight="bold" aria-hidden />
+                      </ButtonLink>
+                      <Link
+                        href="/register"
+                        className="text-sm font-semibold text-royal-700 underline-offset-4 transition hover:underline focus-energy"
+                      >
+                        Activate on my counter
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* The board */}
+          <div className="lg:col-span-7">
+            {groups.map((g, gi) => (
+              <Reveal key={g.cat} delay={gi * 0.06} className={cn(gi > 0 && "mt-8")}>
+                <p className="flex items-baseline gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-ink-400">
+                  <span className="text-accent-600">
+                    {String(gi + 1).padStart(2, "0")}
+                  </span>
+                  {g.label}
+                  <span aria-hidden className="h-px flex-1 bg-ink-100" />
+                  <span className="font-semibold text-ink-300">{g.items.length} live</span>
+                </p>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {g.items.map((s) => {
+                    const active = s.slug === selectedSlug;
+                    const SIcon = iconForService(s.slug);
+                    return (
+                      <li key={s.slug}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSlug(s.slug)}
+                          aria-pressed={active}
+                          className={cn(
+                            "group inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold transition focus-energy",
+                            active
+                              ? "border-transparent bg-energy-gradient text-white shadow-energy-sm"
+                              : "border-ink-200 bg-white text-ink-700 hover:border-accent-300 hover:bg-accent-50/60 hover:text-ink-950"
+                          )}
+                        >
+                          <SIcon
+                            size={16}
+                            weight="duotone"
+                            aria-hidden
+                            className={active ? "text-white" : "text-accent-600"}
+                          />
+                          {s.title}
+                          {s.badge && !active && (
+                            <span className="rounded-full bg-accent-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-700">
+                              {s.badge}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Reveal>
+            ))}
+
+            <Reveal delay={0.2} className="mt-10">
+              <p className="text-sm text-ink-500">
+                New switches are added every quarter —{" "}
+                <Link
+                  href="/services"
+                  className="font-semibold text-royal-700 underline-offset-4 hover:underline focus-energy"
+                >
+                  browse the full board with commissions
+                </Link>
+                .
+              </p>
+            </Reveal>
           </div>
         </div>
-
-        {/* Category chips */}
-        <Reveal className="mt-8 flex flex-wrap gap-2" role="tablist" aria-label="Service categories">
-          {CATEGORIES.map((c) => {
-            const active = cat === c.key;
-            return (
-              <button
-                key={c.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setCat(c.key)}
-                className={cn(
-                  "relative rounded-full px-4 py-2 text-sm font-semibold transition focus-energy",
-                  active
-                    ? "text-white"
-                    : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300 hover:text-ink-900"
-                )}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="service-cat-pill"
-                    aria-hidden
-                    className="absolute inset-0 rounded-full bg-energy-gradient shadow-energy-sm"
-                    transition={{ type: "spring", stiffness: 420, damping: 36 }}
-                  />
-                )}
-                <span className="relative z-10">{c.label}</span>
-              </button>
-            );
-          })}
-        </Reveal>
       </div>
-
-      {/* Rail — bleeds to the viewport edge on the right */}
-      <ul
-        ref={railRef}
-        className="scrollbar-none scroll-snap-x mt-10 flex gap-4 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-[max(2rem,calc((100vw-80rem)/2+2rem))]"
-      >
-        {visible.map((s, i) => {
-          const SIcon = iconForService(s.slug);
-          return (
-            <motion.li
-              key={`${cat}-${s.slug}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.45, delay: Math.min(i, 6) * 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className="snap-start"
-            >
-              <Link
-                href="/services"
-                className="group flex h-full w-[264px] flex-col justify-between rounded-3xl border border-ink-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-energy-sm focus-energy"
-              >
-                <div>
-                  <div className="flex items-start justify-between">
-                    <IconTile icon={SIcon} tone={serviceToneByCategory[s.category] ?? "brand"} size="lg" />
-                    {s.badge && (
-                      <span className="rounded-full bg-accent-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-700">
-                        {s.badge}
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="mt-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink-950">
-                    {s.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500">{s.description}</p>
-                </div>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-royal-700 opacity-0 transition group-hover:opacity-100">
-                  See commission <ArrowRight size={12} weight="bold" aria-hidden />
-                </span>
-              </Link>
-            </motion.li>
-          );
-        })}
-
-        {/* Terminal card */}
-        <li className="snap-start">
-          <Link
-            href="/register"
-            className="grain group flex h-full w-[264px] flex-col justify-between rounded-3xl bg-ink-950 p-6 text-white transition hover:-translate-y-1 hover:shadow-energy focus-energy"
-          >
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/50">
-                And counting
-              </p>
-              <p className="mt-4 font-display text-3xl font-semibold leading-tight tracking-[-0.02em]">
-                New services ship every quarter
-              </p>
-            </div>
-            <span className="mt-6 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink-950 transition group-hover:bg-accent-400">
-              <ArrowRight size={16} weight="bold" aria-hidden />
-            </span>
-          </Link>
-        </li>
-      </ul>
     </section>
   );
 }

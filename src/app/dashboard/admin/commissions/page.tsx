@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -93,14 +93,14 @@ export default function AdminCommissionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Admin · Pricing"
-        title="Commission master"
+        eyebrow="Money Desk"
+        title="Commission Report"
         description="Master rate-card across services. Distributors can only set rates within these caps."
         actions={
           <>
             <ReportActions
               filename="commission-master"
-              title="JMP TRANSPE · Commission Master"
+              title="JMP BankingPoint24 · Commission Master"
               subtitle="Service-wise rate-card"
               columns={[
                 { key: "service", header: "Service" },

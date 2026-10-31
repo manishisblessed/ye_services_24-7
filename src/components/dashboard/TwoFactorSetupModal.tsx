@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
@@ -120,7 +120,7 @@ export function TwoFactorSetupModal() {
 
   function downloadBackupCodes() {
     const text = [
-      "TRANSPE — 2FA Backup Codes",
+      "BankingPoint24 — 2FA Backup Codes",
       `Account: ${session?.user?.email}`,
       `Generated: ${new Date().toLocaleDateString()}`,
       "",
@@ -133,7 +133,7 @@ export function TwoFactorSetupModal() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "TRANSPE-backup-codes.txt";
+    a.download = "BankingPoint24-backup-codes.txt";
     a.click();
     URL.revokeObjectURL(url);
   }

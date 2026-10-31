@@ -132,7 +132,7 @@ export function TodaysBusinessOverview() {
       <SectionHeader
         icon={Sparkle}
         tone="energy"
-        title="Today's Business Overview"
+        title="Today's Settlement Desk"
         description={
           <>
             Platform business done today across all major services. Headline amounts
@@ -161,8 +161,8 @@ export function TodaysBusinessOverview() {
             compact
             icon={WarningCircle}
             tone="coral"
-            title="Couldn't load today's business overview"
-            body="The numbers are still safe — this is just a hiccup fetching them."
+            title="Settlement data unavailable right now"
+            body="Your numbers are safe — this is a temporary fetch issue. Tap retry."
             action={
               <button onClick={load} className="text-sm font-semibold text-coral-700 underline-offset-4 hover:underline">
                 Try again

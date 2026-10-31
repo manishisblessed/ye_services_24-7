@@ -61,14 +61,14 @@ type StatsData = {
 };
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: "Users", href: "/dashboard/admin/users", icon: UsersThree, tone: "brand" },
-  { label: "KYC Queue", href: "/dashboard/admin/kyc", icon: IdentificationBadge, tone: "coral" },
+  { label: "ID Verification", href: "/dashboard/admin/kyc", icon: IdentificationBadge, tone: "coral" },
+  { label: "Members", href: "/dashboard/admin/users", icon: UsersThree, tone: "brand" },
+  { label: "Float Control", href: "/dashboard/admin/wallet-ops", icon: WalletIcon, tone: "royal" },
   { label: "Settlements", href: "/dashboard/admin/settlement-ops", icon: Bank, tone: "accent" },
-  { label: "Wallet Ops", href: "/dashboard/admin/wallet-ops", icon: WalletIcon, tone: "royal" },
-  { label: "Ledger", href: "/dashboard/admin/ledger", icon: BookOpenText, tone: "amber" },
-  { label: "Services", href: "/dashboard/admin/services", icon: Power, tone: "ink" },
+  { label: "Account Ledger", href: "/dashboard/admin/ledger", icon: BookOpenText, tone: "amber" },
+  { label: "Toggle Services", href: "/dashboard/admin/services", icon: Power, tone: "ink" },
   { label: "Analytics", href: "/dashboard/admin/analytics", icon: ChartLineUp, tone: "brand" },
-  { label: "System", href: "/dashboard/admin/system", icon: Pulse, tone: "accent" },
+  { label: "System Health", href: "/dashboard/admin/system", icon: Pulse, tone: "accent" },
 ];
 
 export function AdminOverview({ session }: { session: Session }) {
@@ -138,16 +138,16 @@ export function AdminOverview({ session }: { session: Session }) {
     <div className="space-y-6">
       <GreetingBand
         name={session.name}
-        eyebrow="Control room · live"
+        eyebrow="BankingPoint24 · Command Deck"
         subtitle={<span className="truncate">Platform admin · {session.email}</span>}
-        heroLabel="Settled today"
+        heroLabel="Today's Settlement"
         heroValue={stats?.settledToday ?? 0}
-        heroHint={loading ? "Loading…" : `${formatNumber(stats?.txnsToday ?? 0)} transactions settled today`}
+        heroHint={loading ? "Loading…" : `${formatNumber(stats?.txnsToday ?? 0)} transactions processed today`}
         loading={loading}
         chips={[
-          { label: "Active users", value: loading ? "…" : formatNumber(stats?.activeUsers ?? 0), tone: "brand" },
-          { label: "KYC queue", value: loading ? "…" : String(stats?.pendingKyc ?? 0), tone: (stats?.pendingKyc ?? 0) > 0 ? "coral" : "neutral" },
-          { label: "Partners live", value: loading ? "…" : `${livePartners}/${totalPartners}`, tone: "accent" },
+          { label: "Active members", value: loading ? "…" : formatNumber(stats?.activeUsers ?? 0), tone: "brand" },
+          { label: "KYC pending", value: loading ? "…" : String(stats?.pendingKyc ?? 0), tone: (stats?.pendingKyc ?? 0) > 0 ? "coral" : "neutral" },
+          { label: "Rails live", value: loading ? "…" : `${livePartners}/${totalPartners}`, tone: "accent" },
         ]}
         actions={
           <>
@@ -192,9 +192,9 @@ export function AdminOverview({ session }: { session: Session }) {
           <>
             <StaggerItem>
               <StatCard
-                label="Active Users"
+                label="Active Members"
                 value={formatNumber(stats?.activeUsers ?? 0)}
-                delta={`of ${formatNumber(stats?.totalUsers ?? 0)}`}
+                delta={`of ${formatNumber(stats?.totalUsers ?? 0)} total`}
                 trend="up"
                 icon={Users}
                 accent="brand"
@@ -203,9 +203,9 @@ export function AdminOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="KYC in Queue"
+                label="KYC Pending"
                 value={String(stats?.pendingKyc ?? 0)}
-                delta=""
+                delta="awaiting review"
                 trend="down"
                 icon={ShieldCheck}
                 accent="accent"
@@ -216,7 +216,7 @@ export function AdminOverview({ session }: { session: Session }) {
               <StatCard
                 label="Settled Today"
                 value={formatINR(stats?.settledToday ?? 0)}
-                delta={`${stats?.txnsToday ?? 0} txns`}
+                delta={`${stats?.txnsToday ?? 0} transactions`}
                 trend="up"
                 icon={Banknote}
                 accent="emerald"
@@ -225,9 +225,9 @@ export function AdminOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Partners Live"
+                label="Rails Live"
                 value={`${livePartners} / ${totalPartners}`}
-                delta=""
+                delta="partner rails"
                 trend="up"
                 icon={ServerCog}
                 accent="violet"
@@ -238,7 +238,7 @@ export function AdminOverview({ session }: { session: Session }) {
         )}
       </Stagger>
 
-      {/* ── Revenue Wallet (company earnings) — platform owner only ─── */}
+      {/* ── Company Revenue (platform earnings) — platform owner only ─── */}
       {session.role === "master-admin" && (
         <FadeIn>
           <RevenueWalletCard />

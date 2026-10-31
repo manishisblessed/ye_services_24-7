@@ -40,7 +40,7 @@ const socials: { label: string; href: string; icon: PhosphorIcon }[] = [
 ];
 
 /**
- * TRANSPE footer — four decks:
+ * BankingPoint24 footer — four decks:
  *  1 · newsletter band (briefing signup)
  *  2 · brand + link columns
  *  3 · statutory offices (registered / grievance / nodal) + compliance chips
@@ -69,10 +69,10 @@ export function Footer() {
         <Container className="flex flex-col gap-5 py-10 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
-              <span className="brand-dot" aria-hidden /> The monthly retailer briefing
+              <span className="brand-dot" aria-hidden /> The partner circular
             </p>
             <p className="mt-2 font-display text-xl font-semibold tracking-[-0.01em] text-white md:text-2xl">
-              Commission changes, new services, playbooks — one mail a month.
+              Rate updates, new launches and growth playbooks — once a month, no noise.
             </p>
           </div>
           <div className="w-full md:max-w-md">
@@ -97,9 +97,9 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Logo variant="light" size="md" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/55">
-              TRANSPE powers the neighbourhood counter. Accept payments,
-              dispense cash, settle bills and book travel — every service
-              earns you a commission, every customer walks out served.
+              The neighbourhood counter, upgraded. BankingPoint24 puts cash,
+              transfers, bills, recharges and travel behind a single login —
+              so every walk-in becomes a line of income for your shop.
             </p>
             <div className="mt-6 space-y-2 text-sm text-white/60">
               <a
@@ -164,90 +164,83 @@ export function Footer() {
           </div>
         </div>
 
-        {/* 3 · Statutory offices (mandated by IT Rules & banking regulations) */}
-        <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-3">
-          <OfficeCell label="Registered office" title={company.legalName}>
-            <p className="flex items-start gap-2">
+        {/* 3 · Statutory desk — stacked ledger rows, not a card grid */}
+        <div className="mt-14 overflow-hidden rounded-3xl border border-white/10">
+          <p className="border-b border-white/10 bg-white/[0.03] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+            The statutory desk
+          </p>
+
+          <OfficeRow label="Corporate & registered office">
+            <p className="font-display text-sm font-semibold text-white">{company.legalName}</p>
+            <p className="mt-1.5 flex items-start gap-2">
               <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-accent-400" />
               <span>{company.address}</span>
             </p>
-            <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              <a href={`tel:+91${company.phone}`} className="hover:text-white">
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+              <a href={`tel:+91${company.phone}`} className="inline-flex items-center gap-2 hover:text-white">
+                <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
                 +91 {company.phone}
               </a>
-            </p>
-            <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              <a href={`mailto:${company.email}`} className="break-all hover:text-white">
+              <a href={`mailto:${company.email}`} className="inline-flex items-center gap-2 break-all hover:text-white">
+                <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
                 {company.email}
               </a>
             </p>
-          </OfficeCell>
+          </OfficeRow>
 
-          <OfficeCell
-            label="Grievance Redressal · IT Rules 2021"
-            title={grievanceOfficer.name}
-            subtitle={grievanceOfficer.designation}
-          >
-            <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              <a href={`mailto:${grievanceOfficer.email}`} className="break-all hover:text-white">
+          <OfficeRow label="Grievance desk · IT Rules, 2021">
+            <p className="font-display text-sm font-semibold text-white">
+              {grievanceOfficer.name}
+              <span className="ml-2 text-xs font-normal text-white/50">{grievanceOfficer.designation}</span>
+            </p>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+              <a href={`mailto:${grievanceOfficer.email}`} className="inline-flex items-center gap-2 break-all hover:text-white">
+                <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
                 {grievanceOfficer.email}
               </a>
+              <span className="inline-flex items-center gap-2">
+                <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
+                {grievanceOfficer.phone}
+              </span>
             </p>
-            <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              {grievanceOfficer.phone}
-            </p>
-            <p className="text-white/45">{grievanceOfficer.hours}</p>
-            <p className="text-white/45">{grievanceOfficer.responseSla}</p>
-            <p className="flex items-start gap-2 text-white/45">
-              <MapPin size={14} weight="duotone" aria-hidden className="mt-0.5 shrink-0 text-accent-400" />
-              <span>{grievanceOfficer.address}</span>
+            <p className="mt-1.5 text-white/45">
+              {grievanceOfficer.hours} · {grievanceOfficer.responseSla}
             </p>
             <Link
               href="/legal/grievance"
-              className="inline-flex items-center gap-1 pt-1 font-semibold text-accent-300 hover:text-accent-200"
+              className="mt-1.5 inline-flex items-center gap-1 font-semibold text-accent-300 hover:text-accent-200"
             >
-              Read the policy <ArrowRight size={12} weight="bold" aria-hidden />
+              How a complaint is handled <ArrowRight size={12} weight="bold" aria-hidden />
             </Link>
-          </OfficeCell>
+          </OfficeRow>
 
-          <OfficeCell
-            label="Escalation · Banking Ombudsman Scheme"
-            title={nodalOfficer.name}
-            subtitle={nodalOfficer.designation}
-          >
-            <p className="flex items-center gap-2">
-              <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              <a href={`mailto:${nodalOfficer.email}`} className="break-all hover:text-white">
+          <OfficeRow label="Nodal officer · escalations">
+            <p className="font-display text-sm font-semibold text-white">
+              {nodalOfficer.name}
+              <span className="ml-2 text-xs font-normal text-white/50">{nodalOfficer.designation}</span>
+            </p>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+              <a href={`mailto:${nodalOfficer.email}`} className="inline-flex items-center gap-2 break-all hover:text-white">
+                <Envelope size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
                 {nodalOfficer.email}
               </a>
+              <span className="inline-flex items-center gap-2">
+                <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
+                {nodalOfficer.phone}
+              </span>
             </p>
-            <p className="flex items-center gap-2">
-              <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
-              {nodalOfficer.phone}
+            <p className="mt-1.5 text-white/45">
+              Step in when a grievance crosses 15 working days without resolution.
             </p>
-            <p className="text-white/45">
-              Reach the Nodal Officer if a grievance is not resolved within 15
-              working days.
-            </p>
-          </OfficeCell>
+          </OfficeRow>
         </div>
 
-        {/* Compliance chips */}
-        <ul className="mt-8 flex flex-wrap gap-2" aria-label="Compliance">
-          {footerCertifications.map((c) => (
-            <li
-              key={c}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/60"
-            >
-              <SealCheck size={13} weight="duotone" aria-hidden className="text-accent-400" />
-              {c}
-            </li>
-          ))}
-        </ul>
+        {/* Compliance line — a sentence, not a badge wall */}
+        <p className="mt-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-white/45">
+          <SealCheck size={14} weight="duotone" aria-hidden className="text-accent-400" />
+          <span className="font-semibold uppercase tracking-[0.14em] text-white/55">Runs on:</span>
+          {footerCertifications.join(" · ")}
+        </p>
 
         {/* 4 · Bottom bar */}
         <div className="mt-10 flex flex-col gap-4 border-t border-white/10 py-8 md:flex-row md:items-center md:justify-between">
@@ -261,7 +254,7 @@ export function Footer() {
             </p>
           </div>
           <p className="text-xs text-white/40">
-            Built in {company.shortAddress.split(",").pop()?.trim() ?? "India"} · Made for India
+            Crafted in Anand, Gujarat · Serving counters across Bharat
           </p>
         </div>
       </Container>
@@ -269,25 +262,13 @@ export function Footer() {
   );
 }
 
-function OfficeCell({
-  label,
-  title,
-  subtitle,
-  children
-}: {
-  label: string;
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-}) {
+function OfficeRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ink-950 p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+    <div className="grid gap-2 border-b border-white/10 px-6 py-5 last:border-b-0 md:grid-cols-[220px_1fr] md:gap-8">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/40 md:pt-0.5">
         {label}
       </p>
-      <p className="mt-2 font-display text-base font-semibold text-white">{title}</p>
-      {subtitle && <p className="text-xs text-white/50">{subtitle}</p>}
-      <div className="mt-3 space-y-2 text-xs leading-relaxed text-white/65">{children}</div>
+      <div className="text-xs leading-relaxed text-white/65">{children}</div>
     </div>
   );
 }

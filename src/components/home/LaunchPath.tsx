@@ -1,136 +1,95 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useSpring, useReducedMotion } from "framer-motion";
-import {
-  ArrowRight,
-  IdentificationCard,
-  Storefront,
-  ToggleRight,
-  Wallet
-} from "@phosphor-icons/react";
-import { IconTile, type IconTone } from "@/components/ui/Icon";
+import { ArrowRight } from "@phosphor-icons/react";
 import { Reveal } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./_shared/SectionHeading";
 import { ButtonLink } from "./_shared/ButtonLink";
 
-const MILESTONES: {
-  time: string;
-  title: string;
-  body: string;
-  icon: React.ComponentProps<typeof IconTile>["icon"];
-  tone: IconTone;
-}[] = [
+const STEPS: { duration: string; title: string; body: string }[] = [
   {
-    time: "Minute 0",
-    title: "Register with PAN + Aadhaar",
-    body: "Your mobile number is your login. No paperwork to courier, no joining fee, no agent visit needed.",
-    icon: IdentificationCard,
-    tone: "brand"
+    duration: "~5 min",
+    title: "Create your partner ID",
+    body: "Sign up with your mobile number, PAN and Aadhaar — entirely from your phone, with no agent visit and no joining fee."
   },
   {
-    time: "Minute 5",
-    title: "e-KYC verified, counter approved",
-    body: "OTP-based Aadhaar verification plus a live selfie. Most partners clear KYC before their chai goes cold.",
-    icon: Storefront,
-    tone: "royal"
+    duration: "Same hour",
+    title: "Finish video e-KYC",
+    body: "A short selfie video plus an OTP completes verification. Approval usually lands before you have closed the app."
   },
   {
-    time: "Minute 10",
-    title: "Switch on your first services",
-    body: "Pick AePS, money transfer, bills or all sixty. Each service activates instantly with its commission slab shown upfront.",
-    icon: ToggleRight,
-    tone: "accent"
+    duration: "~2 min",
+    title: "Pick your opening line-up",
+    body: "Choose which services go live on day one. The full rate card is visible before you confirm anything."
   },
   {
-    time: "Same afternoon",
-    title: "First commission in the wallet",
-    body: "Serve your first customer and watch the credit land in real time. Withdraw to your bank 24×7 via IMPS.",
-    icon: Wallet,
-    tone: "coral"
+    duration: "Day one",
+    title: "Ring up your first sale",
+    body: "Your QR, receipts and float wallet are live. Commission credits the moment your first transaction settles."
   }
 ];
 
 /**
- * Vertical scroll-driven timeline — the line fills as you scroll, milestones
- * alternate sides on desktop.
+ * Opening-day ledger — four open columns on a shared gradient baseline,
+ * numbered like ledger entries. No cards, no zigzag timeline.
  */
 export function LaunchPath() {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 0.75", "end 0.6"]
-  });
-  const fill = useSpring(scrollYProgress, { stiffness: 120, damping: 28 });
-
   return (
     <section className="section bg-white">
       <div className="container-x">
         <SectionHeading
           align="center"
-          eyebrow="From signup to first rupee"
-          title="Live before lunch"
-          sub="No franchise fee, no territory lock-in, no waiting period. This is the entire journey — timed."
+          eyebrow="Opening day"
+          title="Morning signup. Evening earnings."
+          sub="No franchise fee, no territory rules, no waiting on anyone. Four short steps stand between you and your first commission."
         />
 
-        <div ref={ref} className="relative mx-auto mt-16 max-w-4xl">
-          {/* Spine */}
+        <div className="relative mx-auto mt-16 max-w-6xl">
+          {/* Shared baseline the steps sit on */}
+          <div aria-hidden className="absolute inset-x-0 top-0 hidden h-px bg-ink-100 md:block" />
           <div
             aria-hidden
-            className="absolute inset-y-0 left-5 w-px bg-ink-100 md:left-1/2 md:-translate-x-1/2"
-          />
-          <motion.div
-            aria-hidden
-            style={{ scaleY: reduce ? 1 : fill }}
-            className="absolute inset-y-0 left-5 w-px origin-top bg-energy-gradient md:left-1/2 md:-translate-x-1/2"
+            className="absolute left-0 top-0 hidden h-[3px] w-1/4 -translate-y-[1px] bg-energy-gradient-x md:block"
           />
 
-          <ol className="space-y-12 md:space-y-16">
-            {MILESTONES.map((m, i) => {
-              const left = i % 2 === 0;
-              return (
-                <li key={m.title} className="relative">
-                  {/* Node */}
-                  <span
-                    aria-hidden
-                    className="absolute left-5 top-7 z-10 -translate-x-1/2 md:left-1/2"
-                  >
-                    <span className="block h-3.5 w-3.5 rounded-full border-2 border-white bg-energy-gradient shadow-energy-sm" />
-                  </span>
-
-                  <Reveal
-                    direction={left ? "right" : "left"}
-                    className={cn(
-                      "ml-12 md:ml-0 md:w-[calc(50%-2.5rem)]",
-                      left ? "md:mr-auto" : "md:ml-auto"
-                    )}
-                  >
-                    <div className="card-base">
-                      <div className="flex items-center justify-between gap-4">
-                        <IconTile icon={m.icon} tone={m.tone} size="lg" />
-                        <span className="rounded-full bg-ink-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-ink-500">
-                          {m.time}
-                        </span>
-                      </div>
-                      <h3 className="mt-4 font-display text-xl font-semibold tracking-[-0.01em] text-ink-950">
-                        {m.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-500">{m.body}</p>
-                    </div>
-                  </Reveal>
-                </li>
-              );
-            })}
+          <ol className="grid gap-10 md:grid-cols-4 md:gap-8">
+            {STEPS.map((s, i) => (
+              <li
+                key={s.title}
+                className={cn("relative md:pt-10", "border-l-2 border-ink-100 pl-6 md:border-l-0 md:pl-0")}
+              >
+                {/* Node on the baseline (desktop) */}
+                <span
+                  aria-hidden
+                  className="absolute left-[-5px] top-1 h-2 w-2 rounded-full bg-energy-gradient md:left-0 md:top-[-4.5px] md:h-[9px] md:w-[9px]"
+                />
+                <Reveal delay={i * 0.08}>
+                  <p className="flex items-baseline justify-between gap-3">
+                    <span className="font-display text-5xl font-semibold tracking-[-0.03em] text-accent-200 md:text-6xl">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="rounded-full border border-accent-200 bg-accent-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
+                      {s.duration}
+                    </span>
+                  </p>
+                  <h3 className="mt-4 font-display text-lg font-semibold tracking-[-0.01em] text-ink-950">
+                    {s.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-500">{s.body}</p>
+                </Reveal>
+              </li>
+            ))}
           </ol>
         </div>
 
         <Reveal className="mt-14 text-center">
           <ButtonLink href="/register" size="lg">
-            Start the clock
+            Get your counter live
             <ArrowRight size={16} weight="bold" aria-hidden />
           </ButtonLink>
+          <p className="mt-3 text-xs text-ink-400">
+            Stuck anywhere? WhatsApp us and a human walks you through it.
+          </p>
         </Reveal>
       </div>
     </section>

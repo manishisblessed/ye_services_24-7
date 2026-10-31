@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE Input — Phase 1 redesign.
+ * BankingPoint24 Input — Phase 1 redesign.
  *
  * Shape language that differentiates from Nextgen:
  *  · Larger corners (`rounded-2xl`) and a slightly taller resting height.
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  *    input props.
  *  · For greenfield forms, use the new `<FloatingInput />` which pairs a
  *    label that smoothly rises above the field on focus / when filled —
- *    this is the single biggest "TRANSPE vs Nextgen" tell on data entry.
+ *    this is the single biggest "BankingPoint24 vs Nextgen" tell on data entry.
  */
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
@@ -30,7 +30,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         "transition-[border-color,box-shadow] duration-200 ease-out",
         "placeholder:text-ink-400",
         "focus:border-brand-400 focus:outline-none",
-        "focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]",
+        "focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(97, 169, 58,0.25)]",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
@@ -65,7 +65,7 @@ export const Select = React.forwardRef<
       "flex h-11 w-full appearance-none truncate rounded-2xl border border-ink-200 bg-white px-4 py-2 text-sm text-ink-900 shadow-sm",
       "transition-[border-color,box-shadow] duration-200 ease-out",
       "focus:border-brand-400 focus:outline-none",
-      "focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]",
+      "focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(97, 169, 58,0.25)]",
       className
     )}
     {...props}
@@ -76,7 +76,7 @@ export const Select = React.forwardRef<
 Select.displayName = "Select";
 
 /* ──────────────────────────────────────────────────────────────────────
-   FloatingInput — TRANSPE's signature labelled input.
+   FloatingInput — BankingPoint24's signature labelled input.
    Label floats up on focus or when the field has a value, and a gradient
    underline draws in from the left. Use for marketing/auth forms where
    polish matters more than density.
@@ -127,8 +127,8 @@ export const FloatingInput = React.forwardRef<
           "transition-[border-color,box-shadow] duration-200 ease-out",
           "focus:outline-none",
           error
-            ? "border-coral-300 focus:border-coral-500 focus:shadow-[0_0_0_4px_rgba(23, 184, 166,0.15)]"
-            : "border-ink-200 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(23, 184, 166,0.25)]",
+            ? "border-coral-300 focus:border-coral-500 focus:shadow-[0_0_0_4px_rgba(97, 169, 58,0.15)]"
+            : "border-ink-200 focus:border-brand-400 focus:shadow-[0_0_0_4px_rgba(23, 43, 107,0.14),0_8px_24px_-10px_rgba(97, 169, 58,0.25)]",
           "disabled:cursor-not-allowed disabled:opacity-50"
         )}
         {...props}

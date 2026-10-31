@@ -15,9 +15,9 @@ export function PlansBoard() {
       <div className="container-x">
         <SectionHeading
           align="center"
-          eyebrow="Membership"
-          title="Priced for the counter, not the boardroom"
-          sub="Start free. Upgrade only when the commission you are leaving on the table costs more than the plan."
+          eyebrow="Pricing"
+          title="Simple pricing. No surprises."
+          sub="Start free. Upgrade only when the extra commission you unlock is worth more than the plan cost."
         />
 
         <div className="mx-auto mt-14 grid max-w-5xl gap-6 lg:grid-cols-3 lg:items-stretch">
@@ -33,7 +33,7 @@ export function PlansBoard() {
                   className={cn(
                     "flex h-full flex-col rounded-4xl p-8",
                     dark
-                      ? "grain relative overflow-hidden bg-ink-950 text-white shadow-energy"
+                      ? "grain relative overflow-hidden bg-brand-950 text-white shadow-energy"
                       : "border border-ink-100 bg-white shadow-sm transition hover:shadow-energy-sm"
                   )}
                 >

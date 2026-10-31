@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * ServiceLayout — the TRANSPE v2 two-column shell for every transactional
+ * ServiceLayout — the BankingPoint24 v2 two-column shell for every transactional
  * service page (recharge, bill pay, DMT, AePS, payout, …).
  *
  *  · LEFT  = the form area (children). Pages wrap their existing form in

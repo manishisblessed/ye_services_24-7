@@ -177,9 +177,9 @@ export default function LedgerPage() {
   return (
     <div className="min-w-0 space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Wallet ledger"
-        description="Every credit and debit on your wallet — commissions, transactions, payouts, settlements and holds."
+        eyebrow="My Profile"
+        title="My Passbook"
+        description="Every credit and debit on your float — commissions, transactions, payouts, settlements and holds."
         actions={
           <>
             <Button variant="outline" size="md" onClick={exportCsv} disabled={!data?.txns.length}>

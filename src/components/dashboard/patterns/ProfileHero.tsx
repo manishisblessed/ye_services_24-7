@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -15,7 +15,7 @@ export function initialsOf(name: string | null | undefined) {
 }
 
 /**
- * TRANSPE ProfileHero — identity header card used on Profile, Performance
+ * BankingPoint24 ProfileHero — identity header card used on Profile, Performance
  * and Network member detail. Big gradient initials tile, Clash Display
  * name, a row of chips (role / userCode / status), optional meta lines
  * and a right-hand "aside" slot (e.g. wallet balance).

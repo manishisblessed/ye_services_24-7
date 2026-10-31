@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * TRANSPE ServicePageHeader — v3 "console band".
+ * BankingPoint24 ServicePageHeader — v3 "console band".
  *
  * A dark navy slab with the signature gradient keyline on top and a single
  * rotated energy beam — rhyming with the GreetingBand on the overviews. Holds

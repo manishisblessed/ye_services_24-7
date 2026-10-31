@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -54,9 +54,9 @@ export default function TransactionsPage() {
   return (
     <div className="min-w-0 space-y-6">
       <PageHeader
-        eyebrow="Account"
-        title="Transactions"
-        description="Every payment processed through your account — search, filter and export in one place."
+        eyebrow="My Profile"
+        title="All Transactions"
+        description="Every payment processed on your account — search by service, filter by status and export anytime."
       />
 
       <Stagger
@@ -101,7 +101,7 @@ export default function TransactionsPage() {
             </Button>
             <ReportActions
               filename="transactions"
-              title="TRANSPE · Transactions"
+              title="BankingPoint24 · Transactions"
               subtitle={`Live view · ${rows.length} records`}
               columns={[
                 { key: "id", header: "Txn ID" },

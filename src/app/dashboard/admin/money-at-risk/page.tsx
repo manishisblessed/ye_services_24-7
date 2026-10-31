@@ -41,7 +41,7 @@ export default function MoneyAtRiskPage() {
 
   return (
     <>
-      <PageHeader
+      <PageHeader eyebrow="Risk & Compliance"
         title="Money at Risk"
         description={
           data

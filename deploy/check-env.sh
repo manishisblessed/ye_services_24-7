@@ -1,6 +1,6 @@
-#!/bin/bash
+﻿#!/bin/bash
 # =====================================================================
-# TRANSPE — Environment drift check
+# BankingPoint24 — Environment drift check
 # =====================================================================
 # Validates that the target .env file has every variable required for a
 # healthy production runtime.

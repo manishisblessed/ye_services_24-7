@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Crown,
   Globe,
+  PaintBrush,
   Storefront
 } from "@phosphor-icons/react";
 import { IconTile, type IconTone } from "@/components/ui/Icon";
@@ -19,7 +20,7 @@ import { ButtonLink } from "./_shared/ButtonLink";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
-type RoleKey = "retailer" | "distributor" | "master" | "super";
+type RoleKey = "retailer" | "distributor" | "master" | "super" | "whitelabel";
 
 const ROLES: {
   key: RoleKey;
@@ -37,15 +38,15 @@ const ROLES: {
     label: "Retailer",
     icon: Storefront,
     tone: "brand",
-    headline: "Your shop, upgraded to a bank point",
-    body: "Serve walk-in customers with cash-out, transfers, bills and travel. You earn the full retailer slab on every transaction — credited live.",
+    headline: "The counter you already own, earning like a branch.",
+    body: "Keep selling what you sell — and let the same counter hand out cash, move money, clear bills and book tickets. Each settled transaction drops its commission straight into your float.",
     points: [
-      "60+ services from day one",
-      "Real-time wallet credits",
-      "Voice alerts on every payment",
-      "WhatsApp-first support"
+      "Sixty-plus switches live on day one",
+      "Commission itemised on every receipt",
+      "Speaker announces each credit",
+      "A human on WhatsApp when stuck"
     ],
-    cta: "Join as a retailer",
+    cta: "Open my counter",
     slabCol: (s) => s.retailer
   },
   {
@@ -53,15 +54,15 @@ const ROLES: {
     label: "Distributor",
     icon: Buildings,
     tone: "royal",
-    headline: "Build a network, earn on every counter",
-    body: "Onboard retailers in your area and collect an override on each transaction they process — your income compounds with your network.",
+    headline: "Sign up the shops around you. Earn while they earn.",
+    body: "Bring the counters in your area onto the platform and collect an override on every transaction they push — your income compounds with every shop you add.",
     points: [
-      "Recruit & manage retailers",
-      "Override on every network txn",
-      "Float management tools",
-      "Dedicated account manager"
+      "Onboard counters from your phone",
+      "Override income on the whole zone",
+      "Float top-ups for your retailers",
+      "A relationship manager who answers"
     ],
-    cta: "Become a distributor",
+    cta: "Build my zone",
     slabCol: (s) => s.distributor
   },
   {
@@ -69,15 +70,15 @@ const ROLES: {
     label: "Master distributor",
     icon: Crown,
     tone: "accent",
-    headline: "Run the region. Own the rails.",
-    body: "Appoint distributors, set your own margins within the band, and operate a white-labelled network with full API access.",
+    headline: "A region under your name — margins under your control.",
+    body: "Appoint distributors across districts, tune margins inside your band, and if you want, run the whole thing under your own brand with our white-label portal and APIs.",
     points: [
-      "Multi-level override income",
-      "White-label branded app",
-      "Full developer API access",
-      "Priority settlement window"
+      "Two layers of override income",
+      "Your brand on portal & app",
+      "Developer APIs & webhooks",
+      "Early settlement window"
     ],
-    cta: "Talk to our team",
+    cta: "Claim a region",
     slabCol: (s) => s.master
   },
   {
@@ -85,21 +86,38 @@ const ROLES: {
     label: "Super distributor",
     icon: Globe,
     tone: "coral",
-    headline: "Sit at the top. Earn on every rung.",
-    body: "Appoint master distributors across states and collect an override on every transaction in the entire tree — the deepest income layer on the platform.",
+    headline: "The state is your tree. Every branch pays you.",
+    body: "Seat Master Distributors across a state and take an override on everything that moves through your entire tree — the deepest earning layer in the network.",
     points: [
-      "Appoint & manage master distributors",
-      "Override across all four tiers",
-      "State-level exclusivity options",
-      "Direct line to the TRANSPE leadership desk"
+      "Appoint master distributors statewide",
+      "Override across every tier below",
+      "Exclusive territory arrangements",
+      "Direct line to the founders' desk"
     ],
-    cta: "Apply for super distributor",
+    cta: "Apply for the top tier",
     slabCol: (s) => s.superDistributor
+  },
+  {
+    key: "whitelabel",
+    label: "White-label partner",
+    icon: PaintBrush,
+    tone: "energy",
+    headline: "Your brand. Our rails. Zero engineering on your side.",
+    body: "Launch your own branded fintech app and portal powered entirely by BankingPoint24 infrastructure. Your logo, your domain, your colour scheme — we handle the compliance, banking integrations and settlement engine behind the curtain.",
+    points: [
+      "Fully branded portal & mobile app",
+      "Your own domain and support desk",
+      "Set your own commission margins",
+      "Dedicated API keys & webhooks",
+      "Compliance & licensing handled by us"
+    ],
+    cta: "Discuss white-label",
+    slabCol: (s) => s.whiteLabel
   }
 ];
 
 /**
- * The four-tier network explained as a switchable "ladder" — role tabs on
+ * The five-tier network explained as a switchable "ladder" — role tabs on
  * top, a split panel (pitch + live slab table) below.
  */
 export function NetworkLadder() {
@@ -112,9 +130,9 @@ export function NetworkLadder() {
       <div className="container-x">
         <SectionHeading
           align="center"
-          eyebrow="Four ways in"
-          title="Pick your rung on the ladder"
-          sub="Same platform, four business models. Switch tiers anytime as your network grows."
+          eyebrow="Join BankingPoint24"
+          title="Choose your level. Grow into the next."
+          sub="Retailer, Distributor, Master Distributor, Super Distributor or White-Label Partner — same platform, five ways in. Start at any level; scale as your ambition grows."
         />
 
         {/* Role tabs */}
@@ -141,7 +159,7 @@ export function NetworkLadder() {
                   <motion.span
                     layoutId="role-pill"
                     aria-hidden
-                    className="absolute inset-0 rounded-full bg-ink-950"
+                    className="absolute inset-0 rounded-full bg-energy-gradient"
                     transition={{ type: "spring", stiffness: 400, damping: 34 }}
                   />
                 )}
@@ -188,7 +206,7 @@ export function NetworkLadder() {
               </div>
 
               {/* Slab table */}
-              <div className="grain bg-ink-950 p-8 text-white md:p-10">
+              <div className="grain bg-brand-950 p-8 text-white md:p-10">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
                   Published {active.label.toLowerCase()} slabs
                 </p>
@@ -203,8 +221,9 @@ export function NetworkLadder() {
                   ))}
                 </ul>
                 <p className="mt-5 text-[11px] leading-relaxed text-white/40">
-                  Full slab sheet visible inside your dashboard before you
-                  activate any service. Revisions carry 7 days notice.
+                  The complete rate card sits inside your dashboard and is
+                  shown before any service goes live. Rate changes are
+                  announced ahead of time — never applied silently.
                 </p>
               </div>
             </motion.div>

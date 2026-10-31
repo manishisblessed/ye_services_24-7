@@ -167,7 +167,7 @@ export async function POST(
 
   // Resolve tenant brand once for all downstream email/SMS/PDF
   const tenantBrand = await resolveNotificationBrand(invite?.platformOwnerId ?? null);
-  const platformName = tenantBrand?.brandName ?? "TRANSPE";
+  const platformName = tenantBrand?.brandName ?? "BankingPoint24";
   const primaryColor = tenantBrand?.primaryColor ?? "#172b6b";
   const tenantBaseUrl = await getEffectivePlatformUrl(invite?.platformOwnerId ?? null);
 
@@ -207,7 +207,7 @@ export async function POST(
               <a href="${tenantBaseUrl}/onboard/${invite?.role ?? ""}" style="display:inline-block;padding:12px 28px;background:${primaryColor};color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Continue Registration</a>
             </div>
             <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
-            <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by TRANSPE" : ""}</p>
+            <p style="color:#94a3b8;font-size:12px;text-align:center;">${platformName}${tenantBrand ? " &middot; Powered by BankingPoint24" : ""}</p>
             </div>
           </div>
         `,

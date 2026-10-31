@@ -55,12 +55,13 @@ type FundRow = {
 };
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: "Invite Retailer", href: "/dashboard/network/onboard", icon: UserPlus, tone: "brand" },
-  { label: "Approve Funds", href: "/dashboard/funds-request", icon: HandCoinsIcon, tone: "accent" },
-  { label: "My Retailers", href: "/dashboard/network", icon: UsersThree, tone: "royal" },
-  { label: "Earnings", href: "/dashboard/earnings", icon: ChartLineUp, tone: "coral" },
-  { label: "My Plan", href: "/dashboard/my-scheme", icon: Stack, tone: "amber" },
-  { label: "Activity", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
+  { label: "Add Retailer", href: "/dashboard/network/onboard", icon: UserPlus, tone: "brand" },
+  { label: "Retailer List", href: "/dashboard/network", icon: UsersThree, tone: "royal" },
+  { label: "My Commission", href: "/dashboard/earnings", icon: ChartLineUp, tone: "coral" },
+  { label: "Pending Actions", href: "/dashboard/funds-request", icon: HandCoinsIcon, tone: "accent" },
+  { label: "My Rates", href: "/dashboard/my-scheme", icon: Stack, tone: "amber" },
+  { label: "Marketing Studio", href: "/dashboard/marketing", icon: ChartLineUp, tone: "energy", hint: "Campaigns for your retailers" },
+  { label: "Transactions", href: "/dashboard/transactions", icon: ClockCounterClockwise, tone: "ink" },
 ];
 
 export function DistributorOverview({ session }: { session: Session }) {
@@ -103,15 +104,15 @@ export function DistributorOverview({ session }: { session: Session }) {
     <div className="space-y-8">
       <GreetingBand
         name={session.name}
-        eyebrow="Network console · Distributor"
+        eyebrow="BankingPoint24 · My Retailers"
         subtitle={
-          loading ? "Loading your network…" : `${retailers.length} retailers · ${formatINR(mtdTurnover)} this month`
+          loading ? "Loading your retailer zone…" : `${retailers.length} retailers · ${formatINR(mtdTurnover)} zone turnover this month`
         }
-        heroLabel="Network wallet"
+        heroLabel="My Commission Float"
         heroValue={session.walletBalance}
         chips={[
           { label: "Retailers", value: loading ? "…" : `${retailers.length}`, tone: "brand" },
-          { label: "MTD", value: loading ? "…" : formatINR(mtdTurnover), tone: "accent" },
+          { label: "Zone MTD", value: loading ? "…" : formatINR(mtdTurnover), tone: "accent" },
           { label: "Pending", value: loading ? "…" : `${pending.length}`, tone: pending.length > 0 ? "coral" : "neutral" },
         ]}
         actions={
@@ -119,12 +120,12 @@ export function DistributorOverview({ session }: { session: Session }) {
             <Link href="/dashboard/network/onboard">
               <Button variant="outline" size="sm" className="border-white/20 bg-white/[0.06] text-white hover:bg-white/[0.1]">
                 <Users className="h-4 w-4" />
-                Onboard retailer
+                Add retailer
               </Button>
             </Link>
             <Link href="/dashboard/funds-request">
               <Button size="sm">
-                Approve funds
+                Review requests
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -146,7 +147,7 @@ export function DistributorOverview({ session }: { session: Session }) {
           <>
             <StaggerItem>
               <StatCard
-                label="Active Retailers"
+                label="Total Retailers"
                 value={`${retailers.length}`}
                 icon={Users}
                 accent="brand"
@@ -154,7 +155,7 @@ export function DistributorOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Network Wallet"
+                label="Commission Float"
                 value={formatINR(session.walletBalance)}
                 icon={HandCoins}
                 accent="violet"
@@ -162,7 +163,7 @@ export function DistributorOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Override Earnings"
+                label="My Commission (MTD)"
                 value={formatINR(0)}
                 icon={IndianRupee}
                 accent="emerald"
@@ -170,7 +171,7 @@ export function DistributorOverview({ session }: { session: Session }) {
             </StaggerItem>
             <StaggerItem>
               <StatCard
-                label="Network Turnover (MTD)"
+                label="Zone Turnover (MTD)"
                 value={formatINR(mtdTurnover)}
                 icon={TrendingUp}
                 accent="accent"
@@ -186,7 +187,7 @@ export function DistributorOverview({ session }: { session: Session }) {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-500">
-                  Network turnover · last 14 days
+                  Zone turnover · last 14 days
                 </p>
                 <p className="mt-1 font-display text-3xl font-semibold tabular-nums tracking-[-0.02em] text-ink-900">
                   {formatINR(mtdTurnover)}
@@ -215,16 +216,16 @@ export function DistributorOverview({ session }: { session: Session }) {
               size="sm"
               icon={Tray}
               tone={pending.length > 0 ? "coral" : "ink"}
-              title="Pending fund requests"
-              description={loading ? "…" : `${pending.length} waiting for review`}
+              title="Float Requests"
+              description={loading ? "…" : `${pending.length} waiting for your review`}
             />
             {pending.length === 0 && !loading ? (
               <EmptyState
                 compact
                 icon={Tray}
                 tone="ink"
-                title="Inbox is clear"
-                body="New fund requests from your retailers will show up here."
+                title="No pending requests"
+                body="Float requests from your retailers will appear here when submitted."
               />
             ) : (
               <ul className="mt-4 space-y-2">
@@ -282,8 +283,8 @@ export function DistributorOverview({ session }: { session: Session }) {
               size="sm"
               icon={Storefront}
               tone="brand"
-              title="Top retailers"
-              description="Sorted by monthly turnover"
+              title="Retailer Board"
+              description="Sorted by zone turnover this month"
             />
             <Link
               href="/dashboard/network"
@@ -296,12 +297,12 @@ export function DistributorOverview({ session }: { session: Session }) {
             <EmptyState
               icon={UserPlus}
               tone="brand"
-              title={`${firstName}, your network starts here`}
-              body="Onboard your first retailer to start seeing live transactions roll in."
+              title={`${firstName}, build your retailer zone`}
+              body="Add your first retailer to see their transactions and commissions flow in real time."
               action={
                 <Link href="/dashboard/network/onboard">
                   <Button size="sm">
-                    Onboard retailer <ArrowRight className="h-4 w-4" />
+                    Add retailer <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               }

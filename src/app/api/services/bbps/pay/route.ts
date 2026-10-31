@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getPartner } from "@/lib/partners";
 import { runTransaction } from "@/lib/services/transaction";
@@ -135,10 +135,10 @@ export async function POST(req: Request) {
     // back-calculated (total / 1.18); otherwise GST (18%) is added on top.
     const gstInclusive = rate.chargeGstInclusive;
     const gross = withGst(rate.charge, 18);
-    const feTRANSPE = gstInclusive ? dec(rate.charge) : gross.total;
+    const feBankingPoint24 = gstInclusive ? dec(rate.charge) : gross.total;
     const baseCharge = gstInclusive ? round(dec(rate.charge).div("1.18")) : dec(rate.charge);
-    const gstMoney = gstInclusive ? round(sub(feTRANSPE, baseCharge)) : gross.gst;
-    const fee = toNumber(feTRANSPE);
+    const gstMoney = gstInclusive ? round(sub(feBankingPoint24, baseCharge)) : gross.gst;
+    const fee = toNumber(feBankingPoint24);
 
     // Keep the display-only snapshots out of the partner payload.
     const { customerName: _cn, billerName: _bn, ...payInput } = parsed.data;
