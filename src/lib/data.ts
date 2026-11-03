@@ -43,8 +43,8 @@ export const company = {
   incorporated: "2026",
   jurisdiction: "Anand, Gujarat",
   address:
-    "27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat - 388345, IN",
-  shortAddress: "Mogri, Anand, Gujarat"
+    "203, H M Patel Trade Center, Mota Bazaar, V V Nagar, Anand, Gujarat - 388120, IN",
+  shortAddress: "V V Nagar, Anand, Gujarat"
 };
 
 // Mandatory under IT Rules 2021 (Intermediary Guidelines) & applicable Master Direction
@@ -56,7 +56,7 @@ export const grievanceOfficer = {
   phone: "+91 7069300077",
   hours: "Monday to Saturday, 10:00 AM – 6:00 PM IST",
   address:
-    "27 The Sun Residency, Nr. MatruBhakti Nani Bhagol, Mogri, Vidyanagar Police Station, Anand, Gujarat - 388345, IN",
+    "203, H M Patel Trade Center, Mota Bazaar, V V Nagar, Anand, Gujarat - 388120, IN",
   responseSla: "Acknowledgement within 24 hours · Resolution within 15 working days"
 };
 
