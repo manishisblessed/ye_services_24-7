@@ -388,6 +388,25 @@ export const navByRole: Record<Role, NavGroup[]> = {
     { heading: "My Profile", items: account }
   ],
 
+  "whitelabel-partner": [
+    {
+      heading: "My Platform",
+      items: [
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/dashboard/earnings", label: "My Commission", icon: CircleDollarSign, badge: "New" },
+        { href: "/dashboard/network", label: "Network", icon: Users },
+        { href: "/dashboard/network/command-center", label: "Platform Dashboard", icon: Gauge, badge: "Live" },
+        { href: "/dashboard/network/onboard", label: "Add Partner", icon: PackagePlus },
+        { href: "/dashboard/network/schemes", label: "Rate Assignment", icon: Layers, badge: "New" },
+        { href: "/dashboard/approvals", label: "Action Pending", icon: FileSignature },
+        { href: "/dashboard/my-scheme", label: "My Rates", icon: Layers, badge: "New" },
+        { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+      ]
+    },
+    { heading: "Partner Hub", items: partnerHub },
+    { heading: "My Profile", items: account }
+  ],
+
   admin: [...adminDesks, { heading: "My Profile", items: account }],
 
   finance: [

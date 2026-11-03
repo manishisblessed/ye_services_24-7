@@ -8,6 +8,8 @@ import {
   Storefront,
   UsersThree,
   TreeStructure,
+  Network,
+  Buildings,
   ArrowRight,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
@@ -23,6 +25,8 @@ const roleMap = {
   retailer: "RETAILER",
   distributor: "DISTRIBUTOR",
   "master-distributor": "MASTER_DISTRIBUTOR",
+  "super-distributor": "SUPER_DISTRIBUTOR",
+  "whitelabel-partner": "WHITELABEL_PARTNER",
 } as const;
 
 const STATES = [
@@ -45,6 +49,8 @@ const ROLE_TILES: { id: keyof typeof roleMap; label: string; icon: PhosphorIcon;
   { id: "retailer", label: "Retailer", icon: Storefront, hint: "One shop" },
   { id: "distributor", label: "Distributor", icon: UsersThree, hint: "Manage retailers" },
   { id: "master-distributor", label: "Master Dist.", icon: TreeStructure, hint: "Regional network" },
+  { id: "super-distributor", label: "Super Dist.", icon: Network, hint: "Manage master dist." },
+  { id: "whitelabel-partner", label: "Whitelabel", icon: Buildings, hint: "Own branded platform" },
 ];
 
 export default function JoinPage() {
@@ -231,7 +237,7 @@ export default function JoinPage() {
                 <legend className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-ink-500">
                   I want to join as
                 </legend>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {ROLE_TILES.map((r) => {
                     const active = form.role === r.id;
                     return (

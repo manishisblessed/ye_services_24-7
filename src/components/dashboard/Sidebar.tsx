@@ -44,6 +44,7 @@ const ROLE_LABEL: Record<Role, string> = {
   "master-distributor": "Master Distributor",
   distributor: "Distributor",
   retailer: "Retailer",
+  "whitelabel-partner": "Whitelabel Partner",
 };
 
 /**

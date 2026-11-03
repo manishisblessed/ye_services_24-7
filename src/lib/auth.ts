@@ -14,7 +14,8 @@ export type Role =
   | "super-distributor"
   | "master-distributor"
   | "distributor"
-  | "retailer";
+  | "retailer"
+  | "whitelabel-partner";
 
 /** Same as Role — kept for clarity in new code */
 export type RoleDisplay = Role;
@@ -28,7 +29,8 @@ export type DbRole =
   | "SUPER_DISTRIBUTOR"
   | "MASTER_DISTRIBUTOR"
   | "DISTRIBUTOR"
-  | "RETAILER";
+  | "RETAILER"
+  | "WHITELABEL_PARTNER";
 
 export type Session = {
   name: string;
@@ -53,6 +55,7 @@ export function toDisplayRole(role: DbRole | string): Role {
     case "MASTER_DISTRIBUTOR": return "master-distributor";
     case "DISTRIBUTOR": return "distributor";
     case "RETAILER": return "retailer";
+    case "WHITELABEL_PARTNER": return "whitelabel-partner";
     default: return "retailer";
   }
 }
@@ -68,6 +71,7 @@ export function toDbRole(displayRole: Role): DbRole {
     case "master-distributor": return "MASTER_DISTRIBUTOR";
     case "distributor": return "DISTRIBUTOR";
     case "retailer": return "RETAILER";
+    case "whitelabel-partner": return "WHITELABEL_PARTNER";
     default: return "RETAILER";
   }
 }
@@ -145,5 +149,11 @@ export const roleMeta: Record<
     tagline: "Read-only money oversight — balances, ledger & reports",
     accent: "from-emerald-700 to-brand-600",
     pillar: "finance"
+  },
+  "whitelabel-partner": {
+    label: "Whitelabel Partner",
+    tagline: "Launch your own branded fintech platform",
+    accent: "from-violet-600 to-cyan-500",
+    pillar: "platform-partner"
   }
 };

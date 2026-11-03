@@ -10,6 +10,7 @@ import {
   MapPin,
   Phone,
   SealCheck,
+  WhatsappLogo,
   XLogo,
   YoutubeLogo
 } from "@phosphor-icons/react/dist/ssr";
@@ -21,7 +22,8 @@ import {
   footerCertifications,
   company,
   grievanceOfficer,
-  nodalOfficer
+  nodalOfficer,
+  supportTeam
 } from "@/lib/data";
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
@@ -34,9 +36,10 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
 const socials: { label: string; href: string; icon: PhosphorIcon }[] = [
   { label: "X (Twitter)", href: "#", icon: XLogo },
   { label: "LinkedIn", href: "#", icon: LinkedinLogo },
-  { label: "Instagram", href: "#", icon: InstagramLogo },
+  { label: "Instagram", href: "https://www.instagram.com/bankingpoint24.anand?srtk=emVvYjlkazEzbDd4", icon: InstagramLogo },
   { label: "YouTube", href: "#", icon: YoutubeLogo },
-  { label: "Facebook", href: "#", icon: FacebookLogo }
+  { label: "Facebook", href: "https://www.facebook.com/share/1Ab46MUxj4/", icon: FacebookLogo },
+  { label: "WhatsApp Channel", href: "https://whatsapp.com/channel/0029Vb8avfkBKfi67LC1Py2Z", icon: WhatsappLogo },
 ];
 
 /**
@@ -120,11 +123,15 @@ export function Footer() {
             <ul className="mt-6 flex items-center gap-2" aria-label="Social">
               {socials.map((s) => {
                 const Icon = s.icon;
+                const isExternal = s.href !== "#";
                 return (
                   <li key={s.label}>
                     <a
                       href={s.href}
                       aria-label={s.label}
+                      {...(isExternal
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
                       className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 transition hover:border-white/30 hover:bg-white/10 hover:text-white focus-energy"
                     >
                       <Icon size={16} weight="duotone" aria-hidden />
@@ -164,12 +171,13 @@ export function Footer() {
           </div>
         </div>
 
-        {/* 3 · Statutory desk — stacked ledger rows, not a card grid */}
+        {/* 3 · Support desk — corporate info + 4 dedicated support contacts */}
         <div className="mt-14 overflow-hidden rounded-3xl border border-white/10">
           <p className="border-b border-white/10 bg-white/[0.03] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
-            The statutory desk
+            The support desk
           </p>
 
+          {/* Corporate & registered office */}
           <OfficeRow label="Corporate & registered office">
             <p className="font-display text-sm font-semibold text-white">{company.legalName}</p>
             <p className="mt-1.5 flex items-start gap-2">
@@ -188,6 +196,24 @@ export function Footer() {
             </p>
           </OfficeRow>
 
+          {/* 4 dedicated support contacts */}
+          {supportTeam.map((contact) => (
+            <OfficeRow key={contact.department} label={contact.department}>
+              <p className="font-display text-sm font-semibold text-white">{contact.name}</p>
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+                <a
+                  href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                  className="inline-flex items-center gap-2 hover:text-white"
+                >
+                  <Phone size={14} weight="duotone" aria-hidden className="shrink-0 text-accent-400" />
+                  {contact.phone}
+                </a>
+              </p>
+              <p className="mt-1.5 text-white/45">{contact.scope}</p>
+            </OfficeRow>
+          ))}
+
+          {/* Grievance & nodal — kept for IT Rules 2021 compliance */}
           <OfficeRow label="Grievance desk · IT Rules, 2021">
             <p className="font-display text-sm font-semibold text-white">
               {grievanceOfficer.name}

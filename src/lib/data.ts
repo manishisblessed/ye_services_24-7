@@ -67,6 +67,41 @@ export const nodalOfficer = {
   phone: "+91 7069300077"
 };
 
+/** Dedicated support team — shown in the footer Support Desk section. */
+export type SupportContact = {
+  department: string;
+  name: string;
+  phone: string;
+  scope: string;
+};
+
+export const supportTeam: SupportContact[] = [
+  {
+    department: "Company Operations & General Information",
+    name: "Barot Jayesh",
+    phone: "+91 8758068295",
+    scope: "For all company operations, portal-related information and general operational queries."
+  },
+  {
+    department: "Marketing & POS Support",
+    name: "Raj Patel",
+    phone: "+91 7201946436",
+    scope: "For marketing-related queries, POS machine information and assistance."
+  },
+  {
+    department: "QR Support",
+    name: "Harshad Meniya",
+    phone: "+91 9924989021",
+    scope: "For all QR-related information, transactions and technical assistance."
+  },
+  {
+    department: "New ID Creation & ID-Related Support",
+    name: "Jayveer Parmar",
+    phone: "+91 9265653141",
+    scope: "For new ID creation, ID-related information and assistance."
+  }
+];
+
 export type ServiceItem = {
   slug: string;
   title: string;
@@ -349,59 +384,90 @@ export const heroStats: Stat[] = [
 
 export type PricingPlan = {
   name: string;
-  price: string;
-  cadence: string;
+  tagline: string;
   description: string;
   features: string[];
   highlighted?: boolean;
   cta: string;
+  ctaHref: string;
 };
 
 export const pricingPlans: PricingPlan[] = [
   {
-    name: "Free Counter",
-    price: "₹0",
-    cadence: "no card, no commitment",
-    description: "Open your counter today and start earning on 30+ everyday services.",
+    name: "Retailer",
+    tagline: "Run a single counter",
+    description: "Open your shop counter today and start earning on 30+ everyday services — zero joining fee.",
     features: [
-      "Bills, recharges & UPI collect",
-      "Published base rate card",
+      "AePS cash withdrawals",
+      "Money transfer & UPI collect",
+      "Bill payments & recharges",
       "Real-time wallet settlement",
-      "Help centre & email support",
-      "Daily earnings summary"
+      "Daily earnings dashboard",
+      "Help centre & email support"
     ],
-    cta: "Open a free counter"
-  },
-  {
-    name: "Retailer Pro",
-    price: "₹599",
-    cadence: "/year",
-    description: "Unlocks cash services and the top commission tier — most counters recover it within two days.",
-    features: [
-      "Everything in Free Counter",
-      "AePS cash & money transfer live",
-      "Top-tier commission card",
-      "WhatsApp priority helpline",
-      "Ledger export & GST summary",
-      "Branded QR standee shipped free"
-    ],
-    highlighted: true,
-    cta: "Go Retailer Pro"
+    cta: "Open a counter",
+    ctaHref: "/register"
   },
   {
     name: "Distributor",
-    price: "₹2,999",
-    cadence: "/year",
-    description: "Recruit counters under you and earn an override on every transaction they process.",
+    tagline: "Manage a retailer network",
+    description: "Recruit retailers under you and earn a commission override on every transaction they process.",
     features: [
-      "Everything in Retailer Pro",
-      "Onboard & manage your counters",
+      "Everything in Retailer",
+      "Onboard & manage retailers",
       "Network override income",
-      "Dedicated relationship manager",
-      "Developer API access",
-      "Your own branded partner app"
+      "Zone performance dashboard",
+      "Rate scheme assignment",
+      "Dedicated relationship manager"
     ],
-    cta: "Talk to the network team"
+    cta: "Become a Distributor",
+    ctaHref: "/register"
+  },
+  {
+    name: "Master Distributor",
+    tagline: "Lead a regional network",
+    description: "Build a network of distributors across a region with white-label branding and API access.",
+    features: [
+      "Everything in Distributor",
+      "Manage distributor network",
+      "White-label branding",
+      "Developer API access",
+      "Override commissions",
+      "Regional analytics"
+    ],
+    highlighted: true,
+    cta: "Become a Master Dist.",
+    ctaHref: "/register"
+  },
+  {
+    name: "Super Distributor",
+    tagline: "Multi-state network head",
+    description: "Oversee master distributors across multiple states with advanced controls and premium support.",
+    features: [
+      "Everything in Master Dist.",
+      "Manage master distributors",
+      "Multi-state network coverage",
+      "Custom scheme design",
+      "Platform-level analytics",
+      "Premium onboarding support"
+    ],
+    cta: "Become a Super Dist.",
+    ctaHref: "/register"
+  },
+  {
+    name: "Whitelabel Partner",
+    tagline: "Launch your own brand",
+    description: "Launch a fully branded fintech platform under your own domain, logo, and mobile app.",
+    features: [
+      "Everything in Super Dist.",
+      "Custom domain & logo",
+      "Branded mobile app",
+      "Full API & webhook access",
+      "Revenue sharing model",
+      "Dedicated tech support"
+    ],
+    cta: "Talk to partnerships",
+    ctaHref: "/contact"
   }
 ];
 

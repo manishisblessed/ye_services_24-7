@@ -9,6 +9,7 @@ import {
   UsersThree,
   TreeStructure,
   Crown,
+  Buildings,
   ArrowRight,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
@@ -31,13 +32,14 @@ import {
 import { StepPanels } from "@/components/auth/StepRail";
 import { cn } from "@/lib/utils";
 
-type PublicRole = "retailer" | "distributor" | "master-distributor" | "super-distributor";
+type PublicRole = "retailer" | "distributor" | "master-distributor" | "super-distributor" | "whitelabel-partner";
 
 const roleOptions: { id: PublicRole; label: string; icon: PhosphorIcon; tagline: string }[] = [
   { id: "retailer", label: "Retailer", icon: Storefront, tagline: "Run a single shop" },
   { id: "distributor", label: "Distributor", icon: UsersThree, tagline: "Manage retailers" },
   { id: "master-distributor", label: "Master Dist.", icon: TreeStructure, tagline: "White-label & API" },
   { id: "super-distributor", label: "Super Dist.", icon: Crown, tagline: "Multi-state network" },
+  { id: "whitelabel-partner", label: "Whitelabel", icon: Buildings, tagline: "Branded platform" },
 ];
 
 export default function LoginPage() {

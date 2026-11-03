@@ -28,7 +28,7 @@ const LocationSchema = z.object({
   accuracy: z.number().optional(),
 });
 
-const PUBLIC_ROLES = ["retailer", "distributor", "master-distributor", "super-distributor"] as const;
+const PUBLIC_ROLES = ["retailer", "distributor", "master-distributor", "super-distributor", "whitelabel-partner"] as const;
 type PublicRole = (typeof PUBLIC_ROLES)[number];
 
 /** Map the public login role selector to the DB role enum. */
@@ -37,6 +37,7 @@ const PUBLIC_ROLE_TO_DB: Record<PublicRole, string> = {
   distributor: "DISTRIBUTOR",
   "master-distributor": "MASTER_DISTRIBUTOR",
   "super-distributor": "SUPER_DISTRIBUTOR",
+  "whitelabel-partner": "WHITELABEL_PARTNER",
 };
 
 /** Network partner roles — allowed only through the public /login portal. */
@@ -45,6 +46,7 @@ const NETWORK_DB_ROLES = new Set([
   "DISTRIBUTOR",
   "MASTER_DISTRIBUTOR",
   "SUPER_DISTRIBUTOR",
+  "WHITELABEL_PARTNER",
 ]);
 
 /** Internal staff roles — allowed only through the admin consoles. */

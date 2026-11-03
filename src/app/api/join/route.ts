@@ -25,7 +25,7 @@ const Body = z.object({
   city: z.string().trim().max(80).optional(),
   state: z.string().trim().max(80).optional(),
   role: z
-    .enum(["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR"])
+    .enum(["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR", "WHITELABEL_PARTNER"])
     .default("RETAILER"),
   message: z.string().trim().max(1000).optional(),
   captchaToken: z.string().max(4000).optional(),
