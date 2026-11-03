@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Phase A — White-label tenant isolation
 -- Adds platformOwnerId + isTenantOwner to User and
 -- platformOwnerId to Invite so every user / invite is scoped
