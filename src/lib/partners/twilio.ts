@@ -347,8 +347,8 @@ export const twilioSms: SmsProvider = {
     // must deliver *that exact code* via a plain SMS so it matches what the
     // verify route looks up in the DB. Calling sendVerification would send a
     // *different* Twilio-generated code and permanently break verification.
-    const brandName = (variables as Record<string, string> | undefined)?._brand ?? "bankingpoint24";
-    const body = `Your ${brandName} verification code is ${otp}. Valid for 5 minutes. Do not share.`;
+    const brandName = (variables as Record<string, string> | undefined)?._brand ?? "BankingPoint24";
+    const body = `Welcome to ${brandName}! Your verification OTP is ${otp}. Valid for 5 minutes. Do not share this code with anyone.`;
     const r = await sendSms({ to: toE164India(phone), body });
     return r;
   },
