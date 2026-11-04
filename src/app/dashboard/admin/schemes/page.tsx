@@ -2076,7 +2076,7 @@ function AssignModal({
           <p className="text-xs text-ink-400">
             {ownerId
               ? "This is a derived scheme — it can only be assigned to the owner's direct children."
-              : "Platform schemes can only be assigned to Super Distributors (SD). MD, DT, and RT users receive their scheme from their direct parent in the network hierarchy (SD assigns to MD, MD to DT, DT to RT)."}
+              : "Admin can assign this scheme directly to any user — SD, MD, DT, or RT. A direct assignment overrides the cascade for that individual user without affecting others in their network."}
           </p>
 
           {/* Available users — scoped to who can actually hold this scheme */}
@@ -2095,15 +2095,14 @@ function AssignModal({
               autoFocus
               excludeUserIds={assignedIds}
               parentId={ownerId ?? undefined}
-              roles={ownerId ? undefined : [{ value: "super-distributor", label: "Super Distributor" }]}
-              defaultRole={ownerId ? "all" : "super-distributor"}
+              defaultRole={ownerId ? "all" : "all"}
               onSelect={(u) => assignUser(u.id)}
               onVisibleUsersChange={setVisibleUsers}
               listMaxHeightClass="max-h-48"
               emptyLabel={
                 ownerId
                   ? "This owner has no direct children to assign yet."
-                  : "All super-distributors are already assigned to this scheme."
+                  : "All users are already assigned to this scheme."
               }
             />
           </div>

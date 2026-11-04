@@ -19,9 +19,9 @@ const AssignBody = z
 /**
  * POST /api/admin/schemes/assign
  *
- * Admin assigns (or unassigns) a scheme to Super Distributor (SD) user(s)
- * only. The scheme then cascades down the network via each tier's own
- * assignment flow:  Admin → SD → MD → DT → RT.
+ * Admin assigns (or unassigns) a scheme to ANY network user (SD, MD, DT, RT).
+ * Direct assignment to any tier lets the admin override the cascade for
+ * individual users without touching the rest of the hierarchy.
  * Unassigning (schemeId null) is always allowed.
  */
 export async function POST(req: Request) {
@@ -50,18 +50,17 @@ export async function POST(req: Request) {
     if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
     if (!scheme.active) return NextResponse.json({ error: "Cannot assign an inactive scheme" }, { status: 400 });
 
-    // Hierarchy rule: admin can only assign schemes to SUPER_DISTRIBUTORs (SD).
-    // Each tier below (MD/DT/RT) receives their scheme from their direct parent
-    // via /api/network/scheme — not from admin directly.
+    // Verify all target users exist and are network users (non-admin roles).
+    const ASSIGNABLE_ROLES = ["SUPER_DISTRIBUTOR", "MASTER_DISTRIBUTOR", "DISTRIBUTOR", "RETAILER"];
     const targets = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, role: true },
     });
-    const invalid = targets.filter((u) => u.role !== "SUPER_DISTRIBUTOR");
+    const invalid = targets.filter((u) => !ASSIGNABLE_ROLES.includes(u.role));
     if (invalid.length > 0) {
       return NextResponse.json(
         {
-          error: `Admin can only assign schemes to Super Distributors (SD). ${invalid.length} of the selected user(s) are not Super Distributors. MD, DT, and RT users receive schemes from their direct parent in the network hierarchy.`,
+          error: `Schemes can only be assigned to network users (SD, MD, DT, RT). ${invalid.length} of the selected user(s) have an admin/unsupported role.`,
         },
         { status: 400 }
       );
