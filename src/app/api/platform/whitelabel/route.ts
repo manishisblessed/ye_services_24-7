@@ -125,6 +125,15 @@ export async function PUT(req: Request) {
       update: data,
     });
 
+    // Activation side-effect: a LIVE tenant's owner gets isTenantOwner = true
+    // so their onboarding/admin powers unlock immediately.
+    if (saved.status === "LIVE") {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { isTenantOwner: true },
+      });
+    }
+
     await prisma.auditLog.create({
       data: {
         userId: user.id,
