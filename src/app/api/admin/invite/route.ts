@@ -54,7 +54,7 @@ const CreateBody = z.object({
   phone: z.string().min(10).max(15),
   email: z.string().email(),
   name: z.string().min(2).optional(),
-  role: z.enum(["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR"]).optional(),
+  role: z.enum(["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR", "WHITELABEL_PARTNER"]).optional(),
   parentId: z.string().cuid().optional(),
 });
 
