@@ -39,8 +39,13 @@ const ROLE_OPTIONS: { value: string; label: string }[] = [
   { value: "RETAILER", label: "Retailer" },
 ];
 
+const MASTER_ADMIN_ROLE_OPTIONS: { value: string; label: string }[] = [
+  { value: "WHITELABEL_PARTNER", label: "White-Label Partner" },
+  ...ROLE_OPTIONS,
+];
+
 function getAllowedRoles(userRole: string): { value: string; label: string }[] {
-  if (userRole === "MASTER_ADMIN") return ROLE_OPTIONS;
+  if (userRole === "MASTER_ADMIN") return MASTER_ADMIN_ROLE_OPTIONS;
   if (userRole === "ADMIN") return ROLE_OPTIONS.filter((r) => r.value === "SUPER_DISTRIBUTOR");
   return ROLE_OPTIONS;
 }
@@ -567,7 +572,7 @@ function CreateInviteForm({
   const [parentsLoading, setParentsLoading] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
 
-  const needsParent = userRole === "MASTER_ADMIN" && form.role !== "SUPER_DISTRIBUTOR";
+  const needsParent = userRole === "MASTER_ADMIN" && form.role !== "SUPER_DISTRIBUTOR" && form.role !== "WHITELABEL_PARTNER";
 
   useEffect(() => {
     if (!needsParent) {

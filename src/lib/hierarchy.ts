@@ -126,7 +126,7 @@ export function canOnboard(
   if (cRank === undefined || tRank === undefined) return false;
 
   if (creatorRole === "MASTER_ADMIN") {
-    return NETWORK_TIERS.includes(targetRole as DbRole);
+    return targetRole === "WHITELABEL_PARTNER" || NETWORK_TIERS.includes(targetRole as DbRole);
   }
 
   // A white-label partner is the master-admin of their own tenant: they can
@@ -163,7 +163,7 @@ export function allowedInviteRoles(
   opts?: { isTenantOwner?: boolean }
 ): DbRole[] {
   if (creatorRole === "MASTER_ADMIN") {
-    return [...NETWORK_TIERS].reverse();
+    return ["WHITELABEL_PARTNER", ...([...NETWORK_TIERS].reverse())];
   }
   // Tenant root: can seed any network tier inside their own company.
   if (creatorRole === "WHITELABEL_PARTNER") {
