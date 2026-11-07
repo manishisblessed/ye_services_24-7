@@ -36,13 +36,14 @@ type ApiResp = {
   sums: { primary: number; aeps: number; total: number };
 };
 
-type TierKey = "RETAILER" | "DISTRIBUTOR" | "MASTER_DISTRIBUTOR" | "SUPER_DISTRIBUTOR";
+type TierKey = "RETAILER" | "DISTRIBUTOR" | "MASTER_DISTRIBUTOR" | "SUPER_DISTRIBUTOR" | "WHITELABEL_PARTNER";
 
 const TABS: { key: TierKey; label: string }[] = [
   { key: "RETAILER", label: "Retailers" },
   { key: "DISTRIBUTOR", label: "Distributors" },
   { key: "MASTER_DISTRIBUTOR", label: "Master Distributors" },
   { key: "SUPER_DISTRIBUTOR", label: "Super-Distributors" },
+  { key: "WHITELABEL_PARTNER", label: "White-Label Partners" },
 ];
 
 const PAGE_SIZE = 10;

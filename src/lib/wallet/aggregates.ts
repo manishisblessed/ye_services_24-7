@@ -15,6 +15,7 @@ export const BALANCE_TIERS = [
   "DISTRIBUTOR",
   "MASTER_DISTRIBUTOR",
   "SUPER_DISTRIBUTOR",
+  "WHITELABEL_PARTNER",
 ] as const;
 
 export type BalanceTier = (typeof BALANCE_TIERS)[number];

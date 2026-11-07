@@ -56,6 +56,7 @@ const TIER_ORDER = [
   "DISTRIBUTOR",
   "MASTER_DISTRIBUTOR",
   "SUPER_DISTRIBUTOR",
+  "WHITELABEL_PARTNER",
 ] as const;
 
 const TIER_LABEL: Record<string, string> = {
@@ -63,6 +64,7 @@ const TIER_LABEL: Record<string, string> = {
   DISTRIBUTOR: "Distributors (DT)",
   MASTER_DISTRIBUTOR: "Master Distributors (MD)",
   SUPER_DISTRIBUTOR: "Super-Distributors (SD)",
+  WHITELABEL_PARTNER: "White-Label Partners",
 };
 
 export function CumulativeWalletCard({

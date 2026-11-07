@@ -38,6 +38,7 @@ const ROLE_TABS = [
   { key: "DISTRIBUTOR",         label: "Distributors" },
   { key: "MASTER_DISTRIBUTOR",  label: "Master Dist." },
   { key: "SUPER_DISTRIBUTOR",   label: "Super Dist." },
+  { key: "WHITELABEL_PARTNER",  label: "WL Partners" },
 ] as const;
 
 type RoleKey = (typeof ROLE_TABS)[number]["key"];
