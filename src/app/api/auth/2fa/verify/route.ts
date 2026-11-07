@@ -168,6 +168,8 @@ export async function POST(req: Request) {
     enabledServices: user.enabledServices ?? [],
     twoFactorEnabled: true,
     twoFactorExempt: (user as { twoFactorExempt?: boolean }).twoFactorExempt ?? false,
+    platformOwnerId: (user as { platformOwnerId?: string | null }).platformOwnerId ?? null,
+    isTenantOwner: (user as { isTenantOwner?: boolean }).isTenantOwner ?? false,
   };
 
   const token = createMobileToken(sessionUser);

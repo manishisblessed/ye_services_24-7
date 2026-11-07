@@ -27,6 +27,22 @@ import { resolveUserScheme, type SchemeSource } from "./resolve-scheme";
 /** @deprecated Use SchemeSource from ./resolve-scheme (kept as an alias). */
 export type ResolvedRateSource = SchemeSource;
 
+/**
+ * Thrown by pricing helpers (quoteKnteerForUser etc.) when `requireScheme` is
+ * set and no slab covers the (user, amount). Every money-moving route MUST
+ * fail closed when no slab is configured.
+ */
+export class PricingUnavailableError extends Error {
+  readonly statusCode = 422;
+  readonly code = "PRICING_UNAVAILABLE";
+  constructor(
+    message = "No pricing slab is configured for this service. Contact your distributor to have a scheme assigned before transacting."
+  ) {
+    super(message);
+    this.name = "PricingUnavailableError";
+  }
+}
+
 export type EffectiveRate = {
   source: SchemeSource;
   schemeId: string | null;

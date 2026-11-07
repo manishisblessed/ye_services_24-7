@@ -18,6 +18,11 @@ export type LegacySession = {
   mustChangePassword?: boolean;
   userCode?: string;
   allowedTabs: string[];
+  /** White-label tenancy — null/false for native BankingPoint24 accounts. */
+  platformOwnerId: string | null;
+  isTenantOwner: boolean;
+  /** True when this account belongs to any white-label company. */
+  isTenantMember: boolean;
 };
 
 /**
@@ -36,15 +41,22 @@ export function useAuth() {
   }
 
   const user = data.user;
+  const platformOwnerId = (user as any).platformOwnerId ?? null;
+  const isTenantOwner = (user as any).isTenantOwner ?? false;
+  const dbRole = (user as any).role ?? "RETAILER";
   const legacySession: LegacySession = {
     name: user.name ?? "",
     email: user.email ?? "",
     phone: (user as any).phone ?? "",
-    role: toDisplayRole((user as any).role ?? "RETAILER"),
+    role: toDisplayRole(dbRole),
     walletBalance: (user as any).walletBalance ?? 0,
     loggedInAt: Date.now(),
     userCode: (user as any).userCode ?? undefined,
     allowedTabs: (user as any).allowedTabs ?? [],
+    platformOwnerId,
+    isTenantOwner,
+    isTenantMember:
+      dbRole === "WHITELABEL_PARTNER" || isTenantOwner === true || Boolean(platformOwnerId),
   };
 
   return { session: legacySession, loading: false, signOut };

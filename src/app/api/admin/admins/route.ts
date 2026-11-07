@@ -6,6 +6,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { tenantOwnerId, isTenantRoot, isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -22,8 +23,9 @@ const CreateBody = z.object({
 });
 
 export async function GET(req: Request) {
+  let session;
   try {
-    await requireRole("MASTER_ADMIN");
+    session = await requireRole("MASTER_ADMIN", "WHITELABEL_PARTNER");
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
@@ -33,7 +35,14 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q") ?? "";
 
-  const where: Record<string, unknown> = { role: { in: ["ADMIN", "FINANCE"] }, deletedAt: null };
+  // Tenant isolation: native owner sees native admins; a tenant root sees only
+  // the admins inside their own company.
+  const ownerId = tenantOwnerId(session);
+  const where: Record<string, unknown> = {
+    role: { in: ["ADMIN", "FINANCE"] },
+    deletedAt: null,
+    platformOwnerId: isPlatformStaff(session) ? null : ownerId ?? "__no_tenant__",
+  };
 
   if (q) {
     where.OR = [
@@ -66,11 +75,20 @@ export async function POST(req: Request) {
   try {
     user = await requireAdminActivity(req, {
       action: "admin.create",
-      roles: ["MASTER_ADMIN"],
+      roles: ["MASTER_ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
     });
   } catch (e) {
     return toErrorResponse(e);
+  }
+
+  // Inside a white-label company, ONLY the tenant root (partner) may mint staff.
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && !isTenantRoot(user)) {
+    return NextResponse.json(
+      { error: "Only the platform owner can create admins" },
+      { status: 403 }
+    );
   }
 
   const parsed = CreateBody.safeParse(await req.json());
@@ -79,8 +97,13 @@ export async function POST(req: Request) {
 
   const { name, email, phone, password, allowedTabs, role } = parsed.data;
 
+  // Per-tenant uniqueness — same email/phone may exist in another company.
   const existing = await prisma.user.findFirst({
-    where: { OR: [{ email: email.toLowerCase() }, { phone }], deletedAt: null },
+    where: {
+      OR: [{ email: email.toLowerCase() }, { phone }],
+      deletedAt: null,
+      platformOwnerId: ownerId ?? null,
+    },
   });
   if (existing) {
     return NextResponse.json(
@@ -100,6 +123,8 @@ export async function POST(req: Request) {
       role,
       status: "ACTIVE",
       allowedTabs,
+      // Bind tenant admins to the partner's company (null for native admins).
+      ...(ownerId ? { platformOwnerId: ownerId } : {}),
     },
     select: {
       id: true,

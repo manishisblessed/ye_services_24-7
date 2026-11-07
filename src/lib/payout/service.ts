@@ -5,6 +5,7 @@ import { decryptField } from "@/lib/crypto/fieldEncryption";
 import { toNumber, sub, round } from "@/lib/money";
 import { creditServiceMargin, reverseServiceMargin } from "@/lib/commission/revenue";
 import { getPartner, assertRealMoneyProvider } from "@/lib/partners";
+import { samedayKnteerPayout } from "@/lib/partners/sameday-knteer-payout";
 import { sendOpsAlert } from "@/lib/monitoring/alerts";
 import { enqueue, QUEUES } from "@/lib/queue";
 import { emitWebhookEvent } from "@/lib/platform/webhooks";
@@ -34,6 +35,29 @@ import { logger } from "@/lib/logger";
 const HOLDABLE: PayoutStatus[] = ["APPROVED", "PROCESSING", "NEEDS_REVIEW"];
 
 const TERMINAL: PayoutStatus[] = ["SUCCESS", "FAILED", "REJECTED", "REVERSED"];
+
+// Minimum age (seconds) a KNTEER NEEDS_REVIEW row must be before an operator
+// may force_failed it. Prevents a hasty manual refund before the partner can
+// refund the row naturally (rule: 30 min + live re-check).
+const KNTEER_MANUAL_REFUND_MIN_AGE_SEC = Number(
+  process.env.KNTEER_MANUAL_REFUND_MIN_AGE_SEC ?? 30 * 60
+);
+
+/**
+ * Thrown by resolveOnePayout when Rule #7 (Knteer manual-refund gate) blocks
+ * a force_failed action. The admin resolve route catches this and returns 409
+ * so the UI can surface the reason without crashing.
+ */
+export class PayoutResolveGateError extends Error {
+  readonly statusCode: number;
+  readonly code: string;
+  constructor(message: string, code: string, statusCode = 409) {
+    super(message);
+    this.name = "PayoutResolveGateError";
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
 
 /** JSON-safe snapshot of a provider payload (never contains raw PII). */
 function asJson(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
@@ -251,7 +275,20 @@ function payoutFailureReason(res: { code: string; message: string }): string {
 }
 
 /** Build the decrypted beneficiary block for the provider call. */
-function beneficiaryFor(row: PayoutRequest, contactMobile?: string) {
+/**
+ * Select the payout provider based on the row's rail.
+ * KNTEER → samedayKnteerPayout; everything else → the settlement provider.
+ */
+function payoutProviderForRow(row: { rail?: string | null }) {
+  if (row.rail === "KNTEER") return samedayKnteerPayout;
+  return getPartner("payout");
+}
+
+function beneficiaryFor(
+  row: PayoutRequest,
+  contactMobile?: string,
+  knteer?: { bankName?: string; mobile?: string } | null
+) {
   if (row.mode === "UPI") {
     return { name: row.beneficiaryName, vpa: decryptField(row.accountNumber) };
   }
@@ -261,7 +298,9 @@ function beneficiaryFor(row: PayoutRequest, contactMobile?: string) {
     ifsc: row.ifsc ? decryptField(row.ifsc) : undefined,
     // Same Day requires a non-blank contact mobile on the registered account or
     // the transfer is rejected; the requester's own mobile is always present.
-    mobile: contactMobile,
+    // For the Knteer rail, prefer the beneficiary's registered mobile + bank name.
+    mobile: knteer?.mobile || contactMobile,
+    ...(knteer?.bankName ? { bankName: knteer.bankName } : {}),
   };
 }
 
@@ -307,7 +346,17 @@ export async function processPayoutInitiate(payoutRequestId: string): Promise<vo
     select: { userCode: true, phone: true },
   });
 
-  const provider = getPartner("payout");
+  // Knteer rail needs the beneficiary's bank name + registered mobile, which
+  // live on the linked KnteerBeneficiary (not the PayoutRequest row itself).
+  const knteerBene =
+    row.rail === "KNTEER" && row.knteerBeneficiaryId
+      ? await prisma.knteerBeneficiary.findUnique({
+          where: { id: row.knteerBeneficiaryId },
+          select: { bankName: true, mobile: true },
+        })
+      : null;
+
+  const provider = payoutProviderForRow(row);
   // Never push real money through a mock in production. A mock "PAID" would
   // capture the hold (debit the user) without any bank transfer. Refuse instead
   // — the request stays PROCESSING (funds held) for ops/recon to resolve.
@@ -315,15 +364,18 @@ export async function processPayoutInitiate(payoutRequestId: string): Promise<vo
     provider,
     () => new Error("Payout rail resolved to MOCK in production — refusing to send")
   );
+  // Embed our reference in the narration so the rail carries it in webhook
+  // payloads and list API responses — makes reference recovery reliable.
+  const narrationTag = row.bulkpeReferenceId;
   const res = await provider.payout({
     idempotencyKey: row.bulkpeReferenceId,
     userId: row.userId,
     mode: row.mode,
     amount: toNumber(row.amount),
-    beneficiary: beneficiaryFor(row, toContactMobile(user?.phone)),
+    beneficiary: beneficiaryFor(row, toContactMobile(user?.phone), knteerBene),
     purpose: user?.userCode
-      ? `Pay by NxtGenPay by RT Code - ${user.userCode}`
-      : `Pay by NxtGenPay ${row.userId}`,
+      ? `Pay by NxtGenPay by RT Code - ${user.userCode} ${narrationTag}`
+      : `Pay by NxtGenPay ${narrationTag}`,
   });
 
   // Persist a safe request/response snapshot (no raw PII in request).
@@ -533,7 +585,7 @@ export async function reconcilePayout(payoutRequestId: string): Promise<void> {
     }
   }
 
-  const provider = getPartner("payout");
+  const provider = payoutProviderForRow(row);
   // A mock status poll unconditionally returns "PAID" — never let recon finalize
   // a phantom success (capture the hold with no real transfer) in production.
   assertRealMoneyProvider(
@@ -693,6 +745,39 @@ export async function resolveOnePayout(
       response: { operatorResolved: true, note: opts.note ?? null },
     });
   } else if (opts.action === "force_failed") {
+    // Rule #7: For Knteer rows, enforce a minimum age before manual force_failed
+    // to prevent a hasty refund before the partner can refund naturally.
+    if (row.rail === "KNTEER") {
+      const ageMs = Date.now() - (row.processedAt ?? row.createdAt).getTime();
+      const ageSec = Math.floor(ageMs / 1000);
+      if (ageSec < KNTEER_MANUAL_REFUND_MIN_AGE_SEC) {
+        const waitMin = Math.ceil((KNTEER_MANUAL_REFUND_MIN_AGE_SEC - ageSec) / 60);
+        throw new PayoutResolveGateError(
+          `Bank Transfer refunds require the transaction to be at least ${Math.round(KNTEER_MANUAL_REFUND_MIN_AGE_SEC / 60)} minutes old. ` +
+            `Please wait about ${waitMin} more minute${waitMin === 1 ? "" : "s"}, verify no refund was already issued, then try again.`,
+          "KNTEER_REFUND_TOO_SOON"
+        );
+      }
+      // Live re-check: reconcile first; if the row resolved on its own, skip
+      // the manual force_failed (funds are already released/captured).
+      await reconcilePayout(row.id);
+      const refreshed = await prisma.payoutRequest.findUnique({
+        where: { id: row.id },
+        select: { status: true },
+      });
+      if (refreshed && refreshed.status !== "NEEDS_REVIEW") {
+        const after2 = await prisma.payoutRequest.findUnique({
+          where: { id: row.id },
+          select: { status: true, bulkpeTxnId: true },
+        });
+        return {
+          action: opts.action,
+          status: after2?.status ?? row.status,
+          recoveredReference: after2?.bulkpeTxnId ?? null,
+          changed: true,
+        };
+      }
+    }
     await finalizePayoutFailure(row.id, {
       failureReason: opts.note?.trim() || "Operator confirmed bank did not disburse",
       response: { operatorResolved: true, note: opts.note ?? null },

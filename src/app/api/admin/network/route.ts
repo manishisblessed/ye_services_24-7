@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { dec, toNumber } from "@/lib/money";
+import { tenantUserWhere } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,13 @@ const TIERS = ["RETAILER", "DISTRIBUTOR", "MASTER_DISTRIBUTOR", "SUPER_DISTRIBUT
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const session = await requireRole(
+      "MASTER_ADMIN",
+      "ADMIN",
+      "SUPPORT",
+      "FINANCE",
+      "WHITELABEL_PARTNER"
+    );
     const { searchParams } = new URL(req.url);
     const tierParam = searchParams.get("tier") ?? "RETAILER";
     const tier = (TIERS as readonly string[]).includes(tierParam) ? tierParam : "RETAILER";
@@ -24,6 +31,8 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(searchParams.get("page") ?? 1));
     const pageSize = Math.min(100, Math.max(10, Number(searchParams.get("pageSize") ?? 25)));
 
+    // White-label isolation — tenant root/staff see only their company.
+    const scope = await tenantUserWhere(session);
     const where: Record<string, unknown> = { role: tier, deletedAt: null };
     if (status && status !== "all") where.status = status;
     // Monthly re-KYC filter: exempt users, or users with an open requirement.
@@ -42,9 +51,15 @@ export async function GET(req: Request) {
       ];
     }
 
+    const hasScope = Object.keys(scope).length > 0;
+    const scopedWhere = hasScope ? { AND: [where, scope] } : where;
+    const scopedTierCountWhere = hasScope
+      ? { AND: [{ role: { in: [...TIERS] }, deletedAt: null }, scope] }
+      : { role: { in: [...TIERS] }, deletedAt: null };
+
     const [users, total, tierCounts] = await Promise.all([
       prisma.user.findMany({
-        where: where as never,
+        where: scopedWhere as never,
         select: {
           id: true,
           userCode: true,
@@ -80,10 +95,10 @@ export async function GET(req: Request) {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      prisma.user.count({ where: where as never }),
+      prisma.user.count({ where: scopedWhere as never }),
       prisma.user.groupBy({
         by: ["role"],
-        where: { role: { in: [...TIERS] }, deletedAt: null },
+        where: scopedTierCountWhere as never,
         _count: true,
       }),
     ]);

@@ -15,13 +15,106 @@ import { AuthError, type SessionUser } from "../auth-server";
 
 const ADMIN_ROLES = new Set(["MASTER_ADMIN", "ADMIN", "SUPPORT"]);
 
+/** All back-office staff roles (money oversight + operations). */
+const STAFF_ROLES = new Set(["MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE"]);
+
 export function isAdminRole(role: string): boolean {
   return ADMIN_ROLES.has(role);
 }
 
-/** Throw 403 unless `user` owns (or administers) the given resource owner id. */
+/* ────────────────────────────────────────────────────────────────────────
+ * White-label tenant isolation
+ *
+ * Access model (replaces the blanket "admins see everything"):
+ *   - Native platform staff (MASTER_ADMIN/ADMIN/SUPPORT/FINANCE with NO
+ *     platformOwnerId and not a tenant owner) → full cross-tenant oversight.
+ *   - A white-label partner (tenant root) and their tenant staff → everything
+ *     WITHIN their own platformOwnerId boundary, nothing outside it.
+ *   - Network users (SD/MD/DT/RT) → self + downline (already inside a tenant).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+type TenantActor = {
+  id: string;
+  role: string;
+  platformOwnerId?: string | null;
+  isTenantOwner?: boolean;
+};
+
+/**
+ * The tenant-root user id for this caller, or null for native platform users.
+ * A WHITELABEL_PARTNER (or any flagged tenant owner) IS the root; everyone else
+ * inherits the root via platformOwnerId.
+ */
+export function tenantOwnerId(user: TenantActor): string | null {
+  if (user.role === "WHITELABEL_PARTNER" || user.isTenantOwner) return user.id;
+  return user.platformOwnerId ?? null;
+}
+
+/** True when the caller IS a white-label tenant root. */
+export function isTenantRoot(user: TenantActor): boolean {
+  return user.role === "WHITELABEL_PARTNER" || user.isTenantOwner === true;
+}
+
+/** True when the caller is native platform staff with cross-tenant oversight. */
+export function isPlatformStaff(user: TenantActor): boolean {
+  return STAFF_ROLES.has(user.role) && !user.platformOwnerId && !isTenantRoot(user);
+}
+
+/** True when the caller is a staff account (admin/support/finance) of a tenant. */
+export function isTenantStaff(user: TenantActor): boolean {
+  return STAFF_ROLES.has(user.role) && Boolean(tenantOwnerId(user));
+}
+
+/** True when the caller may see every record in their tenant (root or staff). */
+export function hasTenantWideScope(user: TenantActor): boolean {
+  return isTenantRoot(user) || isTenantStaff(user);
+}
+
+/** All user ids belonging to a tenant (the root + every member). */
+export async function getTenantMemberIds(ownerId: string): Promise<string[]> {
+  const rows = await prisma.user.findMany({
+    where: { OR: [{ id: ownerId }, { platformOwnerId: ownerId }] },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
+}
+
+/**
+ * Prisma `where` fragment for the **User** table that scopes a list query to
+ * what `user` may see. Spread into a User query's `where`.
+ *   - Native staff → {} (unrestricted)
+ *   - Tenant root/staff → the whole tenant (root + members)
+ *   - Network user → self + downline
+ */
+export async function tenantUserWhere(
+  user: TenantActor
+): Promise<Record<string, unknown>> {
+  if (isPlatformStaff(user)) return {};
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && hasTenantWideScope(user)) {
+    return { OR: [{ id: ownerId }, { platformOwnerId: ownerId }] };
+  }
+  const descendants = await getDescendantIds(user.id);
+  return { id: { in: [user.id, ...descendants] } };
+}
+
+/**
+ * Prisma `where` fragment for any model that carries a `platformOwnerId`
+ * column (Invite, WhitelabelProfile, …). Native staff see all; tenant members
+ * are pinned to their own tenant.
+ */
+export function tenantOwnedWhere(user: TenantActor): Record<string, unknown> {
+  if (isPlatformStaff(user)) return {};
+  const ownerId = tenantOwnerId(user);
+  // Fail closed: a tenant member with no resolvable owner sees nothing.
+  return { platformOwnerId: ownerId ?? "__no_tenant__" };
+}
+
+/** Throw 403 unless `user` owns (or administers) the given resource owner id.
+ *  Only NATIVE platform staff get the blanket bypass; tenant staff must prove
+ *  access via `assertCanAccessUser` (tenant/hierarchy aware). */
 export function assertOwner(resourceOwnerId: string, user: SessionUser): void {
-  if (isAdminRole(user.role)) return;
+  if (isPlatformStaff(user)) return;
   if (resourceOwnerId === user.id) return;
   throw new AuthError("Forbidden", 403);
 }
@@ -94,8 +187,19 @@ export async function canAccessUser(
   targetUserId: string,
   user: SessionUser
 ): Promise<boolean> {
-  if (isAdminRole(user.role)) return true;
+  if (isPlatformStaff(user)) return true;
   if (targetUserId === user.id) return true;
+  // Tenant root / tenant staff: any member of the SAME tenant.
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && hasTenantWideScope(user)) {
+    const target = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, platformOwnerId: true },
+    });
+    if (!target) return false;
+    return target.platformOwnerId === ownerId || target.id === ownerId;
+  }
+  // Network user: self + downline.
   const descendants = await getDescendantIds(user.id);
   return descendants.includes(targetUserId);
 }
@@ -121,7 +225,12 @@ export async function assertCanAccessUser(
 export async function scopeUserIdFilter(
   user: SessionUser
 ): Promise<{ userId?: { in: string[] } }> {
-  if (isAdminRole(user.role)) return {};
+  if (isPlatformStaff(user)) return {};
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && hasTenantWideScope(user)) {
+    const ids = await getTenantMemberIds(ownerId);
+    return { userId: { in: ids } };
+  }
   const descendants = await getDescendantIds(user.id);
   return { userId: { in: [user.id, ...descendants] } };
 }
@@ -135,7 +244,13 @@ export async function scopeUserIdFilter(
 export async function scopeDirectUserIdFilter(
   user: SessionUser
 ): Promise<{ userId?: { in: string[] } }> {
-  if (isAdminRole(user.role)) return {};
+  if (isPlatformStaff(user)) return {};
+  // Tenant root / staff oversee every terminal in their company.
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && hasTenantWideScope(user)) {
+    const ids = await getTenantMemberIds(ownerId);
+    return { userId: { in: ids } };
+  }
   const children = await getDirectChildIds(user.id);
   return { userId: { in: [user.id, ...children] } };
 }

@@ -16,7 +16,13 @@ import { toErrorResponse } from "@/lib/security/apiErrors";
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
 
-const PLATFORM_ROLES = new Set(["MASTER_DISTRIBUTOR", "SUPER_DISTRIBUTOR", "ADMIN", "MASTER_ADMIN"]);
+const PLATFORM_ROLES = new Set([
+  "WHITELABEL_PARTNER",
+  "MASTER_DISTRIBUTOR",
+  "SUPER_DISTRIBUTOR",
+  "ADMIN",
+  "MASTER_ADMIN",
+]);
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const SUBDOMAIN_RE = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/;

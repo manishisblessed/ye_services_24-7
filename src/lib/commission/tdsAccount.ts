@@ -31,7 +31,7 @@ export async function getTdsAccountId(tx?: Prisma.TransactionClient): Promise<st
   if (cachedTdsAccountId) return cachedTdsAccountId;
   const client = tx ?? prisma;
 
-  const existing = await client.user.findUnique({
+  const existing = await client.user.findFirst({
     where: { email: TDS_ACCOUNT_EMAIL },
     select: { id: true },
   });

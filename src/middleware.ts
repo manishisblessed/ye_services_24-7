@@ -95,8 +95,47 @@ const ADMIN_PATHS: Array<{ prefix: string; roles: string[] }> = [
   { prefix: "/dashboard/sub-admin", roles: ["SUPPORT", "MASTER_ADMIN"] },
   // FINANCE gets read access to the admin area; write APIs enforce their own
   // stricter role checks (FINANCE is never accepted on mutating endpoints).
-  { prefix: "/dashboard/admin", roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE"] },
+  // WHITELABEL_PARTNER (tenant root) is allowed into the admin area but is then
+  // confined to the tenant-safe allowlist below.
+  { prefix: "/dashboard/admin", roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER"] },
 ];
+
+/**
+ * White-label tenant isolation (middleware layer).
+ *
+ * A "tenant member" is any account bound to a white-label company: a
+ * WHITELABEL_PARTNER (tenant root), a flagged tenant owner, or any user with a
+ * platformOwnerId. Such accounts may ONLY touch the curated, tenant-scoped
+ * slice of the admin surface below — every other /dashboard/admin page and
+ * /api/admin endpoint is denied by default (deny-by-default), so an unaudited
+ * platform route can never leak cross-tenant data to a tenant admin.
+ */
+const TENANT_ADMIN_PAGE_ALLOWLIST = [
+  "/dashboard/admin/users",
+  "/dashboard/admin/network",
+  "/dashboard/admin/sub-admins",
+  "/dashboard/admin/admins",
+];
+
+const TENANT_ADMIN_API_ALLOWLIST = [
+  "/api/admin/invite",
+  "/api/admin/users",
+  "/api/admin/network",
+  "/api/admin/sub-admins",
+  "/api/admin/admins",
+];
+
+function isTenantMemberToken(token: {
+  role?: unknown;
+  platformOwnerId?: unknown;
+  isTenantOwner?: unknown;
+}): boolean {
+  return (
+    token.role === "WHITELABEL_PARTNER" ||
+    token.isTenantOwner === true ||
+    Boolean(token.platformOwnerId)
+  );
+}
 
 /** BBPS bill-pay pages: only RETAILER can access. */
 const BBPS_PATHS: Array<{ prefix: string; roles: string[] }> = [
@@ -147,6 +186,20 @@ export async function middleware(req: NextRequest) {
     requestHeaders.delete(TENANT_DOMAIN_HEADER);
   }
 
+  // ── 2b. Tenant-member API firewall. Deny-by-default: a white-label tenant
+  //        account may only reach the tenant-scoped /api/admin endpoints in the
+  //        allowlist. Everything else in the admin API namespace is 403 so an
+  //        unaudited platform route can't leak cross-tenant data.
+  if (pathname.startsWith("/api/admin")) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (token && isTenantMemberToken(token)) {
+      const allowed = TENANT_ADMIN_API_ALLOWLIST.some((p) => pathname.startsWith(p));
+      if (!allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+  }
+
   // ── 3. Auth gate for dashboard routes (replaces withAuth wrapper so we keep
   //       full control of the response headers).
   if (pathname.startsWith("/dashboard")) {
@@ -160,6 +213,18 @@ export async function middleware(req: NextRequest) {
     const role = (token.role as string) ?? "";
     const rule = ADMIN_PATHS.find((r) => pathname.startsWith(r.prefix));
     if (rule && !rule.roles.includes(role)) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    // Tenant members in the admin area are confined to the curated allowlist.
+    if (
+      pathname.startsWith("/dashboard/admin") &&
+      isTenantMemberToken(token) &&
+      !TENANT_ADMIN_PAGE_ALLOWLIST.some((p) => pathname.startsWith(p))
+    ) {
       const url = req.nextUrl.clone();
       url.pathname = "/dashboard";
       url.search = "";

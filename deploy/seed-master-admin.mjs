@@ -9,7 +9,17 @@ const prisma = new PrismaClient();
 
 const masterAdminHash = await bcrypt.hash('9090702707', 12);
 
-const admin = await prisma.user.upsert({
+// email is no longer globally unique (per-tenant identity migration).
+async function upsertUserByEmail({ where, update, create }) {
+  const existing = await prisma.user.findFirst({
+    where: { email: where.email, platformOwnerId: null },
+    select: { id: true },
+  });
+  if (existing) return prisma.user.update({ where: { id: existing.id }, data: update });
+  return prisma.user.create({ data: create });
+}
+
+const admin = await upsertUserByEmail({
   where:  { email: 'manish@shahworks.com' },
   update: { passwordHash: masterAdminHash, status: 'ACTIVE' },
   create: {

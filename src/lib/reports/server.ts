@@ -623,7 +623,12 @@ async function reportPg(user: SessionUser, params: ReportParams): Promise<Report
   const ids = await allowedUserIds(user);
   const createdAt = dateFilter(params);
   const pgMatch: Prisma.TransactionWhereInput = {
-    OR: [{ partner: "RAZORPAY" }, { service: "UPI_COLLECT" }],
+    OR: [
+      { partner: "RAZORPAY" },
+      { partner: "CHAGANS_PG" },
+      { partner: "VIABLE_PG" },
+      { service: "UPI_COLLECT" },
+    ],
   };
   const where: Prisma.TransactionWhereInput = {
     AND: [
@@ -668,7 +673,7 @@ async function reportPg(user: SessionUser, params: ReportParams): Promise<Report
   const trend = trendToSeries(
     await dailyTrend({
       table: "Transaction", dateCol: "createdAt", valueExpr: `"amount"`, userCol: "userId",
-      ids, from, to, extra: Prisma.sql`AND ("partner" = 'RAZORPAY' OR "service" = 'UPI_COLLECT')`,
+      ids, from, to, extra: Prisma.sql`AND ("partner" IN ('RAZORPAY', 'CHAGANS_PG', 'VIABLE_PG') OR "service" = 'UPI_COLLECT')`,
     }),
     "Daily collections", "#185df5"
   );

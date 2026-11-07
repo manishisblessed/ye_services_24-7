@@ -8,12 +8,23 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 const demoHash   = await bcrypt.hash('Lion_9090702707', 12);
 
+// email is no longer globally unique (per-tenant identity migration).
+// Native accounts (platformOwnerId = null) are matched by email within the native scope.
+async function upsertUserByEmail({ where, update, create }) {
+  const existing = await prisma.user.findFirst({
+    where: { email: where.email, platformOwnerId: null },
+    select: { id: true },
+  });
+  if (existing) return prisma.user.update({ where: { id: existing.id }, data: update });
+  return prisma.user.create({ data: create });
+}
+
 console.log('\n══════════════════════════════════════════');
 console.log('  BankingPoint24 — Demo Accounts Seed');
 console.log('══════════════════════════════════════════\n');
 
 // ── 1. MASTER ADMIN ────────────────────────────────────────────────────────
-const masterAdmin = await prisma.user.upsert({
+const masterAdmin = await upsertUserByEmail({
   where:  { email: 'support@grandhr.in' },
   update: { name: 'Manish Master', passwordHash: demoHash, role: 'MASTER_ADMIN', status: 'ACTIVE' },
   create: {
@@ -24,7 +35,7 @@ const masterAdmin = await prisma.user.upsert({
 console.log('✅ MASTER_ADMIN     →', masterAdmin.email);
 
 // ── 2. ADMIN ───────────────────────────────────────────────────────────────
-const admin = await prisma.user.upsert({
+const admin = await upsertUserByEmail({
   where:  { email: 'cto@samedaysolution.in' },
   update: { name: 'Manish admin', passwordHash: demoHash, role: 'ADMIN', status: 'ACTIVE' },
   create: {
@@ -36,7 +47,7 @@ const admin = await prisma.user.upsert({
 console.log('✅ ADMIN            →', admin.email);
 
 // ── 3. SUPER DISTRIBUTOR ───────────────────────────────────────────────────
-const superDist = await prisma.user.upsert({
+const superDist = await upsertUserByEmail({
   where:  { email: 'manishspecial009@outlook.com' },
   update: { name: 'Manish SD', passwordHash: demoHash, role: 'SUPER_DISTRIBUTOR', status: 'ACTIVE' },
   create: {
@@ -49,7 +60,7 @@ const superDist = await prisma.user.upsert({
 console.log('✅ SUPER_DISTRIBUTOR →', superDist.email);
 
 // ── 4. MASTER DISTRIBUTOR ──────────────────────────────────────────────────
-const masterDist = await prisma.user.upsert({
+const masterDist = await upsertUserByEmail({
   where:  { email: 'manishspecial009@gmail.com' },
   update: { name: 'Manish MD', passwordHash: demoHash, role: 'MASTER_DISTRIBUTOR', status: 'ACTIVE' },
   create: {
@@ -62,7 +73,7 @@ const masterDist = await prisma.user.upsert({
 console.log('✅ MASTER_DISTRIBUTOR→', masterDist.email);
 
 // ── 5. DISTRIBUTOR ─────────────────────────────────────────────────────────
-const dist = await prisma.user.upsert({
+const dist = await upsertUserByEmail({
   where:  { email: 'manishkshah27@outlook.com' },
   update: { name: 'Manish DT', passwordHash: demoHash, role: 'DISTRIBUTOR', status: 'ACTIVE' },
   create: {
@@ -75,7 +86,7 @@ const dist = await prisma.user.upsert({
 console.log('✅ DISTRIBUTOR      →', dist.email);
 
 // ── 6. RETAILER ────────────────────────────────────────────────────────────
-const retailer = await prisma.user.upsert({
+const retailer = await upsertUserByEmail({
   where:  { email: 'manishisspecial@gmail.com' },
   update: { name: 'Manish RT', passwordHash: demoHash, role: 'RETAILER', status: 'ACTIVE' },
   create: {
@@ -88,7 +99,7 @@ const retailer = await prisma.user.upsert({
 console.log('✅ RETAILER         →', retailer.email);
 
 // ── 7. Convert manish@shahworks.com → WHITELABEL_PARTNER ──────────────────
-const whitelabel = await prisma.user.upsert({
+const whitelabel = await upsertUserByEmail({
   where:  { email: 'manish@shahworks.com' },
   update: {
     name: 'Manish whitelable partner',

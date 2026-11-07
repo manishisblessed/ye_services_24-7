@@ -118,13 +118,15 @@ export interface UpiProvider {
   name: string;
   collect(input: UpiCollectInput): Promise<PartnerResult<UpiCollectOutput>>;
   status(orderId: string): Promise<PartnerResult<UpiStatusOutput>>;
+  /** When true the provider has no status API; the webhook is the only crediting path. */
+  webhookOnly?: boolean;
 }
 
 // ---------- Payouts ----------
 export interface PayoutInput extends IdempotencyContext {
   mode: "IMPS" | "NEFT" | "RTGS" | "UPI";
   amount: Money;
-  beneficiary: { name: string; accountNumber?: string; ifsc?: string; vpa?: string; mobile?: string };
+  beneficiary: { name: string; accountNumber?: string; ifsc?: string; vpa?: string; mobile?: string; bankName?: string };
   purpose: string;
 }
 export interface PayoutOutput {

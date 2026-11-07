@@ -37,7 +37,7 @@ let cachedSuspenseAccountId: string | null = null;
 export async function getSuspenseAccountId(client: DbClient = prisma): Promise<string> {
   if (cachedSuspenseAccountId) return cachedSuspenseAccountId;
 
-  const existing = await client.user.findUnique({
+  const existing = await client.user.findFirst({
     where: { email: SUSPENSE_EMAIL },
     select: { id: true },
   });

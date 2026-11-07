@@ -10,6 +10,7 @@ import * as mock from "./mock";
 import { paysprintAeps, paysprintConfigured, paysprintDmt } from "./paysprint";
 import { razorpayPayout, razorpayPayoutConfigured, razorpayUpi, razorpayUpiConfigured } from "./razorpay";
 import { viableConfigured, viableUpi } from "./viable-pg";
+import { chagansConfigured, chagansUpi, resolveChagansGateway, randomizeChagansAmount } from "./chagans-pg";
 import { samedayBbps, samedayBbpsConfigured } from "./sameday-bbps";
 import { samedaySettlementConfigured } from "./sameday-settlement";
 import { samedaySettlementPayout } from "./sameday-payout";
@@ -106,9 +107,10 @@ export function getPartner<V extends Vertical>(v: V): ProviderMap[V] {
     case "dmt":
       return (flags.dmt && paysprintConfigured() ? paysprintDmt : mock.mockDmt) as ProviderMap[V];
     case "upi":
-      // Prefer Viable DigiSeva PG; then Razorpay.
+      // Prefer Viable DigiSeva PG; then Razorpay; then Chagans; else mock.
       if (flags.upi && viableConfigured()) return viableUpi as ProviderMap[V];
       if (flags.upi && razorpayUpiConfigured()) return razorpayUpi as ProviderMap[V];
+      if (flags.upi && chagansConfigured()) return chagansUpi as ProviderMap[V];
       return mock.mockUpi as ProviderMap[V];
     case "payout":
       return resolvePayout() as ProviderMap[V];
@@ -203,7 +205,15 @@ export function partnerStatus() {
   return {
     aeps:     { live: flags.aeps && paysprintConfigured(), provider: flags.aeps && paysprintConfigured() ? "PAYSPRINT" : "MOCK" },
     dmt:      { live: flags.dmt && paysprintConfigured(), provider: flags.dmt && paysprintConfigured() ? "PAYSPRINT" : "MOCK" },
-    upi:      { live: flags.upi && (viableConfigured() || razorpayUpiConfigured()), provider: flags.upi && viableConfigured() ? "VIABLE_PG" : flags.upi && razorpayUpiConfigured() ? "RAZORPAY" : "MOCK" },
+    upi:      (() => {
+      const live = flags.upi && (viableConfigured() || razorpayUpiConfigured() || chagansConfigured());
+      const names = [
+        flags.upi && viableConfigured() ? "VIABLE_PG" : null,
+        flags.upi && razorpayUpiConfigured() ? "RAZORPAY" : null,
+        flags.upi && chagansConfigured() ? "CHAGANS_PG" : null,
+      ].filter(Boolean) as string[];
+      return { live, provider: names.length ? names.join("+") : "MOCK" };
+    })(),
     payout:   (() => {
       const p = resolvePayout();
       const live = p.name !== "MOCK-PAYOUT";
@@ -226,6 +236,73 @@ export function partnerStatus() {
     rechargekitDirect: { live: flags.rechargekitDirect && rechargekitDirectConfigured(), provider: flags.rechargekitDirect && rechargekitDirectConfigured() ? "RECHARGEKIT_DIRECT" : "NONE" },
     esign:    { live: flags.esign && leegalityConfigured(), provider: flags.esign && leegalityConfigured() ? "LEEGALITY" : "NONE" }
   };
+}
+
+/**
+ * Resolve the UPI provider + collect parameters for a user-selected gateway.
+ *
+ * Channel ids use a `<provider>:<gateway>` prefix (e.g. "chagans:comet",
+ * "viable:razorpay1") so the resolver routes to the correct provider. Legacy
+ * bare ids and a missing id fall back to the default provider.
+ */
+export type UpiSelection = {
+  provider: UpiProvider;
+  channel?: string;
+  prepareAmount: (amount: number) => number;
+  maxAmount?: number;
+};
+
+export function resolveUpiSelection(channelId?: string): UpiSelection {
+  const idx = (channelId || "").indexOf(":");
+  const prefix = idx >= 0 ? channelId!.slice(0, idx) : "";
+  const sub = idx >= 0 ? channelId!.slice(idx + 1) : "";
+
+  if (prefix === "chagans" && flags.upi && chagansConfigured()) {
+    const gw = resolveChagansGateway(sub);
+    return {
+      provider: chagansUpi,
+      channel: gw.id,
+      prepareAmount: gw.requiresRandom ? randomizeChagansAmount : (a) => a,
+      maxAmount: gw.maxAmount,
+    };
+  }
+  if (prefix === "viable" && flags.upi && viableConfigured()) {
+    return { provider: viableUpi, channel: sub || undefined, prepareAmount: (a) => a };
+  }
+  if (prefix === "razorpay" && flags.upi && razorpayUpiConfigured()) {
+    return { provider: razorpayUpi, channel: sub || undefined, prepareAmount: (a) => a };
+  }
+
+  const provider = getPartner("upi");
+  if (provider.name === "CHAGANS_PG") {
+    const gw = resolveChagansGateway(channelId);
+    return {
+      provider,
+      channel: gw.id,
+      prepareAmount: gw.requiresRandom ? randomizeChagansAmount : (a) => a,
+      maxAmount: gw.maxAmount,
+    };
+  }
+  return { provider, channel: channelId || undefined, prepareAmount: (a) => a };
+}
+
+/**
+ * Resolve the EXACT UPI provider that originated a transaction by its
+ * persisted `Transaction.partner` name. The settle layer MUST route through
+ * this so a Chagans payin is never verified against Razorpay.
+ */
+export function getUpiProviderByName(name?: string | null): UpiProvider {
+  switch ((name || "").toUpperCase()) {
+    case "CHAGANS_PG": return chagansUpi;
+    case "VIABLE_PG": return viableUpi;
+    case "RAZORPAY-UPI": return razorpayUpi;
+    default: return getPartner("upi");
+  }
+}
+
+/** True when the named provider settles via webhook only (no status pull). */
+export function isWebhookOnlyPartner(name?: string | null): boolean {
+  return getUpiProviderByName(name).webhookOnly === true;
 }
 
 export type * from "./types";

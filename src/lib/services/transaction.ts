@@ -292,13 +292,13 @@ export async function runTransaction<TIn, TOut>(
   }
 
   // 4b. INDETERMINATE path — a transport/gateway failure (NETWORK / HTTP 5xx /
-  // timeout / exception) where we got NO definitive answer and the provider MAY
-  // have charged. For rails we can reconcile (BBPS/Pay2New, RechargeKit CC-2) we
-  // HOLD the reserve (NO refund) and park the txn in NEEDS_REVIEW. The provider
-  // status API / recon sweep / admin resolver settles or refunds it once the
-  // authoritative outcome is known — so a payment that actually succeeded is
-  // never wrongly refunded (the exact direct-loss bug this prevents).
-  if (!result.ok && result.indeterminate && railSupportsHoldAndRecon(input.partner, input.service)) {
+  // On SameDay recon-capable rails EVERY non-ok result (including a synchronous
+  // HTTP-200 "success:false") is parked in NEEDS_REVIEW without an immediate
+  // refund. The card-push rail can debit the subscriber even when it returns a
+  // failure code synchronously (SameDay reverses our float separately, later).
+  // The provider status API / recon sweep / admin resolver will confirm the true
+  // outcome and trigger a double-checked deferred refund via finalizeServiceTransaction.
+  if (!result.ok && railSupportsHoldAndRecon(input.partner, input.service)) {
     await prisma.transaction.update({
       where: { id: txn.id },
       data: {
@@ -310,7 +310,9 @@ export async function runTransaction<TIn, TOut>(
       },
     });
     void sendOpsAlert({
-      title: "Indeterminate payment HELD for review (funds NOT refunded)",
+      title: result.indeterminate
+        ? "Indeterminate payment HELD for review (funds NOT refunded)"
+        : "Provider-declined payment HELD for review (funds NOT refunded)",
       severity: "critical",
       details: {
         refId,
@@ -326,7 +328,13 @@ export async function runTransaction<TIn, TOut>(
         action: "txn.held_for_review",
         entity: "Transaction",
         entityId: txn.id,
-        meta: { refId, code: result.code, reason: "indeterminate_partner_result" },
+        meta: {
+          refId,
+          code: result.code,
+          reason: result.indeterminate
+            ? "indeterminate_partner_result"
+            : "provider_declined_pending_double_check",
+        },
       },
     });
     return { status: "NEEDS_REVIEW" as const, refId, error: "Payment under verification" };

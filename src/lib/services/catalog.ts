@@ -41,6 +41,7 @@ export type ServiceRouteSeed = {
  */
 export const SERVICE_KEYS = {
   PAYOUT: "payout_bulkpe", // stable key — do not rename (referenced in DB rows)
+  KNTEER_PAYOUT: "knteer_payout", // Bank Transfer (Same Day Knteer Payout API)
   PG: "pg_razorpay",
   POS: "pos_sameday",
   QR: "qr_dynamic",
@@ -82,6 +83,7 @@ export const SERVICE_KEY_TO_HREF: Record<string, string> = {
   [SERVICE_KEYS.POS]: "/dashboard/pos",
   [SERVICE_KEYS.QR]: "/dashboard/qr",
   [SERVICE_KEYS.PAYOUT]: "/dashboard/payout",
+  [SERVICE_KEYS.KNTEER_PAYOUT]: "/dashboard/knteer-payout",
   [SERVICE_KEYS.AEPS]: "/dashboard/aadhaar-pay",
   [SERVICE_KEYS.UPI]: "/dashboard/upi",
   [SERVICE_KEYS.RECHARGE]: "/dashboard/recharge/mobile",
@@ -105,6 +107,7 @@ const SERVICE_HREF_PREFIXES: Array<[prefix: string, key: string]> = [
   ["/dashboard/pos", SERVICE_KEYS.POS],
   ["/dashboard/qr", SERVICE_KEYS.QR],
   ["/dashboard/payout", SERVICE_KEYS.PAYOUT],
+  ["/dashboard/knteer-payout", SERVICE_KEYS.KNTEER_PAYOUT],
   ["/dashboard/aadhaar-pay", SERVICE_KEYS.AEPS],
   ["/dashboard/upi", SERVICE_KEYS.UPI],
   ["/dashboard/recharge", SERVICE_KEYS.RECHARGE],
@@ -144,6 +147,16 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
     enabled: true,
     note: "Bank / UPI disbursals via the Same Day settlement API. Turning this off blocks new payout submissions immediately.",
     sortOrder: 10,
+  },
+  {
+    key: SERVICE_KEYS.KNTEER_PAYOUT,
+    name: "Payout-2 (Same Day)",
+    type: "SERVICE",
+    kind: "PAYOUT",
+    provider: "SAMEDAY_KNTEER",
+    enabled: false,
+    note: "Bank Transfer via Same Day Knteer Payout API — priced independently (KNTEER_PAYOUT slab). Enable after configuring KNTEER_PAYOUT scheme slabs.",
+    sortOrder: 11,
   },
   {
     key: SERVICE_KEYS.PG,

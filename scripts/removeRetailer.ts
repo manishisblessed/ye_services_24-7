@@ -197,8 +197,8 @@ async function main() {
   const stillThere = await prisma.user.findUnique({ where: { id: userId } });
   console.log(`  user row gone               : ${stillThere ? "NO ✗" : "YES ✓"}`);
 
-  const emailFree = !(await prisma.user.findUnique({ where: { email: user.email.toLowerCase() } }));
-  const phoneFree = !(await prisma.user.findUnique({ where: { phone: user.phone } }));
+  const emailFree = !(await prisma.user.findFirst({ where: { email: user.email.toLowerCase() } }));
+  const phoneFree = !(await prisma.user.findFirst({ where: { phone: user.phone } }));
   console.log(`  email free for re-onboard   : ${emailFree ? "YES ✓" : "NO ✗"}`);
   console.log(`  phone free for re-onboard   : ${phoneFree ? "YES ✓" : "NO ✗"}`);
 

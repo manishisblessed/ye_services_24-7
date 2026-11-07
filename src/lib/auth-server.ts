@@ -18,6 +18,8 @@ import {
   setCachedSessionValidation,
 } from "./security/sessionValidationCache";
 import { isLoginAllowed } from "./security/accountGate";
+import { findLoginUser, resolveTenantOwnerFromHeader } from "./security/loginLookup";
+import { TENANT_HEADER } from "./tenant/context";
 
 export type SessionUser = {
   id: string;
@@ -33,6 +35,14 @@ export type SessionUser = {
   twoFactorEnabled: boolean;
   /** Master-admin waived the mandatory-2FA gate for this account. */
   twoFactorExempt: boolean;
+  /**
+   * White-label tenancy. `platformOwnerId` = the tenant-root user id this
+   * account belongs to (null = native BankingPoint24 user). `isTenantOwner` =
+   * this account IS a white-label tenant root. Used by the tenant-scope layer
+   * to isolate every admin query to the caller's own company.
+   */
+  platformOwnerId: string | null;
+  isTenantOwner: boolean;
 };
 
 declare module "next-auth" {
@@ -110,6 +120,8 @@ export const authOptions: NextAuthOptions = {
           enabledServices: (user as any).enabledServices ?? [],
           twoFactorEnabled: user.twoFactorEnabled,
           twoFactorExempt: (user as any).twoFactorExempt ?? false,
+          platformOwnerId: (user as any).platformOwnerId ?? null,
+          isTenantOwner: (user as any).isTenantOwner ?? false,
         };
       },
     }),
@@ -120,7 +132,7 @@ export const authOptions: NextAuthOptions = {
         identifier: { label: "Email or Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.identifier || !credentials?.password) return null;
 
         const identifier = normalizeIdentifier(credentials.identifier);
@@ -134,15 +146,11 @@ export const authOptions: NextAuthOptions = {
           throw e;
         }
 
-        const user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: identifier },
-              { phone: identifier },
-            ],
-            deletedAt: null,
-          },
-        });
+        // Tenant-aware, deterministic lookup (per-tenant identity migration).
+        const tenantHeader =
+          (req?.headers?.[TENANT_HEADER] as string | undefined) ?? null;
+        const tenantOwnerId = await resolveTenantOwnerFromHeader(tenantHeader);
+        const user = await findLoginUser(identifier, { tenantOwnerId });
 
         const valid = user ? await bcrypt.compare(credentials.password, user.passwordHash) : false;
         if (!user || !valid) {
@@ -176,6 +184,8 @@ export const authOptions: NextAuthOptions = {
           enabledServices: (user as any).enabledServices ?? [],
           twoFactorEnabled: user.twoFactorEnabled,
           twoFactorExempt: (user as any).twoFactorExempt ?? false,
+          platformOwnerId: (user as any).platformOwnerId ?? null,
+          isTenantOwner: (user as any).isTenantOwner ?? false,
         };
       },
     }),
@@ -197,6 +207,8 @@ export const authOptions: NextAuthOptions = {
         token.enabledServices = (user as any).enabledServices ?? [];
         token.twoFactorEnabled = (user as any).twoFactorEnabled ?? false;
         token.twoFactorExempt = (user as any).twoFactorExempt ?? false;
+        token.platformOwnerId = (user as any).platformOwnerId ?? null;
+        token.isTenantOwner = (user as any).isTenantOwner ?? false;
         try {
           const seed = await prisma.user.findUnique({
             where: { id: user.id },
@@ -239,6 +251,8 @@ export const authOptions: NextAuthOptions = {
                 status: true,
                 role: true,
                 enabledServices: true,
+                platformOwnerId: true,
+                isTenantOwner: true,
               },
             });
             setCachedSessionValidation(userId, fresh);
@@ -259,6 +273,8 @@ export const authOptions: NextAuthOptions = {
           token.status = fresh.status;
           token.role = fresh.role;
           token.enabledServices = fresh.enabledServices;
+          token.platformOwnerId = (fresh as any).platformOwnerId ?? null;
+          token.isTenantOwner = (fresh as any).isTenantOwner ?? false;
         } catch (err) {
           console.error("[auth] jwt callback: DB error refreshing token, using stale data", err);
         }
@@ -285,6 +301,8 @@ export const authOptions: NextAuthOptions = {
         enabledServices: (token.enabledServices as string[]) ?? [],
         twoFactorEnabled: (token.twoFactorEnabled as boolean) ?? false,
         twoFactorExempt: (token.twoFactorExempt as boolean) ?? false,
+        platformOwnerId: (token.platformOwnerId as string | null) ?? null,
+        isTenantOwner: (token.isTenantOwner as boolean) ?? false,
       };
       return session;
     },
@@ -342,6 +360,8 @@ export function createMobileToken(user: SessionUser, expiresInSec = 30 * 24 * 60
     status: user.status,
     allowedTabs: user.allowedTabs,
     enabledServices: user.enabledServices,
+    platformOwnerId: user.platformOwnerId,
+    isTenantOwner: user.isTenantOwner,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + expiresInSec,
   })));
@@ -379,6 +399,8 @@ export function verifyMobileToken(token: string): SessionUser | null {
       enabledServices: data.enabledServices ?? [],
       twoFactorEnabled: data.twoFactorEnabled ?? false,
       twoFactorExempt: data.twoFactorExempt ?? false,
+      platformOwnerId: data.platformOwnerId ?? null,
+      isTenantOwner: data.isTenantOwner ?? false,
     };
   } catch {
     return null;

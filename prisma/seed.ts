@@ -4,6 +4,26 @@ import { seedServiceRoutes } from "../src/lib/services/catalog";
 
 const prisma = new PrismaClient();
 
+/**
+ * email is no longer a globally-unique key (per-tenant identity), so we can't
+ * `upsert({ where: { email } })` anymore. These seed accounts are all native
+ * (platformOwnerId = null), so match on (email, native) and update/create.
+ */
+async function upsertUserByEmail(args: {
+  where: { email: string };
+  update: Record<string, unknown>;
+  create: Record<string, unknown>;
+}) {
+  const existing = await prisma.user.findFirst({
+    where: { email: args.where.email, platformOwnerId: null },
+    select: { id: true },
+  });
+  if (existing) {
+    return prisma.user.update({ where: { id: existing.id }, data: args.update as never });
+  }
+  return prisma.user.create({ data: args.create as never });
+}
+
 async function main() {
   console.log("→ Seeding BankingPoint24 database…");
 
@@ -12,7 +32,7 @@ async function main() {
 
   // ── Master Admin (primary platform owner) ──
   const masterAdminHash = await bcrypt.hash("9090702707", 12);
-  await prisma.user.upsert({
+  await upsertUserByEmail({
     where: { email: "manish@shahworks.com" },
     update: { passwordHash: masterAdminHash, status: UserStatus.ACTIVE },
     create: {
@@ -27,7 +47,7 @@ async function main() {
   });
 
   // ── Demo Master Admin ──
-  const masterAdmin = await prisma.user.upsert({
+  const masterAdmin = await upsertUserByEmail({
     where: { email: "support@grandhr.in" },
     update: {
       name: "Manish Master",
@@ -46,7 +66,7 @@ async function main() {
   });
 
   // ── Demo Admin ──
-  await prisma.user.upsert({
+  await upsertUserByEmail({
     where: { email: "cto@samedaysolution.in" },
     update: {
       name: "Manish admin",
@@ -65,7 +85,7 @@ async function main() {
   });
 
   // ── Role network accounts (Lion_9090702707) ──
-  const demoSD = await prisma.user.upsert({
+  const demoSD = await upsertUserByEmail({
     where: { email: "manishspecial009@outlook.com" },
     update: {
       name: "Manish SD",
@@ -86,7 +106,7 @@ async function main() {
     }
   });
 
-  const demoMD = await prisma.user.upsert({
+  const demoMD = await upsertUserByEmail({
     where: { email: "manishspecial009@gmail.com" },
     update: {
       name: "Manish MD",
@@ -107,7 +127,7 @@ async function main() {
     }
   });
 
-  const demoDT = await prisma.user.upsert({
+  const demoDT = await upsertUserByEmail({
     where: { email: "manishkshah27@outlook.com" },
     update: {
       name: "Manish DT",
@@ -128,7 +148,7 @@ async function main() {
     }
   });
 
-  await prisma.user.upsert({
+  await upsertUserByEmail({
     where: { email: "manishisspecial@gmail.com" },
     update: {
       name: "Manish RT",
@@ -155,7 +175,7 @@ async function main() {
 
   // ── Second Demo Retailer (Tejas_90907070) ──
   const tejasHash = await bcrypt.hash("Tejas_90907070", 12);
-  await prisma.user.upsert({
+  await upsertUserByEmail({
     where: { email: "tejasj7663@gmail.com" },
     update: {
       name: "Tejas Ramesh Jadhav",

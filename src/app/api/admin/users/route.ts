@@ -10,6 +10,7 @@ import { generateNextUserCode } from "@/lib/userCode";
 import { uplineInclude, flattenUpline } from "@/lib/hierarchy";
 import { buildInviteDataForUser } from "@/lib/onboarding/inviteBackfill";
 import { defaultServicesForRole } from "@/lib/settings";
+import { tenantUserWhere, tenantOwnerId } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
   try {
     admin = await requireAdminActivity(req, {
       action: "user.create",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
     });
   } catch (e) {
@@ -47,8 +48,18 @@ export async function POST(req: Request) {
 
   const { name, email, phone, password, role, shopName, city, state, pincode, parentId, status } = parsed.data;
 
+  // Tenant the new user belongs to: the creator's own tenant (null = native).
+  const ownerId = tenantOwnerId(admin);
+  // Per-tenant uniqueness: the same email/phone/shop may exist in a different
+  // white-label company, but never twice within the same tenant.
+  const tenantScope = { platformOwnerId: ownerId ?? null };
+
   const existing = await prisma.user.findFirst({
-    where: { OR: [{ email: email.toLowerCase() }, { phone }], deletedAt: null },
+    where: {
+      OR: [{ email: email.toLowerCase() }, { phone }],
+      deletedAt: null,
+      ...tenantScope,
+    },
   });
   if (existing) {
     const field = existing.email === email.toLowerCase() ? "email" : "phone";
@@ -60,7 +71,7 @@ export async function POST(req: Request) {
 
   if (shopName) {
     const dupShop = await prisma.user.findFirst({
-      where: { shopName: shopName.trim() },
+      where: { shopName: shopName.trim(), ...tenantScope },
       select: { id: true },
     });
     if (dupShop) {
@@ -75,6 +86,13 @@ export async function POST(req: Request) {
     const parent = await prisma.user.findUnique({ where: { id: parentId } });
     if (!parent)
       return NextResponse.json({ error: "Parent user not found" }, { status: 404 });
+    // A tenant creator can only attach users under a parent in their OWN tenant.
+    if (ownerId && parent.platformOwnerId !== ownerId && parent.id !== ownerId) {
+      return NextResponse.json(
+        { error: "Parent user is not part of your network" },
+        { status: 403 }
+      );
+    }
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -102,6 +120,8 @@ export async function POST(req: Request) {
         pincode: pincode?.trim(),
         parentId: parentId ?? undefined,
         enabledServices,
+        // Scope the new account to the creator's white-label tenant (if any).
+        ...(ownerId ? { platformOwnerId: ownerId } : {}),
       },
       select: {
         id: true,
@@ -145,7 +165,7 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const session = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const session = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
     const { searchParams } = new URL(req.url);
     const q = searchParams.get("q") ?? "";
     const role = searchParams.get("role");
@@ -198,9 +218,15 @@ export async function GET(req: Request) {
     // Never surface soft-deleted accounts in the operator console (list + count).
     where.deletedAt = null;
 
+    // White-label isolation: a tenant root/staff only ever sees their own
+    // company; native platform staff see everything. AND-combined so it never
+    // clobbers the search `OR`.
+    const scope = await tenantUserWhere(session);
+    const scopedWhere = Object.keys(scope).length ? { AND: [where, scope] } : where;
+
     const [users, total] = await Promise.all([
       prisma.user.findMany({
-        where: where as any,
+        where: scopedWhere as any,
         select: {
           id: true,
           userCode: true,
@@ -224,7 +250,7 @@ export async function GET(req: Request) {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      prisma.user.count({ where: where as any }),
+      prisma.user.count({ where: scopedWhere as any }),
     ]);
 
     const now = new Date();

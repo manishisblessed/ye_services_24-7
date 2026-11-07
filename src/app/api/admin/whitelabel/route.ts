@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin white-label tenant management.
@@ -18,7 +19,9 @@ const ADMIN_ROLES = new Set(["MASTER_ADMIN", "ADMIN"]);
 export async function GET(req: Request) {
   let user;
   try { user = await requireAuth(); } catch (e) { return toErrorResponse(e); }
-  if (!ADMIN_ROLES.has(user.role)) {
+  // Cross-tenant brand registry — native platform staff only. A tenant admin
+  // (role ADMIN with a platformOwnerId) must never enumerate other tenants.
+  if (!ADMIN_ROLES.has(user.role) || !isPlatformStaff(user)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -91,7 +94,7 @@ const PutBody = z.object({
 export async function PUT(req: Request) {
   let user;
   try { user = await requireAuth(); } catch (e) { return toErrorResponse(e); }
-  if (!ADMIN_ROLES.has(user.role)) {
+  if (!ADMIN_ROLES.has(user.role) || !isPlatformStaff(user)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -109,6 +112,21 @@ export async function PUT(req: Request) {
     where: { id },
     data: { status },
   });
+
+  // Activation side-effect: a LIVE tenant's owner is promoted to tenant owner so
+  // their onboarding/admin powers unlock immediately (no separate manual step).
+  // Suspending revokes the flag, freezing new onboarding under that tenant.
+  if (status === "LIVE") {
+    await prisma.user.update({
+      where: { id: profile.userId },
+      data: { isTenantOwner: true },
+    });
+  } else if (status === "SUSPENDED") {
+    await prisma.user.update({
+      where: { id: profile.userId },
+      data: { isTenantOwner: false },
+    });
+  }
 
   await prisma.auditLog.create({
     data: {

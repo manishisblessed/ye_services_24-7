@@ -122,7 +122,12 @@ export async function POST(
   const passwordHash = await bcrypt.hash(data.password, 12);
 
   const existingUser = await prisma.user.findFirst({
-    where: { OR: [{ email: invite.email }, { phone: invite.phone }] },
+    where: {
+      OR: [{ email: invite.email }, { phone: invite.phone }],
+      deletedAt: null,
+      // Per-tenant uniqueness — scope the collision check to the invite's tenant.
+      platformOwnerId: invite.platformOwnerId ?? null,
+    },
   });
 
   if (existingUser && invite.userId !== existingUser.id) {

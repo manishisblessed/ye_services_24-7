@@ -532,3 +532,126 @@ export async function runPgInstantSettlementSweep(): Promise<{
 
   return { processed: entries.length, settled, failed, totalAmount };
 }
+
+
+/* -------------------------------------------------------------------------
+ *  handleTopupCapture - instant T0 PG settlement for top-up collections.
+ *
+ *  Called by the webhook handler the moment Chagans confirms a collect.
+ *  Prices the gross against the retailer's assigned PG scheme, credits NET
+ *  to the wallet, distributes upline commission, and writes a PgSettlementEntry
+ *  for reconciliation.
+ * -------------------------------------------------------------------------
+ */
+
+export type TopupCaptureInput = {
+  transactionId: string;
+  grossAmount: number;
+  paymentMode?: string;
+  providerRef?: string;
+  scopeKey: string;
+};
+
+export type TopupCaptureResult = {
+  status: "SETTLED" | "DUPLICATE" | "NO_SCHEME";
+  netAmount?: number;
+  mdrAmount?: number;
+};
+
+export async function handleTopupCapture(
+  input: TopupCaptureInput,
+): Promise<TopupCaptureResult> {
+  const existing = await prisma.pgSettlementEntry.findUnique({
+    where: { transactionRef: input.transactionId },
+  });
+  if (existing) return { status: "DUPLICATE", netAmount: existing.netAmount?.toNumber() };
+
+  const tx = await prisma.transaction.findUnique({
+    where: { id: input.transactionId },
+    include: { user: true },
+  });
+  if (!tx) throw new Error(`handleTopupCapture: transaction ${input.transactionId} not found`);
+
+  const gross = round(input.grossAmount);
+  const paymentMode = input.paymentMode ?? "UPI";
+
+  const price = await priceSchemeSettlement({
+    userId: tx.userId,
+    serviceKind: "PG",
+    grossAmount: gross,
+    paymentMode,
+    scopeKey: input.scopeKey,
+    settlementType: "T0",
+  });
+
+  if (!price) {
+    await prisma.transaction.update({
+      where: { id: input.transactionId },
+      data: { status: "FAILED", errorMessage: "No PG MDR scheme — unpriced, requires ops review" },
+    });
+    return { status: "NO_SCHEME" };
+  }
+
+  const net = price.netAmount;
+  const mdrAmount = price.mdrAmount;
+
+  await prisma.$transaction(async (p) => {
+    await p.pgSettlementEntry.create({
+      data: {
+        transactionRef: input.transactionId,
+        orderId: input.providerRef ?? null,
+        userId: tx.userId,
+        grossAmount: dec(gross),
+        mdrAmount: dec(mdrAmount),
+        netAmount: dec(net),
+        vendorAmount: dec(price.vendorAmount ?? 0),
+        status: "SETTLED",
+        mode: "INSTANT",
+        settledVia: SETTLED_VIA.INSTANT_AUTO,
+        paymentMode,
+        provider: input.scopeKey,
+        settledAt: new Date(),
+      },
+    });
+
+    await p.transaction.update({
+      where: { id: input.transactionId },
+      data: {
+        status: "SUCCESS",
+        amount: dec(gross),
+        fee: dec(mdrAmount),
+      },
+    });
+
+    await creditWallet(
+      {
+        userId: tx.userId,
+        amount: net,
+        reason: "TOPUP",
+        refType: "Transaction",
+        refId: input.transactionId,
+        idempotencyKey: `topup:${input.transactionId}`,
+        note: `Wallet top-up via PG (net ${"\u20b9"}${toNumber(net).toFixed(2)})`,
+      },
+      p
+    );
+  });
+
+  const marginAmount = toNumber(mdrAmount) - toNumber(price.vendorAmount ?? 0);
+  if (marginAmount > 0) {
+    try {
+      await distributeMdrCommission(
+        input.transactionId,
+        tx.userId,
+        "PG",
+        gross,
+        "WALLET_TOPUP",
+        { paymentMode, company: input.scopeKey },
+      );
+    } catch {
+      // Commission failure must NOT roll back the customer credit.
+    }
+  }
+
+  return { status: "SETTLED", netAmount: toNumber(net), mdrAmount: toNumber(mdrAmount) };
+}

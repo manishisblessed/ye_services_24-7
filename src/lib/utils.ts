@@ -61,6 +61,36 @@ export function istDayRangeUtc(fromDate: string, toDate: string): { from: string
   };
 }
 
+/**
+ * Format an ISO date string as a human-readable IST date+time.
+ * e.g. "06 Nov 2026, 03:10 AM"
+ * Accepts optional Intl.DateTimeFormatOptions to customise the output.
+ */
+export function formatIST(
+  iso: string | undefined | null,
+  opts?: Intl.DateTimeFormatOptions
+): string {
+  if (!iso) return "—";
+  try {
+    const defaultOpts: Intl.DateTimeFormatOptions = {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return new Date(iso).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      ...defaultOpts,
+      ...opts,
+    });
+  } catch {
+    return iso;
+  }
+}
+
 /** Role-based user code prefixes (production format). */
 export const USER_CODE_PREFIX: Record<string, string> = {
   RETAILER: "RT",

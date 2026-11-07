@@ -85,12 +85,19 @@ export async function POST(req: Request) {
   const { phone, email, name } = parsed.data;
   const role = parsed.data.role ?? defaultChildRole(user.role);
 
-  // Fetch isTenantOwner flag for this user to allow tenant-owner SD invite powers
+  // Fetch tenancy flags for this user: isTenantOwner powers SD/MD invites, and
+  // platformOwnerId tells us which white-label namespace the new user lands in.
   const creatorMeta = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isTenantOwner: true },
+    select: { isTenantOwner: true, platformOwnerId: true },
   });
   const isTenantOwner = creatorMeta?.isTenantOwner ?? false;
+
+  // The tenant this invite belongs to (null = native BankingPoint24).
+  const inviteOwnerId =
+    user.role === "WHITELABEL_PARTNER" || isTenantOwner
+      ? user.id
+      : creatorMeta?.platformOwnerId ?? null;
 
   if (!canOnboard(user.role, role, { isTenantOwner })) {
     const allowed = defaultChildRole(user.role).replace(/_/g, " ");
@@ -100,8 +107,13 @@ export async function POST(req: Request) {
     );
   }
 
+  // Per-tenant uniqueness: the same email/phone may exist in another company.
   const existingUser = await prisma.user.findFirst({
-    where: { OR: [{ email: email.toLowerCase() }, { phone }] },
+    where: {
+      OR: [{ email: email.toLowerCase() }, { phone }],
+      deletedAt: null,
+      platformOwnerId: inviteOwnerId,
+    },
   });
   if (existingUser) {
     return NextResponse.json(
@@ -114,6 +126,7 @@ export async function POST(req: Request) {
     where: {
       OR: [{ email: email.toLowerCase() }, { phone }],
       status: { in: ["PENDING", "REGISTERED"] },
+      platformOwnerId: inviteOwnerId,
     },
   });
   if (existingInvite) {
@@ -128,10 +141,20 @@ export async function POST(req: Request) {
   // - Master Admin providing an explicit parentId → use it (validated below)
   // - Admin/Staff creating SD (top-level) → no parent needed
   let parentId: string | undefined;
-  if (["MASTER_ADMIN", "ADMIN", "SUPPORT"].includes(user.role)) {
-    if (parsed.data.parentId && user.role === "MASTER_ADMIN" && role !== "SUPER_DISTRIBUTOR") {
+  if (["MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER"].includes(user.role)) {
+    if (
+      parsed.data.parentId &&
+      (user.role === "MASTER_ADMIN" || user.role === "WHITELABEL_PARTNER") &&
+      role !== "SUPER_DISTRIBUTOR"
+    ) {
       const parentUser = await prisma.user.findFirst({
-        where: { id: parsed.data.parentId, status: "ACTIVE" },
+        where: {
+          id: parsed.data.parentId,
+          status: "ACTIVE",
+          // A partner may only attach new users under a parent inside their own
+          // tenant — never across tenant boundaries or onto native users.
+          ...(user.role === "WHITELABEL_PARTNER" ? { platformOwnerId: user.id } : {}),
+        },
         select: { id: true, role: true },
       });
       if (!parentUser) {
@@ -151,13 +174,7 @@ export async function POST(req: Request) {
   // Determine platformOwnerId for this invite.
   // If the creator is a tenant owner or member, carry that tenant through
   // so the registered user is scoped to the same white-label tenant.
-  const creatorFull = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { platformOwnerId: true, isTenantOwner: true },
-  });
-  const platformOwnerId = creatorFull?.isTenantOwner
-    ? user.id                           // creator IS the tenant root
-    : creatorFull?.platformOwnerId ?? null; // creator is a tenant member
+  const platformOwnerId = inviteOwnerId;
 
   const invite = await prisma.invite.create({
     data: {

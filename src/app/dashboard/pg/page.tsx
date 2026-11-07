@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CreditCard,
   Copy,
@@ -8,7 +8,8 @@ import {
   IndianRupee,
   ArrowLeftRight,
   Percent,
-  Banknote
+  Banknote,
+  RefreshCw,
 } from "lucide-react";
 import { LinkSimple, Lightning, ShieldCheck } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -21,21 +22,55 @@ import { ServiceLayout, ServiceCard } from "@/components/dashboard/services/Serv
 import { SummaryPanel, AsideTips } from "@/components/dashboard/services/SummaryPanel";
 import { AmountChips } from "@/components/dashboard/services/AmountChips";
 import { FloatField } from "@/components/dashboard/services/FloatField";
-import { pgTransactions, type PgTransaction } from "@/lib/data";
-import { formatINR, generateRefId } from "@/lib/utils";
+import { formatINR, generateRefId, cn } from "@/lib/utils";
+
+type PgTxn = {
+  id: string;
+  refId: string;
+  amount: number;
+  fee: number | null;
+  status: string;
+  partner: string | null;
+  partnerTxnId: string | null;
+  createdAt: string;
+  errorMessage: string | null;
+};
+
+type TrendPoint = { day: string; volume: number; count: number };
+
+type PgOverview = {
+  todayVolume: number;
+  todayCount: number;
+  trend: TrendPoint[];
+  transactions: PgTxn[];
+};
 
 export default function PgPage() {
+  const [data, setData] = useState<PgOverview | null>(null);
+  const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const fetchOverview = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/pg/overview");
+      if (res.ok) setData(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
+
   function createLink() {
     if (!amount) return;
     const ref = generateRefId("PAY");
-    setLink(
-      `https://pay.bankingpoint-24.com/l/${ref.toLowerCase()}?am=${amount}`
-    );
+    setLink(`https://pay.bankingpoint-24.com/l/${ref.toLowerCase()}?am=${amount}`);
     setCopied(false);
   }
 
@@ -45,33 +80,69 @@ export default function PgPage() {
     setTimeout(() => setCopied(false), 1200);
   }
 
-  const cols: Column<PgTransaction>[] = [
-    { key: "id", header: "Txn ID", render: (r) => <span className="font-mono text-xs">{r.id}</span> },
-    { key: "orderId", header: "Order", render: (r) => <span className="font-mono text-xs">{r.orderId}</span> },
-    { key: "mode", header: "Mode" },
-    { key: "amount", header: "Amount", align: "right", render: (r) => <span className="font-semibold">{formatINR(r.amount)}</span> },
-    { key: "fee", header: "Fee", align: "right", render: (r) => (r.fee ? formatINR(r.fee) : "—") },
+  const successCount = data?.transactions.filter((t) => t.status === "SUCCESS").length ?? 0;
+  const totalCount = data?.transactions.length ?? 0;
+  const successRate = totalCount > 0 ? ((successCount / totalCount) * 100).toFixed(1) : "—";
+
+  const cols: Column<PgTxn>[] = [
+    {
+      key: "refId",
+      header: "Ref ID",
+      render: (r) => <span className="font-mono text-xs">{r.refId}</span>,
+    },
+    {
+      key: "partner",
+      header: "Gateway",
+      render: (r) => <span className="text-xs text-ink-600">{r.partner ?? "—"}</span>,
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      align: "right",
+      render: (r) => <span className="font-semibold tabular-nums">{formatINR(r.amount)}</span>,
+    },
+    {
+      key: "fee",
+      header: "Fee",
+      align: "right",
+      render: (r) =>
+        r.fee ? (
+          <span className="tabular-nums text-amber-700">{formatINR(r.fee)}</span>
+        ) : (
+          <span className="text-ink-300">—</span>
+        ),
+    },
     {
       key: "status",
       header: "Status",
       render: (r) => (
         <Badge
           variant={
-            r.status === "Success"
+            r.status === "SUCCESS"
               ? "success"
-              : r.status === "Pending"
+              : r.status === "PROCESSING" || r.status === "INITIATED"
                 ? "warning"
-                : r.status === "Refunded"
+                : r.status === "HOLD"
                   ? "brand"
                   : "danger"
           }
         >
           {r.status}
         </Badge>
-      )
+      ),
     },
-    { key: "settlement", header: "Settlement" },
-    { key: "date", header: "Date" }
+    {
+      key: "createdAt",
+      header: "Date",
+      render: (r) => (
+        <span className="text-xs text-ink-500">
+          {new Date(r.createdAt).toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -79,14 +150,38 @@ export default function PgPage() {
       <PageHeader
         eyebrow="Payment Gateway"
         title="PG Collections"
-        description="Accept UPI, cards, net banking and wallets. Track every order with real-time status and automated T+1 settlement."
+        description="Accept UPI, cards, net banking and wallets. Track every order with real-time status and automated settlement."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Today's Collections" value="₹1.28 L" delta="+14.2%" icon={IndianRupee} tone="brand" />
-        <StatCard label="Success Rate" value="96.8%" delta="+0.6%" icon={Percent} tone="accent" />
-        <StatCard label="Transactions Today" value="42" delta="+8" icon={ArrowLeftRight} tone="royal" />
-        <StatCard label="Pending Settlement" value="₹2.69 L" icon={Banknote} tone="amber" />
+        <StatCard
+          label="Today's Collections"
+          value={formatINR(data?.todayVolume ?? 0)}
+          icon={IndianRupee}
+          tone="brand"
+          loading={loading && !data}
+        />
+        <StatCard
+          label="Success Rate"
+          value={typeof successRate === "string" ? successRate : `${successRate}%`}
+          icon={Percent}
+          tone="accent"
+          loading={loading && !data}
+        />
+        <StatCard
+          label="Transactions Today"
+          value={String(data?.todayCount ?? 0)}
+          icon={ArrowLeftRight}
+          accent="emerald"
+          loading={loading && !data}
+        />
+        <StatCard
+          label="7-Day Volume"
+          value={formatINR(data?.trend.reduce((s, t) => s + t.volume, 0) ?? 0)}
+          icon={Banknote}
+          accent="violet"
+          loading={loading && !data}
+        />
       </div>
 
       <ServiceLayout
@@ -101,8 +196,8 @@ export default function PgPage() {
               }
               rows={[
                 { label: "Purpose", value: purpose || "Payment request", muted: !purpose },
-                { label: "Accepts", value: "UPI · Cards · Net banking" },
-                { label: "Settlement", value: "T+1 · automated", tone: "brand" },
+                { label: "Accepts", value: "UPI \u00b7 Cards \u00b7 Net banking" },
+                { label: "Settlement", value: "T+1 \u00b7 automated", tone: "brand" },
               ]}
               total={amount ? formatINR(Number(amount) || 0) : undefined}
               totalLabel="Customer pays"
@@ -144,13 +239,13 @@ export default function PgPage() {
           icon={<IconTile icon={LinkSimple} tone="energy" size="lg" />}
           eyebrow="Collect remotely"
           title="Create payment link"
-          description="Set an amount and a purpose — share the link on WhatsApp or SMS."
+          description="Set an amount and a purpose \u2014 share the link on WhatsApp or SMS."
         >
           <div className="grid gap-5">
             <div>
               <FloatField
                 id="pg-amount"
-                label="Amount (₹)"
+                label="Amount (\u20b9)"
                 type="number"
                 display
                 inputMode="numeric"
@@ -178,11 +273,20 @@ export default function PgPage() {
         </ServiceCard>
       </ServiceLayout>
 
-      <DataTable
+      <DataTable<PgTxn>
         title="Recent PG transactions"
         description="All orders collected through your payment gateway."
         columns={cols}
-        data={pgTransactions}
+        data={data?.transactions ?? []}
+        loading={loading && !data}
+        emptyIcon={CreditCard}
+        empty="No PG transactions yet."
+        action={
+          <Button type="button" variant="outline" size="sm" onClick={fetchOverview} disabled={loading}>
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            Refresh
+          </Button>
+        }
       />
     </div>
   );

@@ -28,6 +28,7 @@ export default function OnboardInvitePage() {
   });
 
   const childLabel =
+    role === "whitelabel-partner" ? "Super Distributor" :
     role === "super-distributor" ? "Master Distributor" :
     role === "master-distributor" ? "Distributor" :
     "Retailer";

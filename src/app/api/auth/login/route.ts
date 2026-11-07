@@ -21,6 +21,8 @@ import {
 } from "@/lib/security/audit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { getLoginBlock } from "@/lib/security/accountGate";
+import { findLoginUser, resolveTenantOwnerFromHeader } from "@/lib/security/loginLookup";
+import { TENANT_HEADER } from "@/lib/tenant/context";
 
 const LocationSchema = z.object({
   lat: z.number(),
@@ -118,18 +120,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: normalized },
-          { phone: normalized },
-          // Allow login with the assigned user code (RT0101 / DT0101 / MD0101 / SD0101).
-          // The lookup is case-insensitive so both "rt0101" and "RT0101" resolve correctly.
-          { userCode: { equals: normalized, mode: "insensitive" } },
-        ],
-        deletedAt: null,
-      },
-    });
+    // On a LIVE partner domain the middleware sets x-tenant-id; scope the
+    // lookup to that tenant first so email/phone collisions across tenants
+    // resolve to the right company. userCode stays globally unique.
+    const tenantOwnerId = await resolveTenantOwnerFromHeader(req.headers.get(TENANT_HEADER));
+    const user = await findLoginUser(normalized, { includeUserCode: true, tenantOwnerId });
 
     const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
 
@@ -361,6 +356,8 @@ export async function POST(req: Request) {
       enabledServices: user.enabledServices ?? [],
       twoFactorEnabled: user.twoFactorEnabled,
       twoFactorExempt: user.twoFactorExempt,
+      platformOwnerId: (user as { platformOwnerId?: string | null }).platformOwnerId ?? null,
+      isTenantOwner: (user as { isTenantOwner?: boolean }).isTenantOwner ?? false,
     };
 
     const token = createMobileToken(sessionUser);

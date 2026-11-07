@@ -29,6 +29,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { PillTabs, Stagger, StaggerItem } from "@/components/dashboard/patterns";
 import { ASSIGNABLE_ADMIN_TABS } from "@/lib/roles";
 import { generateRandomPassword } from "@/lib/utils";
+import { useAuth } from "@/lib/useAuth";
 
 type AdminRecord = {
   id: string;
@@ -64,25 +65,30 @@ export default function ManageAdminsPage() {
   const [deleteMasterTarget, setDeleteMasterTarget] = useState<MasterAdminRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // A white-label partner manages only their own tenant's admins — the
+  // platform "Master admins" roster is native-only and firewalled server-side.
+  const { session } = useAuth();
+  const isTenantMember = session?.isTenantMember ?? false;
+
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminsRes, masterRes] = await Promise.all([
-        fetch("/api/admin/admins"),
-        fetch("/api/admin/master-admins"),
-      ]);
+      const adminsRes = await fetch("/api/admin/admins");
       if (adminsRes.ok) {
         const data = await adminsRes.json();
         setRows(data.admins);
       }
-      if (masterRes.ok) {
-        const data = await masterRes.json();
-        setMasterRows(data.masterAdmins);
+      if (!isTenantMember) {
+        const masterRes = await fetch("/api/admin/master-admins");
+        if (masterRes.ok) {
+          const data = await masterRes.json();
+          setMasterRows(data.masterAdmins);
+        }
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isTenantMember]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -400,10 +406,13 @@ export default function ManageAdminsPage() {
       <PillTabs
         aria-label="Admin type"
         value={tab}
-        onChange={(v) => setTab(v)}
+        onChange={(v) => setTab(v as "admins" | "master-admins")}
         tabs={[
           { value: "admins", label: "Admins", count: rows.length },
-          { value: "master-admins", label: "Master admins", icon: Star, count: masterRows.length },
+          // Platform "Master admins" roster is native-only; hidden for tenants.
+          ...(isTenantMember
+            ? []
+            : [{ value: "master-admins", label: "Master admins", icon: Star, count: masterRows.length }]),
         ]}
       />
 

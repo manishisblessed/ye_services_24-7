@@ -81,6 +81,7 @@ type PendingTopup = {
   amount: number;
   paymentUrl?: string;
   upiIntent?: string;
+  provider?: string;
 };
 
 type PgChannel = {
@@ -91,7 +92,10 @@ type PgChannel = {
   healthy: boolean;
   detail: string;
   checkedAt: string;
+  maxAmount?: number;
 };
+
+type MdrQuote = { gross: number; mdr: number; net: number; schemeId?: string | null };
 
 export default function WalletPage() {
   const { session } = useAuth();
@@ -104,6 +108,7 @@ export default function WalletPage() {
   const [channels, setChannels] = useState<PgChannel[]>([]);
   const [channel, setChannel] = useState<string>("");
   const [channelsLoading, setChannelsLoading] = useState(false);
+  const [quote, setQuote] = useState<MdrQuote | null>(null);
   const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState<PendingTopup | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -164,6 +169,30 @@ export default function WalletPage() {
       setChannelsLoading(false);
     }
   }, []);
+
+  const quoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchQuote = useCallback((amt: number, ch?: string) => {
+    if (quoteTimer.current) clearTimeout(quoteTimer.current);
+    if (amt <= 0) { setQuote(null); return; }
+    quoteTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/wallet/topup/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: amt, channel: ch || undefined }),
+        });
+        if (res.ok) setQuote(await res.json());
+      } catch { /* best-effort */ }
+    }, 350);
+  }, []);
+
+  function clearTopupParam() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("topup")) {
+      url.searchParams.delete("topup");
+      window.history.replaceState(null, "", url.pathname + url.search);
+    }
+  }
 
   const stopPolling = useCallback(() => {
     if (pollTimer.current) {
@@ -226,6 +255,7 @@ export default function WalletPage() {
     const params = new URLSearchParams(window.location.search);
     const refId = params.get("topup");
     if (refId?.startsWith("TOPUP")) {
+      clearTopupParam();
       const resumed = { refId, amount: 0 };
       setPending(resumed);
       checkTopup(resumed);
@@ -264,10 +294,21 @@ export default function WalletPage() {
         amount: amt,
         paymentUrl: d.paymentUrl,
         upiIntent: d.upiIntent,
+        provider: d.provider,
       };
       setPending(topup);
       setAmount("");
-      if (d.paymentUrl) window.open(d.paymentUrl, "_blank", "noopener");
+      setQuote(null);
+
+      // Chagans PG requires a full redirect (their checkout is not iframe-safe);
+      // other providers open in a new tab.
+      if (d.paymentUrl) {
+        if (d.provider === "CHAGANS_PG") {
+          window.location.assign(d.paymentUrl);
+          return;
+        }
+        window.open(d.paymentUrl, "_blank", "noopener");
+      }
       startPolling(topup);
     } catch {
       setError("Network error — check your connection and try again.");
@@ -279,6 +320,7 @@ export default function WalletPage() {
   const amountNum = Number(amount) || 0;
   const selectedChannel = channels.find((c) => c.id === channel);
   const allChannelsDown = channels.length > 0 && channels.every((c) => !c.healthy);
+  const exceedsMax = selectedChannel?.maxAmount ? amountNum > selectedChannel.maxAmount : false;
 
   const historyColumns: Column<WalletTxn>[] = [
     {
@@ -477,10 +519,22 @@ export default function WalletPage() {
                   ...(pending
                     ? [{ label: "Reference", value: pending.refId, mono: true }]
                     : []),
+                  ...(quote && quote.mdr > 0 && !pending
+                    ? [
+                        { label: "PG fee (MDR)", value: formatINR(quote.mdr), muted: false },
+                        { label: "You receive", value: formatINR(quote.net), muted: false },
+                      ]
+                    : []),
                 ]}
-                total={formatINR(pending && pending.amount > 0 ? pending.amount : amountNum)}
-                totalLabel="Adds to wallet"
-                totalHint="No charges on wallet top-ups"
+                total={formatINR(
+                  pending && pending.amount > 0
+                    ? pending.amount
+                    : quote && quote.mdr > 0
+                      ? quote.net
+                      : amountNum,
+                )}
+                totalLabel={quote && quote.mdr > 0 ? "Net to wallet" : "Adds to wallet"}
+                totalHint={quote && quote.mdr > 0 ? `${formatINR(quote.mdr)} PG processing fee` : "No charges on wallet top-ups"}
               />
               <AsideTips
                 items={[
@@ -586,14 +640,14 @@ export default function WalletPage() {
                   max={200000}
                   inputMode="numeric"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => { setAmount(e.target.value); fetchQuote(Number(e.target.value) || 0, channel); }}
                   hint="Up to ₹2,00,000 per top-up"
                 />
                 <AmountChips
                   className="mt-3"
                   amounts={[500, 1000, 2000, 5000, 10000, 25000]}
                   value={amount}
-                  onPick={(v) => setAmount(String(v))}
+                  onPick={(v) => { setAmount(String(v)); fetchQuote(v, channel); }}
                 />
               </div>
 
@@ -622,7 +676,7 @@ export default function WalletPage() {
                           type="button"
                           key={c.id}
                           disabled={!c.healthy}
-                          onClick={() => c.healthy && setChannel(c.id)}
+                          onClick={() => { if (c.healthy) { setChannel(c.id); fetchQuote(amountNum, c.id); } }}
                           data-active={active && c.healthy}
                           aria-pressed={active}
                           className={cn(
@@ -684,13 +738,19 @@ export default function WalletPage() {
                 />
               )}
 
+              {exceedsMax && selectedChannel?.maxAmount && (
+                <Notice tone="danger" icon={<AlertCircle className="h-4 w-4" />}>
+                  Maximum amount for {selectedChannel.label} is {formatINR(selectedChannel.maxAmount)}.
+                </Notice>
+              )}
+
               {error && (
                 <Notice tone="danger" icon={<AlertCircle className="h-4 w-4" />}>
                   {error}
                 </Notice>
               )}
 
-              <Button type="submit" size="xl" className="w-full" isLoading={loading} disabled={loading}>
+              <Button type="submit" size="xl" className="w-full" isLoading={loading} disabled={loading || exceedsMax}>
                 {loading
                   ? "Starting top-up…"
                   : `Add ${amount ? formatINR(Number(amount)) : "money"} to wallet`}

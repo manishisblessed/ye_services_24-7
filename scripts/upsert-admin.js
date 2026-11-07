@@ -18,25 +18,33 @@ const ADMIN = {
 (async () => {
   const passwordHash = await bcrypt.hash(ADMIN.password, 12);
 
-  const user = await p.user.upsert({
-    where: { email: ADMIN.email },
-    update: {
-      name: ADMIN.name,
-      passwordHash,
-      role: "ADMIN",
-      status: "ACTIVE",
-      deletedAt: null,
-      tokenVersion: { increment: 1 },
-    },
-    create: {
-      name: ADMIN.name,
-      email: ADMIN.email,
-      phone: ADMIN.phone,
-      passwordHash,
-      role: "ADMIN",
-      status: "ACTIVE",
-    },
+  // email is no longer globally unique (per-tenant identity migration).
+  const existing = await p.user.findFirst({
+    where: { email: ADMIN.email, platformOwnerId: null },
+    select: { id: true },
   });
+  const user = existing
+    ? await p.user.update({
+        where: { id: existing.id },
+        data: {
+          name: ADMIN.name,
+          passwordHash,
+          role: "ADMIN",
+          status: "ACTIVE",
+          deletedAt: null,
+          tokenVersion: { increment: 1 },
+        },
+      })
+    : await p.user.create({
+        data: {
+          name: ADMIN.name,
+          email: ADMIN.email,
+          phone: ADMIN.phone,
+          passwordHash,
+          role: "ADMIN",
+          status: "ACTIVE",
+        },
+      });
   console.log("Upserted:", user.id, user.name, user.email, user.role, user.status);
 
   // Clear lockout + rate limits from earlier failed attempts.

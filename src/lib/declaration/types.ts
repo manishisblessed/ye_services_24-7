@@ -56,7 +56,10 @@ export function needsSuccessorApproval(onboardeeRole: string, creatorRole: strin
   if (
     creatorRole === "ADMIN" ||
     creatorRole === "MASTER_ADMIN" ||
-    creatorRole === "SUPPORT"
+    creatorRole === "SUPPORT" ||
+    // A white-label partner is the tenant's master-admin — onboarding the top
+    // of their own network needs no upline successor approval.
+    creatorRole === "WHITELABEL_PARTNER"
   ) {
     return false;
   }

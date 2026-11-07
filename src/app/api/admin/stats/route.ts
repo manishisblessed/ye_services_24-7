@@ -7,6 +7,7 @@ import { readGatewayHealth } from "@/lib/ops/telemetry";
 import { flags } from "@/lib/env";
 import { SERVICE_KEYS } from "@/lib/services/catalog";
 import { add, dec, toNumber } from "@/lib/money";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -14,7 +15,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const session = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    // Platform-wide KPIs, provider balances and GMV are native-staff only. A
+    // white-label tenant admin never sees cross-tenant financials — they get a
+    // tenant-scoped overview from the network/command-center endpoints instead.
+    if (!isPlatformStaff(session)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const now = new Date();
     const todayStart = new Date(now);

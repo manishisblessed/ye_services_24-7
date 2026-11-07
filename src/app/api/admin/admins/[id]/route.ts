@@ -7,6 +7,28 @@ import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import { bumpTokenVersion } from "@/lib/security/session";
 import { generateRandomPassword } from "@/lib/utils";
+import { tenantOwnerId, isTenantRoot, isPlatformStaff } from "@/lib/security/ownership";
+
+/** Tenant guard for admin mutations (mirrors the sub-admin guard). */
+function staffTenantGuard(
+  actor: { id: string; role: string; platformOwnerId?: string | null; isTenantOwner?: boolean },
+  target: { platformOwnerId: string | null }
+): NextResponse | null {
+  const ownerId = tenantOwnerId(actor);
+  if (ownerId) {
+    if (!isTenantRoot(actor)) {
+      return NextResponse.json({ error: "Only the platform owner can manage staff" }, { status: 403 });
+    }
+    if (target.platformOwnerId !== ownerId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return null;
+  }
+  if (isPlatformStaff(actor) && target.platformOwnerId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return null;
+}
 
 const PatchBody = z.object({
   action: z.enum(["suspend", "activate", "close", "update-tabs", "reset-password", "reset-2fa"]),
@@ -22,7 +44,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     masterAdmin = await requireAdminActivity(req, {
       action: "admin.update",
-      roles: ["MASTER_ADMIN"],
+      roles: ["MASTER_ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
       entityId: params.id,
     });
@@ -32,12 +54,15 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
   const target = await prisma.user.findUnique({
     where: { id: params.id },
-    select: { id: true, role: true, status: true, name: true },
+    select: { id: true, role: true, status: true, name: true, platformOwnerId: true },
   });
 
   if (!target || target.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }
+
+  const guard = staffTenantGuard(masterAdmin, target);
+  if (guard) return guard;
 
   const parsed = PatchBody.safeParse(await req.json());
   if (!parsed.success)
@@ -152,7 +177,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   try {
     masterAdmin = await requireAdminActivity(req, {
       action: "admin.delete",
-      roles: ["MASTER_ADMIN"],
+      roles: ["MASTER_ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
       entityId: params.id,
     });
@@ -162,12 +187,15 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
 
   const target = await prisma.user.findUnique({
     where: { id: params.id },
-    select: { id: true, role: true, name: true },
+    select: { id: true, role: true, name: true, platformOwnerId: true },
   });
 
   if (!target || target.role !== "ADMIN") {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }
+
+  const guard = staffTenantGuard(masterAdmin, target);
+  if (guard) return guard;
 
   await prisma.user.update({
     where: { id: params.id },

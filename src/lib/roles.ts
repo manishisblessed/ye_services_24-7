@@ -76,6 +76,7 @@ const baseServices: NavItem[] = [
   { href: "/dashboard/aadhaar-pay", label: "Cash Withdrawal", icon: Fingerprint },
   { href: "/dashboard/money-transfer", label: "Send Money", icon: Send },
   { href: "/dashboard/payout", label: "Quick Payout", icon: Landmark, badge: "New" },
+  { href: "/dashboard/knteer-payout", label: "Bank Transfer", icon: Landmark },
   { href: "/dashboard/upi", label: "UPI Receive", icon: Send },
   { href: "/dashboard/qr", label: "Payment QR", icon: QrCode, badge: "New" },
   { href: "/dashboard/pg", label: "Online Collect", icon: CreditCard, badge: "New" },
@@ -396,11 +397,22 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/earnings", label: "My Commission", icon: CircleDollarSign, badge: "New" },
         { href: "/dashboard/network", label: "Network", icon: Users },
         { href: "/dashboard/network/command-center", label: "Platform Dashboard", icon: Gauge, badge: "Live" },
-        { href: "/dashboard/network/onboard", label: "Add Partner", icon: PackagePlus },
+        { href: "/dashboard/network/onboard", label: "Add Super Distributor", icon: PackagePlus },
         { href: "/dashboard/network/schemes", label: "Rate Assignment", icon: Layers, badge: "New" },
         { href: "/dashboard/approvals", label: "Action Pending", icon: FileSignature },
         { href: "/dashboard/my-scheme", label: "My Rates", icon: Layers, badge: "New" },
         { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }
+      ]
+    },
+    {
+      // Tenant-scoped slice of the admin desk. Every page here is confined to
+      // the partner's own company by the middleware allowlist + API tenant scope.
+      heading: "Company Team",
+      items: [
+        { href: "/dashboard/admin/users", label: "Member Directory", icon: Users },
+        { href: "/dashboard/admin/network", label: "Network Map", icon: Users },
+        { href: "/dashboard/admin/admins", label: "Admin Roster", icon: ShieldCheck },
+        { href: "/dashboard/admin/sub-admins", label: "Team Access", icon: UserCog },
       ]
     },
     { heading: "Partner Hub", items: partnerHub },

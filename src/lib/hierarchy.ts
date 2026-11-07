@@ -15,8 +15,10 @@ export type DbRole =
   | "DISTRIBUTOR"
   | "MASTER_DISTRIBUTOR"
   | "SUPER_DISTRIBUTOR"
+  | "WHITELABEL_PARTNER"
   | "ADMIN"
   | "SUPPORT"
+  | "FINANCE"
   | "MASTER_ADMIN";
 
 /** Numeric rank — higher number = more authority. */
@@ -26,7 +28,12 @@ export const ROLE_RANK: Record<DbRole, number> = {
   MASTER_DISTRIBUTOR: 30,
   SUPER_DISTRIBUTOR: 40,
   SUPPORT: 50,
+  FINANCE: 50,
   ADMIN: 60,
+  // A white-label partner is the master-admin of their OWN tenant. Ranked just
+  // below the platform master-admin; their authority is always scoped to their
+  // own platformOwnerId boundary (enforced in the API/data layer).
+  WHITELABEL_PARTNER: 65,
   MASTER_ADMIN: 70,
 };
 
@@ -75,13 +82,21 @@ export const ROLE_SHORT_LABEL: Record<string, string> = {
 };
 
 /** Staff/admin roles (not part of the onboarding chain). */
-export const STAFF_ROLES: DbRole[] = ["SUPPORT", "ADMIN", "MASTER_ADMIN"];
+export const STAFF_ROLES: DbRole[] = ["SUPPORT", "FINANCE", "ADMIN", "MASTER_ADMIN"];
 
-/** Roles that can perform onboarding (network + staff-creators). */
+/**
+ * Tenant-root roles — the master-admin of a white-label company. They sit
+ * OUTSIDE the network parentId tree (like a platform master-admin) and can mint
+ * network tiers + their own staff, always scoped to their platformOwnerId.
+ */
+export const TENANT_ROOT_ROLES: DbRole[] = ["WHITELABEL_PARTNER"];
+
+/** Roles that can perform onboarding (network + staff-creators + tenant roots). */
 export const ONBOARD_CAPABLE_ROLES: DbRole[] = [
   "DISTRIBUTOR",
   "MASTER_DISTRIBUTOR",
   "SUPER_DISTRIBUTOR",
+  "WHITELABEL_PARTNER",
   "ADMIN",
   "MASTER_ADMIN",
 ];
@@ -90,6 +105,9 @@ export const ONBOARD_CAPABLE_ROLES: DbRole[] = [
  * Can `creatorRole` onboard a user with `targetRole`?
  *
  * - MASTER_ADMIN can create ANY network role.
+ * - WHITELABEL_PARTNER (tenant root) can create ANY network tier within their
+ *   own tenant boundary (SD/MD/DT/RT). Their own staff (ADMIN/SUPPORT) are
+ *   created through the dedicated staff routes, not the onboarding/invite flow.
  * - ADMIN can ONLY create SUPER_DISTRIBUTOR.
  * - SUPER_DISTRIBUTOR can ONLY create MASTER_DISTRIBUTOR.
  * - MASTER_DISTRIBUTOR can ONLY create DISTRIBUTOR.
@@ -108,6 +126,13 @@ export function canOnboard(
   if (cRank === undefined || tRank === undefined) return false;
 
   if (creatorRole === "MASTER_ADMIN") {
+    return NETWORK_TIERS.includes(targetRole as DbRole);
+  }
+
+  // A white-label partner is the master-admin of their own tenant: they can
+  // seed any network tier inside their company. platformOwnerId scoping is
+  // enforced in the API/data layer so this never crosses tenant boundaries.
+  if (creatorRole === "WHITELABEL_PARTNER") {
     return NETWORK_TIERS.includes(targetRole as DbRole);
   }
 
@@ -140,6 +165,10 @@ export function allowedInviteRoles(
   if (creatorRole === "MASTER_ADMIN") {
     return [...NETWORK_TIERS].reverse();
   }
+  // Tenant root: can seed any network tier inside their own company.
+  if (creatorRole === "WHITELABEL_PARTNER") {
+    return [...NETWORK_TIERS].reverse();
+  }
   if (creatorRole === "ADMIN") {
     return ["SUPER_DISTRIBUTOR"];
   }
@@ -159,6 +188,7 @@ export function defaultChildRole(creatorRole: string): DbRole {
   switch (creatorRole) {
     case "MASTER_ADMIN":
     case "ADMIN":
+    case "WHITELABEL_PARTNER":
       return "SUPER_DISTRIBUTOR";
     case "SUPER_DISTRIBUTOR":
       return "MASTER_DISTRIBUTOR";

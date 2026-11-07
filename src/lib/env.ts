@@ -78,10 +78,20 @@ const schema = z.object({
   SAMEDAY_SETTLEMENT_API_KEY: z.string().min(1).optional(),
   SAMEDAY_SETTLEMENT_API_SECRET: z.string().min(1).optional(),
 
+  // Same Day Solution — Knteer Payout API (Bank Transfer product).
+  // Falls back to POS key pair when unset. Gated by PARTNER_KNTEER_PAYOUT_ENABLED.
+  SAMEDAY_KNTEER_PAYOUT_API_KEY: z.string().min(1).optional(),
+  SAMEDAY_KNTEER_PAYOUT_API_SECRET: z.string().min(1).optional(),
+  PARTNER_KNTEER_PAYOUT_ENABLED: z.string().default("false"),
+
   // Same Day Solution — RechargeKit (CC-2) credit card payment rail.
   // Falls back to POS key pair when unset. Gated by flags.rechargekit.
   SAMEDAY_RECHARGEKIT_API_KEY: z.string().min(1).optional(),
   SAMEDAY_RECHARGEKIT_API_SECRET: z.string().min(1).optional(),
+  // Cooling-off window (minutes) before a provider-confirmed-failed SameDay
+  // recon-capable txn is actually refunded to the retailer. During this window
+  // a fresh status re-poll double-checks the outcome. 0 = no hold.
+  REFUND_HOLD_MINUTES: z.coerce.number().int().min(0).default(30),
 
   // Direct RechargeKit API — "Offline CC Bill Payment". Talks straight to
   // RechargeKit (no Same Day HMAC wrapper); auth via Authorization: Bearer.
@@ -257,6 +267,7 @@ export const flags = {
   dmt: env.PARTNER_DMT_ENABLED === "true",
   upi: env.PARTNER_UPI_ENABLED === "true",
   payout: env.PARTNER_PAYOUT_ENABLED === "true",
+  knteerPayout: env.PARTNER_KNTEER_PAYOUT_ENABLED === "true",
   bbps: env.PARTNER_BBPS_ENABLED === "true",
   recharge: env.PARTNER_RECHARGE_ENABLED === "true",
   travel: env.PARTNER_TRAVEL_ENABLED === "true",

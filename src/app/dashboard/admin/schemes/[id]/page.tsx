@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Input, Label, Select } from "@/components/ui/Input";
 import { EmptyState, StatusChip } from "@/components/dashboard/patterns";
 import { Stack } from "@phosphor-icons/react";
-import { SERVICE_CODES, serviceGroup } from "@/lib/scheme/constants";
+import { SERVICE_CODES, serviceGroup, serviceLabel } from "@/lib/scheme/constants";
 import { BBPS_PRICE_SCOPE_OPTIONS, bbpsProvidersForService } from "@/lib/services/priceScope";
 import {
   ArrowLeft,
@@ -218,7 +218,7 @@ export default function SchemeEditorPage() {
             <section key={service} className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-ink-100">
               <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
                 <div>
-                  <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-ink-900">{service.replace(/_/g, " ")}</h3>
+                  <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-ink-900">{serviceLabel(service)}</h3>
                   <p className="text-xs text-ink-500">{serviceGroup(service)}</p>
                 </div>
                 <Badge variant="brand">{list.length} slabs</Badge>
@@ -563,7 +563,7 @@ function SlabModal({
             <Select value={service} onChange={(e) => setService(e.target.value)} disabled={isEdit}>
               {SERVICE_CODES.map((c) => (
                 <option key={c} value={c}>
-                  {c.replace(/_/g, " ")}
+                  {serviceLabel(c)}
                 </option>
               ))}
             </Select>

@@ -24,6 +24,8 @@ export type SessionValidationSnapshot = {
   status: string;
   role: string;
   enabledServices: string[];
+  platformOwnerId?: string | null;
+  isTenantOwner?: boolean;
 };
 
 const TTL_MS = 20_000;
