@@ -114,6 +114,11 @@ npx prisma migrate deploy
 #   2. Raise Node's heap ceiling for the build.
 # Both are best-effort and never abort the deploy on their own.
 
+# Stop PM2 before building so Node gets maximum RAM headroom.
+# Step 7 restarts everything (web + worker) after the build succeeds.
+pm2 stop all 2>/dev/null || true
+echo "  PM2 stopped — freeing RAM for build"
+
 log "Building Next.js app..."
 
 swap_mb=$(free -m 2>/dev/null | awk '/^Swap:/ {print $2}')
