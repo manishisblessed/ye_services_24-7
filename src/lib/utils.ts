@@ -97,6 +97,7 @@ export const USER_CODE_PREFIX: Record<string, string> = {
   DISTRIBUTOR: "DT",
   MASTER_DISTRIBUTOR: "MD",
   SUPER_DISTRIBUTOR: "SD",
+  WHITELABEL_PARTNER: "WP",
 };
 
 /**
