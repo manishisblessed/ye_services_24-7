@@ -53,6 +53,7 @@ export async function POST(
   const dupUser = await prisma.user.findFirst({
     where: {
       [contactField]: normalizedTarget,
+      deletedAt: null,
       ...(invite.userId ? { id: { not: invite.userId } } : {}),
     },
     select: { id: true },

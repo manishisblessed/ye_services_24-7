@@ -47,7 +47,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
   const kyc = await prisma.kyc.findUnique({
     where: { id: params.id },
-    include: { user: { select: { id: true, status: true } } },
+    include: { user: { select: { id: true, name: true, email: true, role: true, status: true } } },
   });
 
   if (!kyc)
@@ -133,6 +133,24 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         },
       }),
     ]);
+
+    // Auto-create a DRAFT WhitelabelProfile when a WLP user's KYC is approved
+    // so the partner immediately appears in the admin Partner Brands page.
+    if (kyc.user.role === "WHITELABEL_PARTNER") {
+      const existingProfile = await prisma.whitelabelProfile.findUnique({
+        where: { userId: kyc.user.id },
+        select: { id: true },
+      });
+      if (!existingProfile) {
+        await prisma.whitelabelProfile.create({
+          data: {
+            userId: kyc.user.id,
+            brandName: kyc.user.name ?? "My Brand",
+            status: "DRAFT",
+          },
+        });
+      }
+    }
 
     // Best-effort: destroy the old (rejected) Cloudinary assets so they don't
     // linger. S3-stored selfies/videos have no publicId and are skipped.

@@ -37,7 +37,6 @@ export async function GET(req: Request) {
       ? {
           OR: [
             { brandName: { contains: search, mode: "insensitive" as const } },
-            { subdomain: { contains: search, mode: "insensitive" as const } },
             { customDomain: { contains: search, mode: "insensitive" as const } },
             { user: { name: { contains: search, mode: "insensitive" as const } } },
           ],

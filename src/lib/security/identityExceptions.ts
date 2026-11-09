@@ -57,7 +57,7 @@ export const MAX_IDENTITY_SHARES = 4;
 
 export type IdentityHolder = { userId: string; role: Role };
 
-/** All existing accounts that already hold this identity value (excluding self). */
+/** All existing accounts that already hold this identity value (excluding self and soft-deleted). */
 export async function findIdentityHolders(
   fieldKey: IdentityFieldKey,
   value: string,
@@ -65,7 +65,11 @@ export async function findIdentityHolders(
 ): Promise<IdentityHolder[]> {
   if (fieldKey === "shopName") {
     const users = await prisma.user.findMany({
-      where: { shopName: value, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+      where: {
+        shopName: value,
+        deletedAt: null,
+        ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+      },
       select: { id: true, role: true },
     });
     return users.map((u) => ({ userId: u.id, role: u.role }));
@@ -74,6 +78,7 @@ export async function findIdentityHolders(
   const rows = await prisma.kyc.findMany({
     where: {
       [fieldKey]: value,
+      user: { deletedAt: null },
       ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
     },
     select: { userId: true, user: { select: { role: true } } },

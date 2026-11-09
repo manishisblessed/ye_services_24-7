@@ -191,6 +191,7 @@ export async function POST(
       where: {
         aadhaarLast4: last4,
         aadhaarNumber: null,
+        user: { deletedAt: null },
         ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
       },
       select: { userId: true },

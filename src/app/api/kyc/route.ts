@@ -164,7 +164,7 @@ export async function POST(req: Request) {
   });
   if (!approvedAadhaar) {
     const dupAadhaar = await prisma.kyc.findFirst({
-      where: { aadhaarLast4: parsed.data.aadhaarLast4, userId: { not: user.id } },
+      where: { aadhaarLast4: parsed.data.aadhaarLast4, user: { deletedAt: null }, userId: { not: user.id } },
       select: { userId: true },
     });
     if (dupAadhaar) {

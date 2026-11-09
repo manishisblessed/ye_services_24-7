@@ -15,7 +15,6 @@ type Tenant = {
   tagline: string | null;
   logoUrl: string | null;
   primaryColor: string;
-  subdomain: string | null;
   customDomain: string | null;
   supportEmail: string | null;
   status: string;
@@ -156,11 +155,7 @@ export default function AdminWhitelabelPage() {
             )}
             {tenants.map((t) => {
               const Icon = STATUS_ICON[t.status as keyof typeof STATUS_ICON] ?? XCircle;
-              const liveUrl = t.customDomain
-                ? `https://${t.customDomain}`
-                : t.subdomain
-                  ? `https://${t.subdomain}.${process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com"}`
-                  : null;
+              const liveUrl = t.customDomain ? `https://${t.customDomain}` : null;
               return (
                 <tr key={t.id} className="hover:bg-ink-50/50">
                   <td className="px-5 py-4">
@@ -195,12 +190,7 @@ export default function AdminWhitelabelPage() {
                           )}
                         </div>
                       )}
-                      {t.subdomain && (
-                        <p className="font-mono text-xs text-ink-400">
-                          {t.subdomain}.{process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com"}
-                        </p>
-                      )}
-                      {!t.customDomain && !t.subdomain && (
+                      {!t.customDomain && (
                         <span className="text-xs text-ink-300">No domain set</span>
                       )}
                     </div>

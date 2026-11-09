@@ -94,8 +94,8 @@ export async function PUT(req: Request) {
   if (body.subdomain && RESERVED_SUBDOMAINS.has(body.subdomain)) {
     return NextResponse.json({ error: `Subdomain "${body.subdomain}" is reserved` }, { status: 400 });
   }
-  if (body.status === "LIVE" && !body.subdomain && !body.customDomain) {
-    return NextResponse.json({ error: "Going live requires a subdomain or custom domain" }, { status: 400 });
+  if (body.status === "LIVE" && !body.customDomain) {
+    return NextResponse.json({ error: "Going live requires a custom domain" }, { status: 400 });
   }
 
   const existing = await prisma.whitelabelProfile.findUnique({ where: { userId: user.id } });

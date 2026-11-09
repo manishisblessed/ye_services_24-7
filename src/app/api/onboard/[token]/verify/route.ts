@@ -407,6 +407,7 @@ export async function POST(
             where: {
               aadhaarLast4: last4,
               aadhaarNumber: null,
+              user: { deletedAt: null },
               ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
             },
             select: { userId: true },
@@ -450,8 +451,15 @@ export async function POST(
                 select: { status: true },
               })
             : null;
+          // If the prior verification belongs to a soft-deleted user, treat as inactive.
+          const priorUser = dupVerification.userId
+            ? await prisma.user.findUnique({
+                where: { id: dupVerification.userId },
+                select: { deletedAt: true },
+              })
+            : null;
           const isOtherActive =
-            Boolean(dupVerification.userId) ||
+            (Boolean(dupVerification.userId) && priorUser?.deletedAt === null) ||
             (otherInvite != null &&
               ["PENDING", "REGISTERED", "VERIFIED", "APPROVED"].includes(
                 otherInvite.status

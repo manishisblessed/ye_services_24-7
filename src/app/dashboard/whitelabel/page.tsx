@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check, Upload, Loader2, X } from "lucide-react";
 
 const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com";
 import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info } from "@phosphor-icons/react";
@@ -10,6 +10,18 @@ import { Button } from "@/components/ui/Button";
 import { FloatingInput, Input, Label } from "@/components/ui/Input";
 import { IconTile } from "@/components/ui/Icon";
 import { EmptyState, FadeIn, SectionCard, StatusChip } from "@/components/dashboard/patterns";
+
+const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB
+const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/svg+xml,image/webp";
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 type Profile = {
   brandName: string;
@@ -20,7 +32,6 @@ type Profile = {
   accentColor: string;
   supportEmail: string | null;
   supportPhone: string | null;
-  subdomain: string | null;
   customDomain: string | null;
   status: string;
   updatedAt?: string;
@@ -35,13 +46,12 @@ const EMPTY: Profile = {
   accentColor: "#f97606",
   supportEmail: "",
   supportPhone: "",
-  subdomain: "",
   customDomain: "",
   status: "DRAFT",
 };
 
 type DnsVerifyResult = {
-  type: "subdomain" | "customDomain";
+  type: "customDomain";
   host: string;
   ok: boolean;
   resolved?: string[];
@@ -61,6 +71,10 @@ export default function WhitelabelPage() {
   const [verifying, setVerifying] = useState(false);
   const [dnsResults, setDnsResults] = useState<DnsVerifyResult[]>([]);
   const [copied, setCopied] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -86,6 +100,51 @@ export default function WhitelabelPage() {
     setSaved(false);
   }
 
+  async function uploadImage(file: File, type: "logo" | "favicon") {
+    if (!file.type.match(/^image\/(png|jpeg|svg\+xml|webp)$/)) {
+      setError("Please choose a PNG, JPG, SVG, or WebP image.");
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      setError("Image must be under 2 MB.");
+      return;
+    }
+    const setter = type === "logo" ? setUploadingLogo : setUploadingFavicon;
+    setter(true);
+    setError(null);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const signRes = await fetch("/api/uploads/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: `whitelabel-${type}`, isSensitive: false }),
+      });
+      if (!signRes.ok) throw new Error("Failed to get upload signature");
+      const { cloudName, apiKey, timestamp, signature, folder, type: uploadType } = await signRes.json();
+
+      const form = new FormData();
+      form.append("file", dataUrl);
+      form.append("api_key", apiKey);
+      form.append("timestamp", String(timestamp));
+      form.append("signature", signature);
+      form.append("folder", folder);
+      form.append("type", uploadType);
+
+      const upRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+        method: "POST",
+        body: form,
+      });
+      if (!upRes.ok) throw new Error("Upload failed");
+      const upData = await upRes.json();
+      const url = upData.secure_url as string;
+      set(type === "logo" ? "logoUrl" : "faviconUrl", url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setter(false);
+    }
+  }
+
   async function save(goLive?: boolean) {
     setSaving(true);
     setError(null);
@@ -100,7 +159,6 @@ export default function WhitelabelPage() {
         accentColor: profile.accentColor,
         supportEmail: profile.supportEmail?.trim() || null,
         supportPhone: profile.supportPhone?.trim() || null,
-        subdomain: profile.subdomain?.trim().toLowerCase() || null,
         customDomain: profile.customDomain?.trim().toLowerCase() || null,
         ...(goLive ? { status: "LIVE" as const } : {}),
       };
@@ -162,10 +220,8 @@ export default function WhitelabelPage() {
   }
 
   const canSave = profile.brandName.trim().length >= 2 && !saving && !loading;
-  const canGoLive = canSave && Boolean(profile.subdomain?.trim() || profile.customDomain?.trim());
-  const previewHost =
-    profile.customDomain?.trim() ||
-    (profile.subdomain?.trim() ? `${profile.subdomain.trim()}.${PLATFORM_DOMAIN}` : `your-brand.${PLATFORM_DOMAIN}`);
+  const canGoLive = canSave && Boolean(profile.customDomain?.trim());
+  const previewHost = profile.customDomain?.trim() || "yourdomain.com";
 
   return (
     <div className="space-y-6">
@@ -220,20 +276,6 @@ export default function WhitelabelPage() {
       {/* ── DNS & Verification tab ──────────────────────────────── */}
       {activeTab === "dns" && (
         <div className="space-y-6">
-          {/* Subdomain guide */}
-          <SectionCard
-            icon={<IconTile icon={WifiHigh} tone="brand" size="sm" />}
-            title="Subdomain setup"
-            description={`Your portal will be live at ${profile.subdomain?.trim() ? `${profile.subdomain.trim()}.${PLATFORM_DOMAIN}` : `<subdomain>.${PLATFORM_DOMAIN}`} — no DNS changes required.`}
-          >
-            <div className="rounded-2xl bg-ink-50 p-4">
-              <p className="text-sm text-ink-600">
-                Subdomain portals are managed by us and go live as soon as you click{" "}
-                <strong>Go live</strong>. No DNS record needs to be added on your end.
-              </p>
-            </div>
-          </SectionCard>
-
           {/* Custom domain guide */}
           <SectionCard
             icon={<IconTile icon={Globe} tone="accent" size="sm" />}
@@ -310,13 +352,13 @@ export default function WhitelabelPage() {
             title="Verify propagation"
             description="Check if your domain is resolving correctly."
           >
-            <Button variant="secondary" onClick={verifyDns} disabled={verifying || (!profile.subdomain && !profile.customDomain)}>
+            <Button variant="secondary" onClick={verifyDns} disabled={verifying || !profile.customDomain}>
               <RefreshCw className={`h-4 w-4 ${verifying ? "animate-spin" : ""}`} />
               {verifying ? "Checking…" : "Check DNS now"}
             </Button>
-            {!profile.subdomain && !profile.customDomain && (
+            {!profile.customDomain && (
               <p className="mt-3 text-sm text-ink-400 flex items-center gap-1.5">
-                <Info size={14} /> Save a subdomain or custom domain first.
+                <Info size={14} /> Save a custom domain first.
               </p>
             )}
             {dnsResults.length > 0 && (
@@ -393,35 +435,108 @@ export default function WhitelabelPage() {
                   <Input value={profile.accentColor} onChange={(e) => set("accentColor", e.target.value)} className="font-mono uppercase" aria-label="Accent color hex" />
                 </div>
               </div>
-              <FloatingInput label="Logo URL" value={profile.logoUrl ?? ""} onChange={(e) => set("logoUrl", e.target.value)} placeholder="https://cdn.yourbrand.in/logo.svg" />
-              <FloatingInput label="Favicon URL" value={profile.faviconUrl ?? ""} onChange={(e) => set("faviconUrl", e.target.value)} placeholder="https://cdn.yourbrand.in/favicon.svg" />
+              {/* Logo upload */}
+              <div>
+                <Label>Brand logo</Label>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept={ACCEPTED_IMAGE_TYPES}
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadImage(f, "logo");
+                    e.target.value = "";
+                  }}
+                />
+                {profile.logoUrl ? (
+                  <div className="mt-1 flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={profile.logoUrl} alt="Logo" className="h-12 w-12 rounded-xl border border-ink-200 object-contain bg-white p-1" />
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                        {uploadingLogo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Replace
+                      </Button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => set("logoUrl", null)}>
+                        <X className="h-3.5 w-3.5" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-1 w-full"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                  >
+                    {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {uploadingLogo ? "Uploading…" : "Upload logo"}
+                  </Button>
+                )}
+                <p className="mt-1 text-xs text-ink-400">PNG, SVG, or WebP · max 2 MB</p>
+              </div>
+              {/* Favicon upload */}
+              <div>
+                <Label>Favicon (icon)</Label>
+                <input
+                  ref={faviconInputRef}
+                  type="file"
+                  accept={ACCEPTED_IMAGE_TYPES}
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadImage(f, "favicon");
+                    e.target.value = "";
+                  }}
+                />
+                {profile.faviconUrl ? (
+                  <div className="mt-1 flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={profile.faviconUrl} alt="Favicon" className="h-10 w-10 rounded-lg border border-ink-200 object-contain bg-white p-0.5" />
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" size="sm" onClick={() => faviconInputRef.current?.click()} disabled={uploadingFavicon}>
+                        {uploadingFavicon ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Replace
+                      </Button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => set("faviconUrl", null)}>
+                        <X className="h-3.5 w-3.5" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-1 w-full"
+                    onClick={() => faviconInputRef.current?.click()}
+                    disabled={uploadingFavicon}
+                  >
+                    {uploadingFavicon ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {uploadingFavicon ? "Uploading…" : "Upload favicon"}
+                  </Button>
+                )}
+                <p className="mt-1 text-xs text-ink-400">PNG, SVG, or ICO · max 2 MB</p>
+              </div>
             </div>
           </SectionCard>
 
           <SectionCard
             icon={<IconTile icon={Globe} tone="brand" size="sm" />}
             title="Domain"
-            description="Where your branded portal lives."
+            description="Your own domain where the branded portal will be live."
           >
-            <div className="grid gap-5 md:grid-cols-2">
-              <div className="flex items-center gap-2">
-                <FloatingInput
-                  label="Subdomain"
-                  className="flex-1"
-                  value={profile.subdomain ?? ""}
-                  onChange={(e) => set("subdomain", e.target.value)}
-                  placeholder="kapoorpay"
-                />
-                <span className="whitespace-nowrap text-sm font-medium text-ink-500">.{PLATFORM_DOMAIN}</span>
-              </div>
-              <FloatingInput
-                label="Custom domain"
-                hint="Point a CNAME at the platform before going live."
-                value={profile.customDomain ?? ""}
-                onChange={(e) => set("customDomain", e.target.value)}
-                placeholder="kapoorpay.in"
-              />
-            </div>
+            <FloatingInput
+              label="Custom domain"
+              hint="Add your domain (e.g. www.master-india.com) and point its DNS to our server."
+              value={profile.customDomain ?? ""}
+              onChange={(e) => set("customDomain", e.target.value)}
+              placeholder="www.master-india.com"
+            />
+            <p className="mt-2 text-xs text-ink-500">
+              Go to the <button type="button" onClick={() => setActiveTab("dns")} className="font-semibold text-brand-600 hover:underline">DNS & Verification</button> tab for setup instructions.
+            </p>
           </SectionCard>
 
           <SectionCard
