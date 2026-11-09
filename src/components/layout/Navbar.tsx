@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/Button";
 import { IconTile, type IconTone } from "@/components/ui/Icon";
 import { company, mainNav, type NavLink } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { useTenant } from "@/components/providers/TenantProvider";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
@@ -85,12 +86,29 @@ export function Navbar() {
   const pathname = usePathname();
   const reduce = useReducedMotion();
   const isActive = useIsActive(pathname);
+  const tenant = useTenant();
 
   const [scrolled, setScrolled] = React.useState(false);
   const [darkHero, setDarkHero] = React.useState(DARK_ROUTES.has(pathname));
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [megaOpen, setMegaOpen] = React.useState(false);
   const [hovered, setHovered] = React.useState<string | null>(null);
+
+  // White-label partners show a simplified nav — no mega menu, just key links.
+  const tenantNav = React.useMemo(() => {
+    if (!tenant) return mainNav;
+    return [
+      { label: "Services", href: "/services" },
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
+    ] as NavLink[];
+  }, [tenant]);
+
+  const tenantLogo = tenant
+    ? { brandName: tenant.brandName, logoUrl: tenant.logoUrl, primaryColor: tenant.primaryColor }
+    : null;
+
+  const supportPhone = tenant?.supportPhone ?? company.phone;
 
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const headerRef = React.useRef<HTMLElement>(null);
@@ -175,7 +193,7 @@ export function Navbar() {
 
   const solid = scrolled || megaOpen;
   const onDark = darkHero && !solid;
-  const servicesItem = mainNav.find((i) => i.children);
+  const servicesItem = tenant ? undefined : mainNav.find((i) => i.children);
 
   return (
     <>
@@ -203,12 +221,12 @@ export function Navbar() {
           }}
         >
           <div className="container-x flex h-[70px] items-center justify-between gap-6">
-            <Logo size="md" variant={onDark ? "light" : "dark"} className="shrink-0" />
+            <Logo size="md" variant={onDark ? "light" : "dark"} className="shrink-0" tenant={tenantLogo} />
 
             {/* Centre tabs (lg+) */}
             <nav aria-label="Primary" className="hidden lg:block">
               <ul className="flex items-center gap-1">
-                {mainNav.map((item) => {
+                {tenantNav.map((item) => {
                   const active = isActive(item.href);
                   const marked = hovered ? hovered === item.label : active;
                   const hasChildren = Boolean(item.children);
@@ -287,7 +305,7 @@ export function Navbar() {
             {/* Right rail (lg+): support chip · divider · sign in · CTA */}
             <div className="hidden items-center gap-3 lg:flex">
               <a
-                href={`tel:+91${company.phone}`}
+                href={`tel:+91${supportPhone}`}
                 className={cn(
                   "hidden whitespace-nowrap items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition focus-energy xl:inline-flex",
                   onDark
@@ -298,16 +316,16 @@ export function Navbar() {
                 <Phone size={13} weight="duotone" aria-hidden className={onDark ? "text-accent-300" : "text-accent-600"} />
                 <span>
                   <span className={cn("mr-1.5 font-normal", onDark ? "text-white/45" : "text-ink-400")}>
-                    Counter help
+                    {tenant ? "Support" : "Counter help"}
                   </span>
-                  +91 {company.phone}
+                  +91 {supportPhone}
                 </span>
               </a>
               <span
                 aria-hidden
                 className={cn("hidden h-5 w-px xl:block", onDark ? "bg-white/15" : "bg-ink-200")}
               />
-              <Link href="/login" className="rounded-2xl focus-energy">
+              <Link href={tenant ? "/admin" : "/login"} className="rounded-2xl focus-energy">
                 <Button
                   variant="outline"
                   size="sm"
@@ -319,9 +337,9 @@ export function Navbar() {
                   Sign in
                 </Button>
               </Link>
-              <Link href="/register" className="rounded-2xl focus-energy">
+              <Link href={tenant ? "/register" : "/register"} className="rounded-2xl focus-energy">
                 <Button size="sm" tabIndex={-1} className="px-5">
-                  Become a partner
+                  {tenant ? "Join network" : "Become a partner"}
                   <ArrowRight size={14} weight="bold" aria-hidden />
                 </Button>
               </Link>
@@ -366,6 +384,8 @@ export function Navbar() {
             reduce={Boolean(reduce)}
             onClose={() => setMobileOpen(false)}
             isActive={isActive}
+            tenant={tenant}
+            tenantNav={tenantNav}
           />
         )}
       </AnimatePresence>
@@ -475,16 +495,25 @@ function MegaPanel({
 function MobileDrawer({
   reduce,
   onClose,
-  isActive
+  isActive,
+  tenant,
+  tenantNav,
 }: {
   reduce: boolean;
   onClose: () => void;
   isActive: (href: string) => boolean;
+  tenant: ReturnType<typeof useTenant>;
+  tenantNav: NavLink[];
 }) {
   const closeRef = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     closeRef.current?.focus();
   }, []);
+
+  const navItems = tenant ? tenantNav : mainNav;
+  const tenantLogo = tenant
+    ? { brandName: tenant.brandName, logoUrl: tenant.logoUrl, primaryColor: tenant.primaryColor }
+    : null;
 
   return (
     <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Site menu" className="fixed inset-0 z-[60] lg:hidden">
@@ -509,7 +538,7 @@ function MobileDrawer({
         className="absolute inset-y-0 right-0 flex w-[88%] max-w-sm flex-col overflow-y-auto rounded-l-[2rem] bg-white shadow-glow"
       >
         <div className="flex items-center justify-between px-6 pt-5">
-          <Logo size="sm" />
+          <Logo size="sm" tenant={tenantLogo} />
           <button
             ref={closeRef}
             type="button"
@@ -523,7 +552,7 @@ function MobileDrawer({
 
         <nav aria-label="Primary" className="flex-1 px-4 py-6">
           <ul className="space-y-0.5">
-            {mainNav.map((item, i) => {
+            {navItems.map((item, i) => {
               const active = isActive(item.href);
               return (
                 <motion.li
@@ -575,18 +604,20 @@ function MobileDrawer({
           <div className="grid gap-2">
             <Link href="/register" onClick={onClose} className="rounded-2xl focus-energy">
               <Button size="lg" tabIndex={-1} className="w-full">
-                Become a partner
+                {tenant ? "Join network" : "Become a partner"}
                 <ArrowRight size={16} weight="bold" aria-hidden />
               </Button>
             </Link>
-            <Link href="/login" onClick={onClose} className="rounded-2xl focus-energy">
+            <Link href={tenant ? "/admin" : "/login"} onClick={onClose} className="rounded-2xl focus-energy">
               <Button variant="outline" size="lg" tabIndex={-1} className="w-full">
                 Sign in
               </Button>
             </Link>
           </div>
           <p className="mt-4 text-center text-[11px] text-ink-400">
-            ₹0 to join · Live the same day · Counter help +91 {company.phone}
+            {tenant
+              ? `${tenant.brandName} · Powered by BankingPoint24`
+              : `₹0 to join · Live the same day · Counter help +91 ${company.phone}`}
           </p>
         </div>
       </motion.div>

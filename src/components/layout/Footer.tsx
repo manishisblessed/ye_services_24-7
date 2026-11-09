@@ -10,6 +10,7 @@ import {
   MapPin,
   Phone,
   SealCheck,
+  ShieldCheck,
   WhatsappLogo,
   XLogo,
   YoutubeLogo
@@ -25,6 +26,7 @@ import {
   nodalOfficer,
   supportTeam
 } from "@/lib/data";
+import type { TenantBrand } from "@/lib/tenant/context";
 
 const columns: { title: string; links: { label: string; href: string }[] }[] = [
   { title: "Services", links: footerLinks.services },
@@ -50,9 +52,13 @@ const socials: { label: string; href: string; icon: PhosphorIcon }[] = [
  *  4 · bottom bar (legal line + socials)
  * Opens with the signature gradient keyline instead of a CTA hero — the page
  * above always ends in its own closing CTA.
+ *
+ * When `brand` is provided, renders a streamlined white-label footer instead.
  */
-export function Footer() {
+export function Footer({ brand }: { brand?: TenantBrand | null }) {
   const year = new Date().getFullYear();
+
+  if (brand) return <TenantFooter brand={brand} year={year} />;
 
   return (
     <footer className="relative isolate overflow-hidden bg-ink-950 text-ink-300">
@@ -281,6 +287,118 @@ export function Footer() {
           </div>
           <p className="text-xs text-white/40">
             Crafted in Anand, Gujarat · Serving counters across Bharat
+          </p>
+        </div>
+      </Container>
+    </footer>
+  );
+}
+
+/** Streamlined footer for white-label partner portals. */
+function TenantFooter({ brand, year }: { brand: TenantBrand; year: number }) {
+  const tenantLinks = [
+    { label: "Services", href: "/services" },
+    { label: "About", href: "/about" },
+    { label: "Privacy Policy", href: "/legal/privacy" },
+    { label: "Terms & Conditions", href: "/legal/terms" },
+    { label: "Refunds", href: "/legal/refunds" },
+    { label: "Contact", href: "/contact" },
+  ];
+
+  return (
+    <footer className="relative isolate overflow-hidden text-white" style={{ background: brand.primaryColor }}>
+      {/* Gradient overlay for depth */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+      <div aria-hidden className="pointer-events-none absolute -right-40 top-10 z-0 h-[380px] w-[380px] rounded-full bg-white/5 blur-3xl" />
+
+      <Container className="relative z-10 pt-14">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+          {/* Brand column */}
+          <div className="lg:col-span-5">
+            {brand.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={brand.logoUrl} alt={brand.brandName} className="h-10 w-auto object-contain brightness-0 invert" />
+            ) : (
+              <span className="font-display text-2xl font-bold tracking-tight text-white">{brand.brandName}</span>
+            )}
+            {brand.tagline && (
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">{brand.tagline}</p>
+            )}
+            <div className="mt-6 space-y-2 text-sm text-white/60">
+              {brand.supportPhone && (
+                <a href={`tel:+91${brand.supportPhone}`} className="flex w-fit items-center gap-2 transition hover:text-white">
+                  <Phone size={14} weight="duotone" className="text-white/80" aria-hidden />
+                  +91 {brand.supportPhone}
+                </a>
+              )}
+              {brand.supportEmail && (
+                <a href={`mailto:${brand.supportEmail}`} className="flex w-fit items-center gap-2 transition hover:text-white">
+                  <Envelope size={14} weight="duotone" className="text-white/80" aria-hidden />
+                  {brand.supportEmail}
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div className="lg:col-span-3">
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">Quick links</h3>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              {tenantLinks.map((l) => (
+                <li key={l.label}>
+                  <Link href={l.href} className="group inline-flex items-center gap-1 text-white/60 transition hover:text-white">
+                    {l.label}
+                    <ArrowUpRight size={11} weight="bold" aria-hidden className="-translate-x-1 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-70" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Sign-in CTA */}
+          <div className="lg:col-span-4">
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-6 backdrop-blur">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">Partner portal</p>
+              <p className="mt-2 font-display text-lg font-semibold tracking-tight text-white">
+                Sign in to your dashboard
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-white/55">
+                Access all services, manage transactions, and grow your network from one place.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link href="/admin" className="inline-flex rounded-2xl focus-energy">
+                  <span className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-sm font-semibold transition hover:shadow-lg" style={{ color: brand.primaryColor }}>
+                    Sign in <ArrowRight size={14} weight="bold" aria-hidden />
+                  </span>
+                </Link>
+                <Link href="/register" className="inline-flex rounded-2xl focus-energy">
+                  <span className="inline-flex items-center gap-2 rounded-2xl border border-white/25 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
+                    Join network
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compliance line */}
+        <p className="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-relaxed text-white/40">
+          <ShieldCheck size={14} weight="duotone" aria-hidden className="text-white/60" />
+          <span className="font-semibold uppercase tracking-[0.14em] text-white/50">Powered by</span>
+          BankingPoint24 · {footerCertifications.slice(0, 3).join(" · ")}
+        </p>
+
+        {/* Bottom bar */}
+        <div className="mt-8 flex flex-col gap-3 border-t border-white/10 py-8 md:flex-row md:items-center md:justify-between">
+          <p className="text-xs text-white/40">
+            © {year} {brand.brandName}. All rights reserved.
+          </p>
+          <p className="text-xs text-white/40">
+            Powered by{" "}
+            <a href="https://www.bankingpoint-24.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white/60 hover:text-white">
+              BankingPoint24
+            </a>
+            {" "}· RUTVA MULTISERVICES LLP
           </p>
         </div>
       </Container>

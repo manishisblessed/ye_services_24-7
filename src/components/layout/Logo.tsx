@@ -33,6 +33,13 @@ export function LogoMark({
   );
 }
 
+/** Tenant brand info for the tenant-aware logo variant. */
+export type TenantLogoProps = {
+  brandName: string;
+  logoUrl: string | null;
+  primaryColor: string;
+};
+
 /** Brand tagline shown beside the logo. Change here to update it everywhere. */
 export const LOGO_TAGLINE = "Banking Made Simple.";
 
@@ -52,20 +59,72 @@ const sizeMap = {
  * - Pass `iconOnly` to render just the brand mark (collapsed sidebar).
  * - Pass `tagline` to show the theme-gradient tagline beside the mark.
  * - Use `size` to scale the lockup ("sm" | "md" | "lg").
+ * - Pass `tenant` for white-label branding (partner logo or styled text).
  */
 export function Logo({
   className,
   variant = "dark",
   iconOnly = false,
   tagline = false,
-  size = "md"
+  size = "md",
+  tenant,
 }: {
   className?: string;
   variant?: "dark" | "light";
   iconOnly?: boolean;
   tagline?: boolean;
   size?: keyof typeof sizeMap;
+  tenant?: TenantLogoProps | null;
 }) {
+  // ── Tenant-branded logo ──────────────────────────────────────────────
+  if (tenant) {
+    return (
+      <Link
+        href="/"
+        className={cn("group relative inline-flex items-center gap-3", className)}
+        aria-label={`${tenant.brandName} home`}
+      >
+        {tenant.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={tenant.logoUrl}
+            alt={tenant.brandName}
+            className={cn(
+              "w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]",
+              sizeMap[size],
+              variant === "light" && "brightness-0 invert",
+            )}
+          />
+        ) : (
+          <span
+            className={cn(
+              "font-display font-bold tracking-tight transition-transform duration-300 group-hover:scale-[1.03]",
+              size === "sm" ? "text-lg" : size === "lg" ? "text-2xl" : "text-xl",
+              variant === "light" ? "text-white" : "text-ink-950",
+            )}
+          >
+            {tenant.brandName}
+          </span>
+        )}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-1 -top-0.5 flex h-2.5 w-2.5"
+        >
+          <span
+            className={cn(
+              "absolute inline-flex h-full w-full rounded-full opacity-70 animate-ping-soft",
+              variant === "light" ? "bg-white" : "bg-accent-400",
+            )}
+          />
+          <span
+            className="relative inline-flex h-2.5 w-2.5 rounded-full ring-2"
+            style={{ background: tenant.primaryColor, borderColor: variant === "light" ? "rgba(255,255,255,0.7)" : "white" }}
+          />
+        </span>
+      </Link>
+    );
+  }
+
   if (iconOnly) {
     return (
       <Link
