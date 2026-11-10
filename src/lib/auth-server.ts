@@ -19,7 +19,7 @@ import {
 } from "./security/sessionValidationCache";
 import { isLoginAllowed } from "./security/accountGate";
 import { findLoginUser, resolveTenantOwnerFromHeader } from "./security/loginLookup";
-import { TENANT_HEADER } from "./tenant/context";
+import { TENANT_DOMAIN_HEADER, resolveTenantIdFromHost } from "./tenant/context";
 
 export type SessionUser = {
   id: string;
@@ -147,9 +147,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Tenant-aware, deterministic lookup (per-tenant identity migration).
-        const tenantHeader =
-          (req?.headers?.[TENANT_HEADER] as string | undefined) ?? null;
-        const tenantOwnerId = await resolveTenantOwnerFromHeader(tenantHeader);
+        // The middleware forwards the verified host; resolve the tenant in the
+        // Node runtime (Prisma cannot run in Edge middleware).
+        const tenantHost =
+          (req?.headers?.[TENANT_DOMAIN_HEADER] as string | undefined) ?? null;
+        const tenantId = await resolveTenantIdFromHost(tenantHost);
+        const tenantOwnerId = await resolveTenantOwnerFromHeader(tenantId);
         const user = await findLoginUser(identifier, { tenantOwnerId });
 
         const valid = user ? await bcrypt.compare(credentials.password, user.passwordHash) : false;

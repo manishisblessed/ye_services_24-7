@@ -5,60 +5,13 @@ import { TENANT_HEADER, TENANT_DOMAIN_HEADER } from "@/lib/tenant/context";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// ── Tenant brand cache (in-memory, 5-minute TTL) ─────────────────────────
-// Keeps hot tenant lookups out of the DB on every single request. This is a
-// lightweight edge-compatible map — no external dependencies.
-type CachedTenant = { id: string; expiresAt: number };
-const tenantCache = new Map<string, CachedTenant | null>();
-const TENANT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-async function resolveTenantId(host: string): Promise<string | null> {
-  const now = Date.now();
-  const cached = tenantCache.get(host);
-  if (cached !== undefined) {
-    if (cached === null || cached.expiresAt > now) return cached?.id ?? null;
-  }
-
-  // Skip resolution for the platform's own domain
-  const platformDomain = process.env.PLATFORM_DOMAIN ?? "bankingpoint-24.com";
-  const appHost = (process.env.NEXT_PUBLIC_APP_URL ?? "")
-    .replace(/^https?:\/\//, "")
-    .split(":")[0];
-
-  // If this is the platform's root domain (not a subdomain), not a tenant
-  if (host === appHost || host === platformDomain || host === `www.${platformDomain}`) {
-    tenantCache.set(host, null);
-    return null;
-  }
-
-  try {
-    // Dynamic import to avoid pulling Prisma into the edge runtime
-    const { prisma } = await import("@/lib/db");
-
-    // Check if it's a subdomain of the platform domain (e.g. kapoor.bankingpoint-24.com)
-    let subdomain: string | null = null;
-    if (host.endsWith(`.${platformDomain}`)) {
-      subdomain = host.slice(0, -(`.${platformDomain}`.length));
-    }
-
-    const profile = await prisma.whitelabelProfile.findFirst({
-      where: {
-        status: "LIVE",
-        OR: [
-          { customDomain: host },
-          ...(subdomain ? [{ subdomain }] : []),
-        ],
-      },
-      select: { id: true },
-    });
-
-    const result = profile ? { id: profile.id, expiresAt: now + TENANT_CACHE_TTL_MS } : null;
-    tenantCache.set(host, result);
-    return profile?.id ?? null;
-  } catch {
-    return null;
-  }
-}
+// NOTE: Tenant (white-label) resolution does NOT happen here. The Edge
+// middleware runtime cannot run the Prisma query engine (no DB connection), so
+// any Prisma call here fails silently in production. Instead the middleware
+// forwards the VERIFIED request host as the `x-tenant-domain` header and the
+// Node runtime (see getTenantBrand / resolveTenantIdFromHost in
+// lib/tenant/context.ts) performs the actual DB lookup. The client-supplied
+// `x-tenant-id` header is always stripped so a tenant can never be spoofed.
 
 /**
  * Content-Security-Policy applied to every document response.
@@ -151,11 +104,10 @@ const PAYOUT_PATHS: Array<{ prefix: string; roles: string[] }> = [
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── 0. Tenant resolution — map custom domain / subdomain to a white-label
-  //       brand. The resolved tenant-id is injected as a request header so
-  //       server components and API routes can read it without a DB call.
+  // ── 0. Tenant host passthrough — forward the verified request host to the
+  //       Node runtime, which resolves the white-label brand from the DB.
+  //       (Prisma cannot run in the Edge middleware runtime.)
   const host = req.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
-  const tenantId = host ? await resolveTenantId(host) : null;
 
   // ── 1. Request-size limit on mutating API calls (defense vs oversized bodies).
   //       Video upload proxy routes (/video/upload) handle their own size check
@@ -176,13 +128,13 @@ export async function middleware(req: NextRequest) {
 
   const requestHeaders = new Headers(req.headers);
 
-  // Inject tenant headers so downstream RSCs/APIs can resolve the brand without
-  // an additional DB round-trip.
-  if (tenantId) {
-    requestHeaders.set(TENANT_HEADER, tenantId);
+  // Forward the verified host so downstream Node code (RSCs/APIs) can resolve
+  // the tenant brand from the DB. Always strip any client-supplied x-tenant-id
+  // so a tenant identity can never be spoofed via a request header.
+  requestHeaders.delete(TENANT_HEADER);
+  if (host) {
     requestHeaders.set(TENANT_DOMAIN_HEADER, host);
   } else {
-    requestHeaders.delete(TENANT_HEADER);
     requestHeaders.delete(TENANT_DOMAIN_HEADER);
   }
 

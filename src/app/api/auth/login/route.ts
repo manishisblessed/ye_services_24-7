@@ -22,7 +22,7 @@ import {
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { getLoginBlock } from "@/lib/security/accountGate";
 import { findLoginUser, resolveTenantOwnerFromHeader } from "@/lib/security/loginLookup";
-import { TENANT_HEADER } from "@/lib/tenant/context";
+import { TENANT_DOMAIN_HEADER, resolveTenantIdFromHost } from "@/lib/tenant/context";
 
 const LocationSchema = z.object({
   lat: z.number(),
@@ -120,10 +120,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    // On a LIVE partner domain the middleware sets x-tenant-id; scope the
-    // lookup to that tenant first so email/phone collisions across tenants
-    // resolve to the right company. userCode stays globally unique.
-    const tenantOwnerId = await resolveTenantOwnerFromHeader(req.headers.get(TENANT_HEADER));
+    // On a LIVE partner domain, scope the lookup to that tenant first so
+    // email/phone collisions across tenants resolve to the right company.
+    // The middleware forwards the verified host; resolve the tenant here
+    // (Node runtime) since Prisma cannot run in Edge middleware.
+    const tenantId = await resolveTenantIdFromHost(req.headers.get(TENANT_DOMAIN_HEADER));
+    const tenantOwnerId = await resolveTenantOwnerFromHeader(tenantId);
     const user = await findLoginUser(normalized, { includeUserCode: true, tenantOwnerId });
 
     const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;

@@ -9,7 +9,7 @@ import { assertCaptcha } from "@/lib/security/captcha";
 import { clientIp, logSecurityEvent } from "@/lib/security/audit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { isTwilioOtpEnabled, sendVerification } from "@/lib/partners/twilio";
-import { TENANT_HEADER } from "@/lib/tenant/context";
+import { TENANT_DOMAIN_HEADER, resolveTenantIdFromHost } from "@/lib/tenant/context";
 
 const Body = z.object({
   channel: z.enum(["SMS", "EMAIL"]).default("SMS"),
@@ -74,14 +74,15 @@ export async function POST(req: Request) {
     data: { channel: parsed.data.channel, target: parsed.data.target, codeHash, purpose: parsed.data.purpose, expiresAt }
   });
 
-  // Resolve platform name from the tenant header injected by middleware
-  const tenantId = req.headers.get(TENANT_HEADER);
+  // Resolve platform name from the verified host (Node runtime; Prisma cannot
+  // run in the Edge middleware). tenantId is the WhitelabelProfile id.
+  const tenantId = await resolveTenantIdFromHost(req.headers.get(TENANT_DOMAIN_HEADER));
   let platformName = "bankingpoint24";
   let primaryColor = "#172b6b";
   if (tenantId) {
     try {
       const tenantProfile = await prisma.whitelabelProfile.findUnique({
-        where: { userId: tenantId },
+        where: { id: tenantId },
         select: { brandName: true, primaryColor: true, status: true },
       });
       if (tenantProfile?.status === "LIVE" && tenantProfile.brandName) {
