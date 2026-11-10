@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check, Upload, Loader2, X } from "lucide-react";
 
 const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com";
+const SERVER_IP = process.env.NEXT_PUBLIC_SERVER_IP ?? "13.55.164.240";
 import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -276,71 +277,81 @@ export default function WhitelabelPage() {
       {/* ── DNS & Verification tab ──────────────────────────────── */}
       {activeTab === "dns" && (
         <div className="space-y-6">
-          {/* Custom domain guide */}
+          {/* Custom domain setup guide */}
           <SectionCard
             icon={<IconTile icon={Globe} tone="accent" size="sm" />}
             title="Custom domain setup"
-            description="Point your own domain to this platform with a CNAME record."
+            description="Point your domain to our server using an A record. Works with Cloudflare, GoDaddy, Namecheap, BigRock, etc."
           >
             <ol className="space-y-4 text-sm text-ink-700">
               <li className="flex gap-3">
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
                 <div>
-                  <p className="font-semibold text-ink-900">Log in to your domain registrar</p>
-                  <p className="text-ink-500 mt-0.5">GoDaddy, Namecheap, Cloudflare, BigRock, etc.</p>
+                  <p className="font-semibold text-ink-900">Log in to your domain registrar / DNS provider</p>
+                  <p className="text-ink-500 mt-0.5">Go to your DNS settings (Records section).</p>
                 </div>
               </li>
               <li className="flex gap-3">
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
                 <div>
-                  <p className="font-semibold text-ink-900">Create a CNAME record</p>
+                  <p className="font-semibold text-ink-900">Add two A records — one for root, one for www</p>
                   <div className="mt-2 overflow-x-auto rounded-xl border border-ink-200 bg-white">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b border-ink-100 bg-ink-50">
                           <th className="px-4 py-2 text-left font-semibold text-ink-600">Type</th>
                           <th className="px-4 py-2 text-left font-semibold text-ink-600">Name / Host</th>
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / Target</th>
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">TTL</th>
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / IPv4</th>
+                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Proxy / TTL</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-ink-50">
                         <tr>
-                          <td className="px-4 py-2.5 font-mono font-semibold text-brand-700">CNAME</td>
-                          <td className="px-4 py-2.5 font-mono">
-                            {profile.customDomain?.trim() || "yourdomain.in"}
-                          </td>
+                          <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
+                          <td className="px-4 py-2.5 font-mono font-semibold">@ (root)</td>
                           <td className="px-4 py-2.5">
                             <div className="flex items-center gap-2">
-                              <code className="font-mono text-ink-900">{PLATFORM_DOMAIN}</code>
+                              <code className="font-mono text-ink-900">{SERVER_IP}</code>
                               <button
                                 type="button"
-                                onClick={() => copyToClipboard(PLATFORM_DOMAIN)}
+                                onClick={() => copyToClipboard(SERVER_IP)}
                                 className="rounded p-0.5 text-ink-400 hover:text-ink-700"
+                                title="Copy IP"
                               >
                                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                               </button>
                             </div>
                           </td>
-                          <td className="px-4 py-2.5 font-mono text-ink-500">3600</td>
+                          <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
+                          <td className="px-4 py-2.5 font-mono font-semibold">www</td>
+                          <td className="px-4 py-2.5">
+                            <code className="font-mono text-ink-900">{SERVER_IP}</code>
+                          </td>
+                          <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
+                  <p className="mt-2 text-xs text-ink-500">
+                    <strong className="text-ink-700">Using Cloudflare?</strong> Enable the orange cloud (Proxy) — this gives you free SSL/HTTPS automatically. No certificate setup needed.
+                  </p>
                 </div>
               </li>
               <li className="flex gap-3">
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
                 <div>
                   <p className="font-semibold text-ink-900">Wait for DNS propagation</p>
-                  <p className="text-ink-500 mt-0.5">Usually 15 minutes to 48 hours. Use the checker below to confirm.</p>
+                  <p className="text-ink-500 mt-0.5">With Cloudflare proxy, usually <strong className="text-ink-700">5–15 minutes</strong>. Without proxy, up to 48 hours.</p>
                 </div>
               </li>
               <li className="flex gap-3">
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">4</span>
                 <div>
-                  <p className="font-semibold text-ink-900">SSL is automatic</p>
-                  <p className="text-ink-500 mt-0.5">Once the CNAME propagates, TLS/HTTPS is provisioned automatically. No manual certificate work needed.</p>
+                  <p className="font-semibold text-ink-900">Contact us to activate your portal</p>
+                  <p className="text-ink-500 mt-0.5">Once DNS is set, our team will verify and activate your portal. Your branded site will then be live at <span className="font-mono text-ink-700">{profile.customDomain?.trim() || "yourdomain.com"}</span>.</p>
                 </div>
               </li>
             </ol>
