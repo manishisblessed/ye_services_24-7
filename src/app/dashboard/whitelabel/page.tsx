@@ -5,12 +5,13 @@ import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check, Upload
 
 const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com";
 const SERVER_IP = process.env.NEXT_PUBLIC_SERVER_IP ?? "13.55.164.240";
-import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info } from "@phosphor-icons/react";
+import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info, CheckCircle as PhCheckCircle } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { FloatingInput, Input, Label } from "@/components/ui/Input";
 import { IconTile } from "@/components/ui/Icon";
 import { EmptyState, FadeIn, SectionCard, StatusChip } from "@/components/dashboard/patterns";
+import { PREMIUM_THEMES } from "@/lib/tenant/themes";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB
 const ACCEPTED_IMAGE_TYPES = "image/png,image/jpeg,image/svg+xml,image/webp";
@@ -420,30 +421,42 @@ export default function WhitelabelPage() {
             <div className="grid gap-5 md:grid-cols-2">
               <FloatingInput label="Brand name *" value={profile.brandName} onChange={(e) => set("brandName", e.target.value)} placeholder="KapoorPay" />
               <FloatingInput label="Tagline" value={profile.tagline ?? ""} onChange={(e) => set("tagline", e.target.value)} placeholder="Your own payments brand" />
-              <div>
-                <Label htmlFor="wl-primary">Primary color</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="wl-primary"
-                    type="color"
-                    value={profile.primaryColor}
-                    onChange={(e) => set("primaryColor", e.target.value)}
-                    className="h-11 w-12 cursor-pointer rounded-2xl border border-ink-200 p-1"
-                  />
-                  <Input value={profile.primaryColor} onChange={(e) => set("primaryColor", e.target.value)} className="font-mono uppercase" aria-label="Primary color hex" />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="wl-accent">Accent color</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="wl-accent"
-                    type="color"
-                    value={profile.accentColor}
-                    onChange={(e) => set("accentColor", e.target.value)}
-                    className="h-11 w-12 cursor-pointer rounded-2xl border border-ink-200 p-1"
-                  />
-                  <Input value={profile.accentColor} onChange={(e) => set("accentColor", e.target.value)} className="font-mono uppercase" aria-label="Accent color hex" />
+              {/* Theme picker — curated 6 premium themes instead of raw color pickers */}
+              <div className="col-span-full">
+                <Label>Color theme</Label>
+                <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {PREMIUM_THEMES.map((t) => {
+                    const selected = profile.primaryColor.toUpperCase() === t.primaryColor.toUpperCase()
+                      && profile.accentColor.toUpperCase() === t.accentColor.toUpperCase();
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          set("primaryColor", t.primaryColor);
+                          set("accentColor", t.accentColor);
+                        }}
+                        className={`relative overflow-hidden rounded-2xl border-2 text-left transition-all ${
+                          selected
+                            ? "border-ink-900 ring-2 ring-ink-900/20 shadow-md"
+                            : "border-ink-200 hover:border-ink-400 hover:shadow-sm"
+                        }`}
+                      >
+                        {/* Gradient preview */}
+                        <div
+                          className="h-14 w-full"
+                          style={{ background: `linear-gradient(135deg, ${t.primaryColor}, ${t.accentColor})` }}
+                        />
+                        <div className="px-3 py-2.5">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-semibold text-ink-900">{t.name}</p>
+                            {selected && <PhCheckCircle size={18} weight="fill" className="text-ink-900" />}
+                          </div>
+                          <p className="text-xs text-ink-500 mt-0.5">{t.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               {/* Logo upload */}
