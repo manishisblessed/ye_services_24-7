@@ -149,6 +149,22 @@ const schema = z.object({
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 
+  // ---------- Cloudflare for SaaS (white-label custom-domain automation) ----------
+  // When a partner clicks "Go Live", the backend provisions a Cloudflare
+  // Custom Hostname for their domain via the API — Cloudflare auto-issues and
+  // renews the TLS cert. The partner only has to add ONE CNAME record pointing
+  // at CLOUDFLARE_SAAS_FALLBACK_HOSTNAME. No nameserver change, no manual nginx.
+  //   - CLOUDFLARE_API_TOKEN: zone-scoped token with "SSL and Certificates: Edit"
+  //     + "Zone Settings: Read" on the platform zone.
+  //   - CLOUDFLARE_ZONE_ID: the zone id of the platform domain (where SaaS is on).
+  //   - CLOUDFLARE_SAAS_FALLBACK_HOSTNAME: the CNAME target partners point to
+  //     (e.g. "saas.bankingpoint-24.com"). The brand portal fetches this from
+  //     the API to show the exact record the partner must add.
+  // When these are unset, go-live falls back to the legacy manual A-record flow.
+  CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
+  CLOUDFLARE_ZONE_ID: z.string().min(1).optional(),
+  CLOUDFLARE_SAAS_FALLBACK_HOSTNAME: z.string().min(1).optional(),
+
   // Have-I-Been-Pwned breached-password check (k-anonymity range API).
   SECURITY_HIBP_ENABLED: z.string().default("true"),
 

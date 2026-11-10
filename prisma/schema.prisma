@@ -1131,7 +1131,23 @@ model WhitelabelProfile {
   subdomain    String? @unique // e.g. "kapoorpay" → kapoorpay.<platform-domain>
   customDomain String? @unique // e.g. "kapoorpay.in"
 
-  status String @default("DRAFT") // DRAFT | LIVE | SUSPENDED
+  // DRAFT    — being edited, not public
+  // PENDING  — go-live requested; Cloudflare custom hostname created, waiting
+  //            for the partner's CNAME + TLS cert to validate
+  // LIVE     — domain verified + SSL active; tenant resolution serves the brand
+  // SUSPENDED— admin-frozen; never resolves
+  status String @default("DRAFT") // DRAFT | PENDING | LIVE | SUSPENDED
+
+  // ---------- Cloudflare for SaaS custom-hostname automation ----------
+  // The Cloudflare "custom_hostname" record id provisioned for customDomain.
+  cfCustomHostnameId String?
+  // Mirrors Cloudflare's ssl.status: pending_validation | pending_issuance |
+  // pending_deployment | active | ... (null before provisioning).
+  sslStatus          String?
+  // True once Cloudflare reports the hostname active (DNS + cert validated).
+  domainVerified     Boolean   @default(false)
+  // Last time the worker/portal polled Cloudflare for this hostname's status.
+  domainCheckedAt    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

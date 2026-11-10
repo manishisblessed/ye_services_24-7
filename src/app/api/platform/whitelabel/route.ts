@@ -5,6 +5,14 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import {
+  provisionCustomDomain,
+  teardownCustomDomain,
+} from "@/lib/cloudflare/domains";
+import {
+  isCloudflareSaasConfigured,
+  cloudflareSaasFallbackHostname,
+} from "@/lib/cloudflare/client";
 
 /**
  * Whitelabel profile management (Phase 4).
@@ -56,7 +64,17 @@ function serialize(p: NonNullable<Awaited<ReturnType<typeof prisma.whitelabelPro
     subdomain: p.subdomain,
     customDomain: p.customDomain,
     status: p.status,
+    sslStatus: p.sslStatus,
+    domainVerified: p.domainVerified,
     updatedAt: p.updatedAt.toISOString(),
+  };
+}
+
+/** DNS setup metadata surfaced to the brand portal. */
+function dnsInfo() {
+  return {
+    saasEnabled: isCloudflareSaasConfigured(),
+    cnameTarget: cloudflareSaasFallbackHostname(),
   };
 }
 
@@ -72,7 +90,7 @@ export async function GET() {
   }
 
   const profile = await prisma.whitelabelProfile.findUnique({ where: { userId: user.id } });
-  return NextResponse.json({ profile: profile ? serialize(profile) : null });
+  return NextResponse.json({ profile: profile ? serialize(profile) : null, dns: dnsInfo() });
 }
 
 export async function PUT(req: Request) {
@@ -104,6 +122,14 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Profile is suspended — contact support" }, { status: 403 });
   }
 
+  // Whether the partner is requesting go-live in this call.
+  const goLiveRequested = body.status === "LIVE" && existing?.status !== "SUSPENDED";
+
+  // Did the custom domain change? If so, the old Cloudflare hostname (if any)
+  // must be torn down before we provision the new one.
+  const newDomain = body.customDomain ?? null;
+  const domainChanged = (existing?.customDomain ?? null) !== newDomain;
+
   const data = {
     brandName: body.brandName,
     tagline: body.tagline ?? null,
@@ -114,8 +140,22 @@ export async function PUT(req: Request) {
     supportEmail: body.supportEmail ?? null,
     supportPhone: body.supportPhone ?? null,
     subdomain: body.subdomain ?? null,
-    customDomain: body.customDomain ?? null,
-    ...(body.status && existing?.status !== "SUSPENDED" ? { status: body.status } : {}),
+    customDomain: newDomain,
+    // NOTE: we do NOT flip to LIVE here. Go-live is handled by
+    // provisionCustomDomain() below, which sets PENDING (awaiting SSL) or LIVE
+    // (manual fallback / already active).
+    //   - Changing the domain (without going live in the same call) resets the
+    //     profile to DRAFT: the new domain needs its own hostname + CNAME, so it
+    //     must be re-activated via Go live.
+    //   - An explicit DRAFT save records DRAFT.
+    //   - Otherwise status is left untouched (a LIVE brand stays LIVE on edits).
+    ...(!goLiveRequested && existing?.status !== "SUSPENDED"
+      ? domainChanged
+        ? { status: "DRAFT" }
+        : body.status === "DRAFT"
+          ? { status: "DRAFT" }
+          : {}
+      : {}),
   };
 
   try {
@@ -125,26 +165,48 @@ export async function PUT(req: Request) {
       update: data,
     });
 
-    // Activation side-effect: a LIVE tenant's owner gets isTenantOwner = true
-    // so their onboarding/admin powers unlock immediately.
-    if (saved.status === "LIVE") {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { isTenantOwner: true },
-      });
+    // If the domain changed, drop the stale Cloudflare custom hostname so we
+    // don't leak certs/records for a domain the partner no longer uses.
+    if (domainChanged && existing?.cfCustomHostnameId) {
+      await teardownCustomDomain(saved.id).catch(() => {});
     }
+
+    // Go-live: provision the Cloudflare custom hostname and move to PENDING
+    // (or LIVE when Cloudflare isn't configured / the cert is already active).
+    let provision: Awaited<ReturnType<typeof provisionCustomDomain>> | null = null;
+    if (goLiveRequested) {
+      provision = await provisionCustomDomain(saved.id);
+      if (provision.outcome === "error") {
+        return NextResponse.json(
+          { error: `Could not start go-live: ${provision.error ?? "Cloudflare error"}` },
+          { status: 502 }
+        );
+      }
+    }
+
+    const fresh = await prisma.whitelabelProfile.findUnique({ where: { id: saved.id } });
 
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        action: "whitelabel.saved",
+        action: goLiveRequested ? "whitelabel.golive" : "whitelabel.saved",
         entity: "WhitelabelProfile",
         entityId: saved.id,
-        meta: { brandName: saved.brandName, subdomain: saved.subdomain, customDomain: saved.customDomain, status: saved.status },
+        meta: {
+          brandName: saved.brandName,
+          subdomain: saved.subdomain,
+          customDomain: saved.customDomain,
+          status: fresh?.status ?? saved.status,
+          ...(provision ? { provisionOutcome: provision.outcome, sslStatus: provision.sslStatus } : {}),
+        },
       },
     });
 
-    return NextResponse.json({ profile: serialize(saved) });
+    return NextResponse.json({
+      profile: serialize(fresh ?? saved),
+      dns: dnsInfo(),
+      ...(provision ? { provision } : {}),
+    });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
       return NextResponse.json({ error: "That subdomain or domain is already taken" }, { status: 409 });

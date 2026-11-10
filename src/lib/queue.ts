@@ -129,6 +129,11 @@ export const QUEUES = {
   // Lien governance report (daily): flags ageing + large ACTIVE liens for ops.
   // Never writes off or releases a lien. See src/lib/recon/lienGovernance.ts.
   LIEN_AGING_REPORT: "recon.lien.aging",
+  // White-label custom-domain verification sweep (every 2 min). Polls Cloudflare
+  // for every PENDING WhitelabelProfile's custom hostname and auto-promotes it
+  // to LIVE the moment the TLS cert is active — so a partner's page goes live
+  // with no manual step once their CNAME resolves. See src/lib/cloudflare/domains.ts.
+  WHITELABEL_DOMAIN_VERIFY: "whitelabel.domain.verify",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

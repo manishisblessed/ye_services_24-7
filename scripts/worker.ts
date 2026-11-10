@@ -38,6 +38,7 @@ import { runTopupReconciliation, runTopupIntegrityCheck } from "@/lib/recon/topu
 import { runOutcomeVerificationSweep } from "@/lib/recon/clawbackDetect";
 import { runExposureThresholdAlert } from "@/lib/recon/exposure";
 import { runLienAgingReport } from "@/lib/recon/lienGovernance";
+import { sweepPendingDomains } from "@/lib/cloudflare/domains";
 import { getPartner } from "@/lib/partners";
 import { viableChannelHealth, viableConfigured } from "@/lib/partners/viable-pg";
 import { recordWorkerHeartbeat, persistGatewayHealth } from "@/lib/ops/telemetry";
@@ -690,6 +691,21 @@ async function main() {
     }
   });
   await boss.schedule(QUEUES.LIEN_AGING_REPORT, "0 3 * * *", {}, { tz: "Asia/Kolkata" });
+
+  // QUEUES.WHITELABEL_DOMAIN_VERIFY — white-label custom-domain go-live sweep
+  // (every 2 min). Polls Cloudflare for each PENDING tenant's custom hostname
+  // and auto-promotes it to LIVE once the TLS cert is active. No-ops when
+  // Cloudflare for SaaS isn't configured. See src/lib/cloudflare/domains.ts.
+  await boss.work(QUEUES.WHITELABEL_DOMAIN_VERIFY, async () => {
+    try {
+      const r = await sweepPendingDomains();
+      if (!r.skipped && (r.scanned > 0 || r.promoted > 0))
+        log(`whitelabel.domain.verify: scanned=${r.scanned} promoted=${r.promoted}`);
+    } catch (e) {
+      await captureError(e, { where: "whitelabel.domain.verify" });
+    }
+  });
+  await boss.schedule(QUEUES.WHITELABEL_DOMAIN_VERIFY, "*/2 * * * *");
 
   // Phase 5 — secrets hardening: loudly flag weak/missing production secrets
   // at startup (never crashes the worker; ops gets one alert per boot).

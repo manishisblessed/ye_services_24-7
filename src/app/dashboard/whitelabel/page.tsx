@@ -36,8 +36,104 @@ type Profile = {
   supportPhone: string | null;
   customDomain: string | null;
   status: string;
+  sslStatus?: string | null;
+  domainVerified?: boolean;
   updatedAt?: string;
 };
+
+type DnsInfo = {
+  saasEnabled: boolean;
+  cnameTarget: string | null;
+};
+
+/** The host label for the CNAME record (www for www domains, else "@"). */
+function cnameHostLabel(domain: string | null): string {
+  if (!domain) return "@";
+  const d = domain.trim().toLowerCase();
+  return d.startsWith("www.") ? "www" : "@ (root)";
+}
+
+/** Human-readable SSL status + copy for each pipeline state. */
+function sslStatusCopy(sslStatus: string | null): string {
+  switch (sslStatus) {
+    case "active":
+      return "SSL certificate issued and active.";
+    case "pending_validation":
+      return "Waiting for your DNS record to resolve (domain control validation).";
+    case "pending_issuance":
+      return "DNS verified — Cloudflare is issuing your certificate.";
+    case "pending_deployment":
+      return "Certificate issued — deploying to the edge network.";
+    case null:
+    case undefined:
+      return "Not started yet.";
+    default:
+      return `Current state: ${sslStatus}.`;
+  }
+}
+
+/** Go-live status banner shown at the top of the DNS tab. */
+function DomainStatusBanner({
+  status,
+  sslStatus,
+  domain,
+  checking,
+  onCheck,
+  showCheck,
+}: {
+  status: string;
+  sslStatus: string | null;
+  domain: string | null;
+  checking: boolean;
+  onCheck: () => void;
+  showCheck: boolean;
+}) {
+  const live = status === "LIVE";
+  const pending = status === "PENDING";
+  const tone = live
+    ? "border-emerald-200 bg-emerald-50"
+    : pending
+      ? "border-amber-200 bg-amber-50"
+      : "border-ink-200 bg-ink-50";
+
+  return (
+    <div className={`rounded-2xl border p-4 ${tone}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          {live ? (
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+          ) : pending ? (
+            <Loader2 className={`mt-0.5 h-5 w-5 shrink-0 text-amber-600 ${checking ? "animate-spin" : ""}`} />
+          ) : (
+            <Info className="mt-0.5 h-5 w-5 shrink-0 text-ink-400" />
+          )}
+          <div>
+            <p className="text-sm font-semibold text-ink-900">
+              {live
+                ? `Your portal is live${domain ? ` at ${domain}` : ""}`
+                : pending
+                  ? "Go-live in progress — awaiting DNS & SSL"
+                  : "Not live yet"}
+            </p>
+            <p className="mt-0.5 text-xs text-ink-600">
+              {live
+                ? "Visitors to your domain now see your branded landing page."
+                : pending
+                  ? sslStatusCopy(sslStatus)
+                  : "Click Go live, then add the DNS record below."}
+            </p>
+          </div>
+        </div>
+        {showCheck && (
+          <Button variant="secondary" size="sm" onClick={onCheck} disabled={checking}>
+            <RefreshCw className={`h-4 w-4 ${checking ? "animate-spin" : ""}`} />
+            {checking ? "Checking…" : "Check status now"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const EMPTY: Profile = {
   brandName: "",
@@ -73,8 +169,11 @@ export default function WhitelabelPage() {
   const [verifying, setVerifying] = useState(false);
   const [dnsResults, setDnsResults] = useState<DnsVerifyResult[]>([]);
   const [copied, setCopied] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [dns, setDns] = useState<DnsInfo>({ saasEnabled: false, cnameTarget: null });
+  const [checkingStatus, setCheckingStatus] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,10 +187,32 @@ export default function WhitelabelPage() {
       }
       const data = await res.json();
       if (res.ok && data.profile) setProfile({ ...EMPTY, ...data.profile });
+      if (res.ok && data.dns) setDns(data.dns);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Re-poll Cloudflare for the custom-hostname status and auto-promote to LIVE.
+  async function checkDomainStatus() {
+    setCheckingStatus(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/platform/whitelabel/domain-status", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Status check failed");
+      setProfile((p) => ({
+        ...p,
+        status: data.status ?? p.status,
+        sslStatus: data.sslStatus ?? null,
+        domainVerified: !!data.domainVerified,
+      }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Status check failed");
+    } finally {
+      setCheckingStatus(false);
+    }
+  }
 
   useEffect(() => {
     load();
@@ -174,6 +295,7 @@ export default function WhitelabelPage() {
         throw new Error(typeof data.error === "string" ? data.error : "Check the highlighted fields and try again");
       }
       setProfile({ ...EMPTY, ...data.profile });
+      if (data.dns) setDns(data.dns);
       setSaved(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save");
@@ -235,14 +357,23 @@ export default function WhitelabelPage() {
           <div className="flex flex-wrap items-center gap-2">
             <StatusChip
               status={profile.status}
-              label={profile.status === "LIVE" ? "Live" : profile.status === "SUSPENDED" ? "Suspended" : "Draft"}
+              label={
+                profile.status === "LIVE"
+                  ? "Live"
+                  : profile.status === "PENDING"
+                    ? "Pending DNS"
+                    : profile.status === "SUSPENDED"
+                      ? "Suspended"
+                      : "Draft"
+              }
             />
             <Button variant="secondary" onClick={() => save()} disabled={!canSave}>
               <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save draft"}
             </Button>
             {profile.status !== "LIVE" && (
               <Button onClick={() => save(true)} disabled={!canGoLive}>
-                <Rocket className="h-4 w-4" /> Go live
+                <Rocket className="h-4 w-4" />{" "}
+                {profile.status === "PENDING" ? "Re-check go live" : "Go live"}
               </Button>
             )}
           </div>
@@ -278,85 +409,163 @@ export default function WhitelabelPage() {
       {/* ── DNS & Verification tab ──────────────────────────────── */}
       {activeTab === "dns" && (
         <div className="space-y-6">
-          {/* Custom domain setup guide */}
-          <SectionCard
-            icon={<IconTile icon={Globe} tone="accent" size="sm" />}
-            title="Custom domain setup"
-            description="Point your domain to our server using an A record. Works with Cloudflare, GoDaddy, Namecheap, BigRock, etc."
-          >
-            <ol className="space-y-4 text-sm text-ink-700">
-              <li className="flex gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
-                <div>
-                  <p className="font-semibold text-ink-900">Log in to your domain registrar / DNS provider</p>
-                  <p className="text-ink-500 mt-0.5">Go to your DNS settings (Records section).</p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
-                <div>
-                  <p className="font-semibold text-ink-900">Add two A records — one for root, one for www</p>
-                  <div className="mt-2 overflow-x-auto rounded-xl border border-ink-200 bg-white">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b border-ink-100 bg-ink-50">
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Type</th>
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Name / Host</th>
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / IPv4</th>
-                          <th className="px-4 py-2 text-left font-semibold text-ink-600">Proxy / TTL</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-ink-50">
-                        <tr>
-                          <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
-                          <td className="px-4 py-2.5 font-mono font-semibold">@ (root)</td>
-                          <td className="px-4 py-2.5">
-                            <div className="flex items-center gap-2">
-                              <code className="font-mono text-ink-900">{SERVER_IP}</code>
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(SERVER_IP)}
-                                className="rounded p-0.5 text-ink-400 hover:text-ink-700"
-                                title="Copy IP"
-                              >
-                                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
-                        </tr>
-                        <tr>
-                          <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
-                          <td className="px-4 py-2.5 font-mono font-semibold">www</td>
-                          <td className="px-4 py-2.5">
-                            <code className="font-mono text-ink-900">{SERVER_IP}</code>
-                          </td>
-                          <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
-                        </tr>
-                      </tbody>
-                    </table>
+          {/* Go-live status banner */}
+          <DomainStatusBanner
+            status={profile.status}
+            sslStatus={profile.sslStatus ?? null}
+            domain={profile.customDomain?.trim() || null}
+            checking={checkingStatus}
+            onCheck={checkDomainStatus}
+            showCheck={dns.saasEnabled && (profile.status === "PENDING" || profile.status === "LIVE")}
+          />
+
+          {dns.saasEnabled ? (
+            /* ── Cloudflare-for-SaaS flow: one CNAME, auto SSL ───────────── */
+            <SectionCard
+              icon={<IconTile icon={Globe} tone="accent" size="sm" />}
+              title="Custom domain setup"
+              description="Add ONE DNS record at your domain registrar. We provision the SSL certificate automatically — no server or certificate setup on your side."
+            >
+              <ol className="space-y-4 text-sm text-ink-700">
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">Click <strong>Go live</strong> above</p>
+                    <p className="text-ink-500 mt-0.5">This reserves your domain and starts automatic SSL provisioning.</p>
                   </div>
-                  <p className="mt-2 text-xs text-ink-500">
-                    <strong className="text-ink-700">Using Cloudflare?</strong> Enable the orange cloud (Proxy) — this gives you free SSL/HTTPS automatically. No certificate setup needed.
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
-                <div>
-                  <p className="font-semibold text-ink-900">Wait for DNS propagation</p>
-                  <p className="text-ink-500 mt-0.5">With Cloudflare proxy, usually <strong className="text-ink-700">5–15 minutes</strong>. Without proxy, up to 48 hours.</p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">4</span>
-                <div>
-                  <p className="font-semibold text-ink-900">Contact us to activate your portal</p>
-                  <p className="text-ink-500 mt-0.5">Once DNS is set, our team will verify and activate your portal. Your branded site will then be live at <span className="font-mono text-ink-700">{profile.customDomain?.trim() || "yourdomain.com"}</span>.</p>
-                </div>
-              </li>
-            </ol>
-          </SectionCard>
+                </li>
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-ink-900">Add this CNAME record at your registrar</p>
+                    <p className="text-ink-500 mt-0.5">In your DNS settings (GoDaddy, Namecheap, Cloudflare, BigRock, etc.), add:</p>
+                    <div className="mt-2 overflow-x-auto rounded-xl border border-ink-200 bg-white">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-ink-100 bg-ink-50">
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Type</th>
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Name / Host</th>
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / Target</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">CNAME</td>
+                            <td className="px-4 py-2.5 font-mono font-semibold">{cnameHostLabel(profile.customDomain)}</td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-2">
+                                <code className="font-mono text-ink-900">{dns.cnameTarget}</code>
+                                <button
+                                  type="button"
+                                  onClick={() => { if (dns.cnameTarget) { copyToClipboard(dns.cnameTarget); setCopiedTarget(true); setTimeout(() => setCopiedTarget(false), 2000); } }}
+                                  className="rounded p-0.5 text-ink-400 hover:text-ink-700"
+                                  title="Copy target"
+                                >
+                                  {copiedTarget ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs text-ink-500">
+                      <strong className="text-ink-700">Root/apex domains</strong> (e.g. <code>{profile.customDomain?.replace(/^www\./, "") || "yourdomain.com"}</code>): if your registrar doesn&apos;t allow a CNAME on the root, either use <code>www</code> with a redirect, or host the domain&apos;s DNS on Cloudflare (CNAME flattening handles the root automatically).
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">That&apos;s it — your portal goes live automatically</p>
+                    <p className="text-ink-500 mt-0.5">
+                      Once the record resolves (usually <strong className="text-ink-700">5–30 minutes</strong>), we issue your SSL certificate and your branded site goes live at <span className="font-mono text-ink-700">{previewHost}</span> — no further action needed. Use <strong>Check status now</strong> above to refresh.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </SectionCard>
+          ) : (
+            /* ── Legacy manual A-record flow (Cloudflare SaaS not configured) ─ */
+            <SectionCard
+              icon={<IconTile icon={Globe} tone="accent" size="sm" />}
+              title="Custom domain setup"
+              description="Point your domain to our server using an A record. Works with Cloudflare, GoDaddy, Namecheap, BigRock, etc."
+            >
+              <ol className="space-y-4 text-sm text-ink-700">
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">Log in to your domain registrar / DNS provider</p>
+                    <p className="text-ink-500 mt-0.5">Go to your DNS settings (Records section).</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">Add two A records — one for root, one for www</p>
+                    <div className="mt-2 overflow-x-auto rounded-xl border border-ink-200 bg-white">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-ink-100 bg-ink-50">
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Type</th>
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Name / Host</th>
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Value / IPv4</th>
+                            <th className="px-4 py-2 text-left font-semibold text-ink-600">Proxy / TTL</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-ink-50">
+                          <tr>
+                            <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
+                            <td className="px-4 py-2.5 font-mono font-semibold">@ (root)</td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-center gap-2">
+                                <code className="font-mono text-ink-900">{SERVER_IP}</code>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(SERVER_IP)}
+                                  className="rounded p-0.5 text-ink-400 hover:text-ink-700"
+                                  title="Copy IP"
+                                >
+                                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
+                          </tr>
+                          <tr>
+                            <td className="px-4 py-2.5 font-mono font-semibold text-emerald-700">A</td>
+                            <td className="px-4 py-2.5 font-mono font-semibold">www</td>
+                            <td className="px-4 py-2.5">
+                              <code className="font-mono text-ink-900">{SERVER_IP}</code>
+                            </td>
+                            <td className="px-4 py-2.5 text-ink-500">Proxied · Auto</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs text-ink-500">
+                      <strong className="text-ink-700">Using Cloudflare?</strong> Enable the orange cloud (Proxy) — this gives you free SSL/HTTPS automatically. No certificate setup needed.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">Wait for DNS propagation</p>
+                    <p className="text-ink-500 mt-0.5">With Cloudflare proxy, usually <strong className="text-ink-700">5–15 minutes</strong>. Without proxy, up to 48 hours.</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">4</span>
+                  <div>
+                    <p className="font-semibold text-ink-900">Contact us to activate your portal</p>
+                    <p className="text-ink-500 mt-0.5">Once DNS is set, our team will verify and activate your portal. Your branded site will then be live at <span className="font-mono text-ink-700">{profile.customDomain?.trim() || "yourdomain.com"}</span>.</p>
+                  </div>
+                </li>
+              </ol>
+            </SectionCard>
+          )}
 
           {/* DNS verifier */}
           <SectionCard
