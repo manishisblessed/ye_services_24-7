@@ -43,6 +43,10 @@ export const SERVICE_KEYS = {
   PAYOUT: "payout_bulkpe", // stable key — do not rename (referenced in DB rows)
   KNTEER_PAYOUT: "knteer_payout", // Bank Transfer (Same Day Knteer Payout API)
   PG: "pg_razorpay",
+  /** Chagans PG — Comet gateway (pgType chagans3, T+1 next-day, scopeKey CHAGANS_COMET). */
+  CHAGANS_PG_COMET: "pg_chagans_comet",
+  /** Chagans PG — Star gateway (pgType chagans2, T+0 same-day, scopeKey CHAGANS_STAR). */
+  CHAGANS_PG_STAR: "pg_chagans_star",
   POS: "pos_sameday",
   QR: "qr_dynamic",
   UPI: "upi_collect",
@@ -167,6 +171,28 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
     enabled: true,
     note: "Hosted checkout / UPI collections — powers instant wallet top-ups.",
     sortOrder: 20,
+  },
+  {
+    key: SERVICE_KEYS.CHAGANS_PG_COMET,
+    name: "Comet PG (Chagans T+1)",
+    type: "SERVICE",
+    kind: "PG",
+    // provider = scopeKey used for MDR slab (company dim) + RailMdrRate lookup.
+    // Must match the scopeKey passed to handleTopupCapture in settleTopup.
+    provider: "CHAGANS_COMET",
+    enabled: true,
+    note: "Chagans PG — Comet gateway. pgType: chagans3, mode: t1 (next-day settlement). Max ₹1,00,000. Set rate card here, then assign scheme slabs with company=CHAGANS_COMET.",
+    sortOrder: 21,
+  },
+  {
+    key: SERVICE_KEYS.CHAGANS_PG_STAR,
+    name: "Star PG (Chagans T+0)",
+    type: "SERVICE",
+    kind: "PG",
+    provider: "CHAGANS_STAR",
+    enabled: true,
+    note: "Chagans PG — Star gateway. pgType: chagans2, mode: t0 (same-day settlement). Max ₹40,000. Set rate card here, then assign scheme slabs with company=CHAGANS_STAR.",
+    sortOrder: 22,
   },
   {
     key: SERVICE_KEYS.POS,

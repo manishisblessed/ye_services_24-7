@@ -272,7 +272,18 @@ export async function settleTopup(
     // ------ PG-MDR providers credit NET-of-MDR via the settlement engine ------
     if (isPgMdrProvider(txn.partner)) {
       const gross = toNumber(txn.amount);
-      const scopeKey = txn.partner ?? "CHAGANS_PG";
+      // Map the Chagans partner to its per-gateway MDR scope key so that
+      // priceSchemeSettlement targets the correct pipeline's RailMdrRate + slab:
+      //   "CHAGANS_PG" (partner) → "CHAGANS_COMET" or "CHAGANS_STAR" (scopeKey)
+      // The gateway id is stored in the transaction request at initiation time.
+      const reqObj = (txn.request && typeof txn.request === "object" ? txn.request : {}) as Record<string, unknown>;
+      const gatewayId = typeof reqObj.gatewayId === "string" ? reqObj.gatewayId : null;
+      const scopeKey =
+        txn.partner === "CHAGANS_PG"
+          ? gatewayId === "star"
+            ? "CHAGANS_STAR"
+            : "CHAGANS_COMET" // default to Comet for any pre-existing rows without gatewayId
+          : (txn.partner ?? "CHAGANS_PG");
       const result = await handleTopupCapture({
         transactionId: txn.id,
         grossAmount: gross,
