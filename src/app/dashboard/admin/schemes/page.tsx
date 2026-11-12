@@ -940,7 +940,7 @@ function SlabModal({
   const [chargeType, setChargeType] = useState<RateType>(editing?.chargeType ?? "FLAT");
   // PERCENT edited as human percent (0.5 = 0.5%), stored as fraction (0.005).
   const [chargeValue, setChargeValue] = useState(
-    String(editing ? (editing.chargeType === "PERCENT" ? editing.chargeValue * 100 : editing.chargeValue) : 0)
+    editing ? fromStoredPct(editing.chargeValue, editing.chargeType) : "0"
   );
   const [chargeGstInclusive, setChargeGstInclusive] = useState(editing?.chargeGstInclusive ?? false);
   const [saving, setSaving] = useState(false);
@@ -1282,6 +1282,16 @@ function SlabModal({
   );
 }
 
+/**
+ * Stored fraction → human display string, safe from IEEE 754 noise.
+ * E.g. 0.011 → "1.1" (not "1.0999…"), 0.0012 → "0.12". Retains up to 4
+ * meaningful decimal places then strips trailing zeros.
+ */
+function fromStoredPct(v: number, type: string): string {
+  const human = type === "PERCENT" ? v * 100 : v;
+  return String(Number(human.toFixed(4)));
+}
+
 // ---------------------------------------------------------------------------
 // POS MDR rate modal (company/card dimensions + T+1/T+0)
 // ---------------------------------------------------------------------------
@@ -1316,38 +1326,19 @@ function MdrRateModal({
   const [classification, setClassification] = useState(editing?.classification ?? "");
   const [mdrType, setMdrType] = useState<RateType>(editing?.mdrType ?? "PERCENT");
   // PERCENT edited as human percent (1 = 1%), stored as fraction (0.01).
-  const [mdrT1, setMdrT1] = useState(
-    String(editing ? (editing.mdrType === "PERCENT" ? editing.mdrValue * 100 : editing.mdrValue) : 0)
-  );
-  const [mdrT0, setMdrT0] = useState(
-    String(editing ? (editing.mdrType === "PERCENT" ? editing.mdrValueT0 * 100 : editing.mdrValueT0) : 0)
-  );
-  const [vendorT1, setVendorT1] = useState(
-    String(editing ? (editing.mdrType === "PERCENT" ? editing.vendorCharge * 100 : editing.vendorCharge) : 0)
-  );
-  const [vendorT0, setVendorT0] = useState(
-    String(editing ? (editing.mdrType === "PERCENT" ? editing.vendorChargeT0 * 100 : editing.vendorChargeT0) : 0)
-  );
+  // fromStoredPct strips IEEE 754 float noise (0.011 → "1.1", not "1.0999…").
+  const [mdrT1, setMdrT1] = useState(editing ? fromStoredPct(editing.mdrValue, editing.mdrType) : "0");
+  const [mdrT0, setMdrT0] = useState(editing ? fromStoredPct(editing.mdrValueT0, editing.mdrType) : "0");
+  const [vendorT1, setVendorT1] = useState(editing ? fromStoredPct(editing.vendorCharge, editing.mdrType) : "0");
+  const [vendorT0, setVendorT0] = useState(editing ? fromStoredPct(editing.vendorChargeT0, editing.mdrType) : "0");
   const [commissionType, setCommissionType] = useState<RateType>(editing?.commissionType ?? "PERCENT");
-  const [commDist, setCommDist] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionDistributor * 100 : editing.commissionDistributor) : 0)
-  );
-  const [commMaster, setCommMaster] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionMaster * 100 : editing.commissionMaster) : 0)
-  );
-  const [commSuper, setCommSuper] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionSuperDistributor * 100 : editing.commissionSuperDistributor) : 0)
-  );
+  const [commDist, setCommDist] = useState(editing ? fromStoredPct(editing.commissionDistributor, editing.commissionType) : "0");
+  const [commMaster, setCommMaster] = useState(editing ? fromStoredPct(editing.commissionMaster, editing.commissionType) : "0");
+  const [commSuper, setCommSuper] = useState(editing ? fromStoredPct(editing.commissionSuperDistributor, editing.commissionType) : "0");
   // Instant (T+0) commission per tier — 0 means "use the T+1 value".
-  const [commDistT0, setCommDistT0] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionDistributorT0 * 100 : editing.commissionDistributorT0) : 0)
-  );
-  const [commMasterT0, setCommMasterT0] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionMasterT0 * 100 : editing.commissionMasterT0) : 0)
-  );
-  const [commSuperT0, setCommSuperT0] = useState(
-    String(editing ? (editing.commissionType === "PERCENT" ? editing.commissionSuperDistributorT0 * 100 : editing.commissionSuperDistributorT0) : 0)
-  );
+  const [commDistT0, setCommDistT0] = useState(editing ? fromStoredPct(editing.commissionDistributorT0, editing.commissionType) : "0");
+  const [commMasterT0, setCommMasterT0] = useState(editing ? fromStoredPct(editing.commissionMasterT0, editing.commissionType) : "0");
+  const [commSuperT0, setCommSuperT0] = useState(editing ? fromStoredPct(editing.commissionSuperDistributorT0, editing.commissionType) : "0");
   const [applyScope, setApplyScope] = useState<"single" | "global">("single");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1411,11 +1402,11 @@ function MdrRateModal({
     }
     const isPercent = pick.mdrType === "PERCENT";
     setMdrType(pick.mdrType as RateType);
-    setVendorT1(String(isPercent ? Number(pick.mdrValue) * 100 : Number(pick.mdrValue)));
-    setVendorT0(String(isPercent ? Number(pick.mdrValueT0) * 100 : Number(pick.mdrValueT0)));
+    setVendorT1(fromStoredPct(Number(pick.mdrValue), pick.mdrType));
+    setVendorT0(fromStoredPct(Number(pick.mdrValueT0), pick.mdrType));
     // Minimum MDR (human %). Defaults to the vendor cost when the brand hasn't
     // set one (zero company margin), mirroring the server.
-    const toHuman = (v: number) => (isPercent ? v * 100 : v);
+    const toHuman = (v: number) => Number((isPercent ? v * 100 : v).toFixed(4));
     const minMdr = Number(pick.minMdrValue) > 0 ? Number(pick.minMdrValue) : Number(pick.mdrValue);
     const minMdrT0 = Number(pick.minMdrValueT0) > 0 ? Number(pick.minMdrValueT0) : minMdr;
     setPosLock({ locked: true, missing: false, minMdr: toHuman(minMdr), minMdrT0: toHuman(minMdrT0) });
