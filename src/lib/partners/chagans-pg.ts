@@ -38,6 +38,7 @@
  */
 import type { PartnerResult, UpiCollectInput, UpiCollectOutput, UpiProvider, UpiStatusOutput } from "./types";
 import { logger } from "../logger";
+import { getSetting } from "../settings";
 
 const DEFAULT_BASE = "https://chagans.com";
 // Chagans webhook source IPs (allow-list):
@@ -281,11 +282,22 @@ export const chagansUpi: UpiProvider = {
 
   async collect(input: UpiCollectInput): Promise<PartnerResult<UpiCollectOutput>> {
     const gw = resolveChagansGateway(input.channel);
-    if (input.amount > gw.maxAmount) {
+    // Enforce DB-backed per-gateway caps (admin-changeable without redeploy).
+    const limits = await getChagansDbLimits();
+    const gwEnabled = gw.id === "comet" ? limits.cometEnabled : limits.starEnabled;
+    const gwMax     = gw.id === "comet" ? limits.cometMax     : limits.starMax;
+    if (!gwEnabled) {
+      return {
+        ok: false,
+        code: "GATEWAY_DISABLED",
+        message: `${gw.label} is currently disabled by the administrator.`,
+      };
+    }
+    if (input.amount > gwMax) {
       return {
         ok: false,
         code: "AMOUNT_OVER_LIMIT",
-        message: `${gw.label} supports up to ₹${gw.maxAmount.toLocaleString("en-IN")} per transaction.`,
+        message: `${gw.label} supports up to ₹${gwMax.toLocaleString("en-IN")} per transaction.`,
       };
     }
     const webhookUrl = process.env.CHAGAN_WEBHOOK_URL || `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/webhooks/chagans-pg`;
@@ -565,6 +577,40 @@ export type ChagansChannelHealth = {
 const HEALTH_TTL_MS = Number(process.env.CHAGAN_HEALTH_TTL_MS ?? 600_000); // 10 min
 const healthCache = new Map<string, { healthy: boolean; detail: string; checkedAt: number }>();
 
+// ---------------------------------------------------------------------------
+// DB-backed per-gateway limits — admin can toggle / change caps without a
+// redeploy. Cached process-wide for 30 s so a control-panel change takes
+// effect almost immediately without a DB read on every collect() call.
+// ---------------------------------------------------------------------------
+type ChagansDbLimits = { cometEnabled: boolean; cometMax: number; starEnabled: boolean; starMax: number };
+let _limitsCache: { at: number; val: ChagansDbLimits } | null = null;
+const LIMITS_TTL_MS = 30_000;
+
+async function getChagansDbLimits(): Promise<ChagansDbLimits> {
+  const now = Date.now();
+  if (_limitsCache && now - _limitsCache.at < LIMITS_TTL_MS) return _limitsCache.val;
+  try {
+    const s = await getSetting("pg.channel_limits");
+    const val: ChagansDbLimits = {
+      cometEnabled: s.cometEnabled,
+      cometMax: s.cometMax,
+      starEnabled: s.starEnabled,
+      starMax: s.starMax,
+    };
+    _limitsCache = { at: now, val };
+    return val;
+  } catch {
+    // DB unavailable — fall back to env/hard-coded defaults; don't cache so
+    // the next call retries the DB.
+    return {
+      cometEnabled: true,
+      cometMax: num(process.env.CHAGAN_COMET_MAX, 100_000),
+      starEnabled: true,
+      starMax: num(process.env.CHAGAN_STAR_MAX, 40_000),
+    };
+  }
+}
+
 /** Record a gateway outcome from a REAL collect attempt (no probe order). */
 export function recordChagansHealth(gateway: string, healthy: boolean, detail: string): void {
   healthCache.set(gateway, { healthy, detail, checkedAt: Date.now() });
@@ -574,20 +620,31 @@ export function recordChagansHealth(gateway: string, healthy: boolean, detail: s
  * Per-gateway health for the wallet selector. When configured and no recent
  * failure is cached, gateways report healthy ("Available"); a recent real
  * failure keeps a gateway unhealthy until the TTL lapses.
+ *
+ * DB-backed limits are fetched (30 s cache) so the wallet channel selector
+ * immediately reflects admin-configured caps and the enabled/disabled state
+ * without a redeploy.
  */
-export function chagansChannelHealth(): ChagansChannelHealth[] {
+export async function chagansChannelHealth(): Promise<ChagansChannelHealth[]> {
   const configured = chagansConfigured();
   const now = Date.now();
+  // Fetch DB limits; fall back gracefully when DB is unavailable.
+  const limits = configured ? await getChagansDbLimits() : null;
   return chagansGateways().map((g): ChagansChannelHealth => {
+    const gwEnabled = g.id === "comet" ? (limits?.cometEnabled ?? true) : (limits?.starEnabled ?? true);
+    const gwMax     = g.id === "comet" ? (limits?.cometMax ?? g.maxAmount) : (limits?.starMax ?? g.maxAmount);
     const base = {
       id: g.id,
       label: g.label,
       route: g.id,
       primary: !!g.primary,
-      maxAmount: g.maxAmount,
+      maxAmount: gwMax,
     };
     if (!configured) {
       return { ...base, healthy: false, detail: "Not configured", checkedAt: new Date(now).toISOString() };
+    }
+    if (!gwEnabled) {
+      return { ...base, healthy: false, detail: "Disabled by administrator", checkedAt: new Date(now).toISOString() };
     }
     const cached = healthCache.get(g.id);
     if (cached && now - cached.checkedAt < HEALTH_TTL_MS) {

@@ -249,6 +249,23 @@ const SETTING_SCHEMAS = {
   }),
 
   /**
+   * Per-gateway transaction caps and on/off switches for Chagans PG channels.
+   * Changes apply within 30 s (cached in-process). Env vars CHAGAN_COMET_MAX /
+   * CHAGAN_STAR_MAX remain the hard-coded floor; the DB value overrides them
+   * whenever it is present. Master Admin only.
+   */
+  "pg.channel_limits": z.object({
+    /** Comet PG (T+1 next-day, chagans3) */
+    cometEnabled: z.boolean().default(true),
+    /** Per-transaction rupee cap for Comet (₹, default ₹1,00,000). */
+    cometMax: z.number().int().min(100).max(1_000_000).default(100_000),
+    /** Star PG (T+0 same-day, chagans2) */
+    starEnabled: z.boolean().default(true),
+    /** Per-transaction rupee cap for Star (₹, default ₹40,000). */
+    starMax: z.number().int().min(100).max(100_000).default(40_000),
+  }),
+
+  /**
    * Default service allowlist granted to a NEW network user at creation, keyed
    * by role. Network users are default-disabled (an empty `enabledServices`
    * means NO access); these per-tier lists let an admin pre-enable a curated

@@ -63,7 +63,7 @@ export async function GET() {
 
   // --------- Chagans PG channels ---------
   if (chagansConfigured()) {
-    const gateways = chagansChannelHealth();
+    const gateways = await chagansChannelHealth();
     for (const gw of gateways) {
       channels.push({
         id: `chagans:${gw.id}`,

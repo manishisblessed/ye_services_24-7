@@ -50,6 +50,11 @@ const LABELS: Record<string, { title: string; description: string }> = {
     title: "Default settlement limits",
     description: "Daily / per-transfer settlement caps for users without a custom limit.",
   },
+  "pg.channel_limits": {
+    title: "PG channel limits",
+    description:
+      "Per-transaction rupee caps and on/off switches for each Chagans PG gateway (Comet T+1 and Star T+0). Changes take effect within 30 s — no redeploy needed.",
+  },
   "pos.card_classification": {
     title: "Card classification (tier)",
     description:
@@ -67,6 +72,11 @@ const FIELD_LABELS: Record<string, string> = {
   dailyCap: "Daily cap (₹)",
   perTxnCap: "Per-transfer cap (₹)",
   days: "Valid for (days)",
+  // pg.channel_limits
+  cometEnabled: "Comet PG enabled (T+1 next-day)",
+  cometMax: "Comet max per-transaction (₹)",
+  starEnabled: "Star PG enabled (T+0 same-day)",
+  starMax: "Star max per-transaction (₹)",
 };
 
 const inputCls =
