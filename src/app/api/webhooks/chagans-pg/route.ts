@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
     amount: parsed.amount,
     reference: parsed.reference,
     providerRef: parsed.transactionId ?? parsed.orderId,
+    paymentMode: parsed.paymentMode,
   };
 
   try {

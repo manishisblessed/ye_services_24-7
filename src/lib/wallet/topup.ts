@@ -63,6 +63,12 @@ export type VerifiedPayin = {
   amount?: number;
   reference?: string;
   providerRef?: string;
+  /**
+   * Normalised payment instrument (UPI | CARD | NETBANKING | WALLET) from the
+   * provider webhook. Drives the MDR slab/rail-rate selection at settlement for
+   * PG_MDR_PROVIDERS. Defaults to UPI when the webhook omits a usable method.
+   */
+  paymentMode?: string;
 };
 
 export async function initiateTopup(input: {
@@ -195,6 +201,9 @@ export async function settleTopup(
   let verifiedAmount: number | undefined;
   let utr: string | null = null;
   let providerRef: string | null = null;
+  // Payment instrument from the webhook (PG_MDR_PROVIDERS price per-mode).
+  // Defaults to UPI when absent so MDR pricing always has a mode to resolve.
+  let verifiedPaymentMode = "UPI";
 
   if (webhookVerified) {
     paid = webhookVerified.status === "PAID";
@@ -202,6 +211,7 @@ export async function settleTopup(
     verifiedAmount = webhookVerified.amount;
     utr = webhookVerified.reference ?? null;
     providerRef = webhookVerified.providerRef ?? null;
+    if (webhookVerified.paymentMode) verifiedPaymentMode = webhookVerified.paymentMode;
   } else if (isWebhookOnlyPartner(txn.partner)) {
     // Webhook-only providers (Chagans PG) have no status API — nothing to poll.
     return { refId, status: txn.status as TopupState };
@@ -266,7 +276,7 @@ export async function settleTopup(
       const result = await handleTopupCapture({
         transactionId: txn.id,
         grossAmount: gross,
-        paymentMode: "UPI",
+        paymentMode: verifiedPaymentMode,
         providerRef: providerRef ?? utr ?? undefined,
         scopeKey,
       });
@@ -285,6 +295,7 @@ export async function settleTopup(
         gross,
         net: result.netAmount,
         mdr: result.mdrAmount,
+        paymentMode: verifiedPaymentMode,
         provider: txn.partner,
         utr,
       });
