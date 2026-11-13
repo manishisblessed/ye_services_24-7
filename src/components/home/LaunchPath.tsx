@@ -10,7 +10,7 @@ const STEPS: { duration: string; title: string; body: string }[] = [
   {
     duration: "~5 min",
     title: "Create your partner ID",
-    body: "Sign up with your mobile number, PAN and Aadhaar — entirely from your phone, with no agent visit and no joining fee."
+    body: "Sign up with your mobile number, PAN and Aadhaar — entirely from your phone, with no agent visit."
   },
   {
     duration: "Same hour",
@@ -41,7 +41,7 @@ export function LaunchPath() {
           align="center"
           eyebrow="Opening day"
           title="Morning signup. Evening earnings."
-          sub="No franchise fee, no territory rules, no waiting on anyone. Four short steps stand between you and your first commission."
+          sub="No territory rules, no waiting on anyone. Four short steps stand between you and your first commission."
         />
 
         <div className="relative mx-auto mt-16 max-w-6xl">

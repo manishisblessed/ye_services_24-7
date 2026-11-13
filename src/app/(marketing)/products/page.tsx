@@ -36,7 +36,7 @@ const products: Product[] = [
     headline: "Take payments online without writing a line of code.",
     text: "Send a payment link on WhatsApp or drop a checkout on your website. UPI, cards, net banking and wallets, with tracking you can read at a glance.",
     specs: [
-      "0% MDR on UPI · cards from 0.95%",
+      "MDR as per ID",
       "T+1 settlement to any bank account",
       "Payment links, hosted checkout and APIs"
     ],
@@ -51,7 +51,7 @@ const products: Product[] = [
     headline: "A card machine that pays for itself in a week.",
     text: "Android terminals on monthly rental. Card, UPI, BharatQR and tap-to-pay on one device, with every sale in your BankingPoint24 wallet by next morning.",
     specs: [
-      "Rental from ₹499 a month, no deposit",
+      "Rental from ₹499 a month",
       "Cards, UPI, BharatQR and Tap & Pay",
       "Replacement within 48 hours if it fails"
     ],
@@ -65,7 +65,7 @@ const products: Product[] = [
     headline: "Your own QR. Your own name on every receipt.",
     text: "Static QR for the counter, dynamic QR for a specific bill. The customer scans, you hear the alert, the money is yours the same day.",
     specs: [
-      "0% MDR · ₹0 setup",
+      "MDR as per ID · ₹0 setup",
       "Voice alerts and instant settlement reports",
       "Unlimited static and dynamic codes"
     ],
@@ -91,10 +91,10 @@ const products: Product[] = [
 ];
 
 const comparison: { label: string; values: string[] }[] = [
-  { label: "Settlement", values: ["T+1", "T+1", "Same day", "Instant"] },
+  { label: "Settlement", values: ["Settlement Instant", "Settlement Instant and T+1", "Same day", "Instant"] },
   {
     label: "MDR",
-    values: ["UPI 0% · Cards from 0.95%", "UPI 0% · Cards from 1.10%", "0%", "₹0 per credit"]
+    values: ["MDR as per ID", "MDR as per ID", "As per ID", "₹0 per credit"]
   },
   { label: "Setup fee", values: ["₹0", "₹499 / month rental", "₹0", "₹0"] },
   {
@@ -124,9 +124,9 @@ export default function ProductsPage() {
         description="Payment Gateway, POS terminals, QR Collect, AePS, Money Transfer and Virtual Accounts — all flowing into one BankingPoint24 float. Start with one and add the rest as your counter grows."
         stats={[
           { value: "6", label: "Products, one float" },
-          { value: "0%", label: "MDR on UPI" },
-          { value: "T+1", label: "Bank settlement" },
-          { value: "₹0", label: "Joining cost" }
+          { value: "As per ID", label: "MDR" },
+          { value: "Instant & T+1", label: "Settlement" },
+          { value: "As per ID", label: "Joining cost" }
         ]}
         actions={
           <>

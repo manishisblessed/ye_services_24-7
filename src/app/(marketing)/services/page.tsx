@@ -216,7 +216,7 @@ export default function ServicesPage() {
 /** Per-service commission hints shown on rows. Falls back to the first
  *  clause of the category commission line for services not listed here. */
 const serviceHints: Record<string, string> = {
-  "payment-gateway": "0% MDR on UPI · T+1 settlement",
+  "payment-gateway": "MDR as per ID · T+1 settlement",
   pos: "Low MDR on cards · monthly rental, no buying",
   "qr-payments": "₹0 on UPI collections · instant alerts",
   "aadhaar-pay": "Earn up to ₹6 per AePS withdrawal",

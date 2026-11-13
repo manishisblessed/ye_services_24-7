@@ -83,7 +83,7 @@ function PgMock() {
           Pay ₹12,400
         </div>
         <p className="mt-3 text-center text-[11px] text-ink-400">
-          0% MDR on UPI · Settles T+1 to your bank
+          MDR as per ID · Settles T+1 to your bank
         </p>
       </div>
       <div className="absolute -right-4 -top-5 flex items-center gap-2 rounded-2xl border border-ink-100 bg-white px-3 py-2 shadow-soft">

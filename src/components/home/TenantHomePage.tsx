@@ -276,7 +276,7 @@ function HeroSection({ brand }: { brand: TenantBrand }) {
           </motion.div>
 
           <motion.div {...enter(4)} className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/70">
-            {["₹0 joining fee", "e-KYC in 5 minutes", "Earn from day one"].map((t) => (
+            {["e-KYC in 5 minutes", "Earn from day one"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <CheckCircle size={15} weight="fill" className="text-emerald-300" /> {t}
               </span>

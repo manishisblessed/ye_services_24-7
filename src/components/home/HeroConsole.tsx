@@ -116,7 +116,7 @@ export function HeroConsole() {
               {...enter(4)}
               className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-500"
             >
-              {["₹0 joining fee", "e-KYC in 5 minutes", "Earn from day one"].map((t) => (
+              {["e-KYC in 5 minutes", "Earn from day one"].map((t) => (
                 <li key={t} className="inline-flex items-center gap-1.5">
                   <CheckCircle size={14} weight="fill" className="text-accent-500" aria-hidden />
                   {t}
