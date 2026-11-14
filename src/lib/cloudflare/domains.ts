@@ -19,6 +19,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { ensureTenantDefaultScheme } from "@/lib/scheme/tenant";
 import {
   createCustomHostname,
   deleteCustomHostname,
@@ -27,6 +28,22 @@ import {
   CloudflareError,
   type CfCustomHostname,
 } from "./client";
+
+/**
+ * Flip a white-label owner into an active tenant the moment their site goes
+ * live: grant tenant-owner powers AND seed a starter default scheme (cloned
+ * from the platform default) so their retailers can transact from day one.
+ * Idempotent — safe to call on every LIVE transition.
+ */
+export async function activateTenantOwner(ownerUserId: string): Promise<void> {
+  await prisma.user.update({
+    where: { id: ownerUserId },
+    data: { isTenantOwner: true },
+  });
+  await ensureTenantDefaultScheme(ownerUserId).catch(() => {
+    /* seeding failure must never block go-live; a partner can create a scheme manually */
+  });
+}
 
 export type ProvisionResult = {
   /** "pending" = Cloudflare provisioning started; "live" = already active;
@@ -70,10 +87,12 @@ export async function provisionCustomDomain(
 
   // Cloudflare not wired up → legacy manual flow: flip straight to LIVE.
   if (!isCloudflareSaasConfigured()) {
-    await prisma.whitelabelProfile.update({
+    const live = await prisma.whitelabelProfile.update({
       where: { id: profile.id },
       data: { status: "LIVE" },
+      select: { userId: true },
     });
+    await activateTenantOwner(live.userId);
     return { outcome: "manual", status: "LIVE", sslStatus: null, cname: null };
   }
 
@@ -95,7 +114,7 @@ export async function provisionCustomDomain(
     const active = isActive(cf);
     const status = active ? "LIVE" : "PENDING";
 
-    await prisma.whitelabelProfile.update({
+    const updated = await prisma.whitelabelProfile.update({
       where: { id: profile.id },
       data: {
         cfCustomHostnameId: cf.id,
@@ -104,7 +123,13 @@ export async function provisionCustomDomain(
         domainCheckedAt: new Date(),
         status,
       },
+      select: { userId: true },
     });
+
+    // Already-active hostname (e.g. re-provision after cert issued): activate now.
+    if (status === "LIVE" && profile.status !== "LIVE") {
+      await activateTenantOwner(updated.userId);
+    }
 
     return {
       outcome: active ? "live" : "pending",
@@ -180,16 +205,14 @@ export async function syncCustomDomainStatus(profileId: string): Promise<{
   });
 
   if (nextStatus === "LIVE" && profile.status !== "LIVE") {
-    // Unlock the owner's tenant powers the moment the domain goes live.
+    // Unlock the owner's tenant powers + seed their starter scheme the moment
+    // the domain goes live.
     const owner = await prisma.whitelabelProfile.findUnique({
       where: { id: profile.id },
       select: { userId: true },
     });
     if (owner) {
-      await prisma.user.update({
-        where: { id: owner.userId },
-        data: { isTenantOwner: true },
-      });
+      await activateTenantOwner(owner.userId);
     }
   }
 

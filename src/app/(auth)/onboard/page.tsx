@@ -36,7 +36,7 @@ import { Badge } from "@/components/ui/Badge";
 import { PinInput } from "@/components/security/PinInput";
 import { AuthAlert, AuthCard } from "@/components/auth/AuthCard";
 import { StepPanels, StepRail } from "@/components/auth/StepRail";
-import { namesMatch } from "@/lib/utils";
+import { namesMatch, namesPartiallyOverlap } from "@/lib/utils";
 import { extractGpsFromFile } from "@/lib/gps";
 import { LivenessVideoCapture } from "@/components/kyc/LivenessVideoCapture";
 import { SelfieCapture } from "@/components/kyc/SelfieCapture";
@@ -208,6 +208,19 @@ function OnboardContent() {
     !(gstTradeName && namesMatch(gstTradeName, bankResult.nameAtBank))
   );
   const nameMismatch = panAadhaarMismatch || bankNameMismatch;
+
+  // Partial-overlap flags: names ARE different, but share common tokens (e.g.
+  // "K C Prathap Reddy" vs "CHANDRAPRATHAP REDDY KOTLO"). In this case the
+  // user may proceed by self-declaring that both names belong to them.
+  const panAadhaarPartialMatch =
+    panAadhaarMismatch &&
+    namesPartiallyOverlap(
+      aadhaarResult?.name ?? "",
+      panResult?.registered_name ?? ""
+    );
+  const bankPartialMatch =
+    bankNameMismatch &&
+    namesPartiallyOverlap(bankRefName ?? "", bankResult?.nameAtBank ?? "");
 
   // Name-mismatch self-declaration popup
   const [showNameDeclaration, setShowNameDeclaration] = useState(false);
@@ -1138,15 +1151,23 @@ function OnboardContent() {
       case 3:
         return aadhaarVerified;
       case 4:
-        // PAN must be verified AND names must match Aadhaar (edit PAN if mismatch).
-        return !!panResult && !panAadhaarMismatch;
+        // PAN must be verified. If names mismatch but share common tokens
+        // (partial overlap), the applicant can self-declare and proceed.
+        if (!panResult) return false;
+        if (!panAadhaarMismatch) return true;
+        if (panAadhaarPartialMatch && nameDeclarationChecked) return true;
+        return false;
       case 5:
         // GST is optional, but a business / shop name is always required so the
         // self-declaration and final registration have a firm name.
         return form.shopName.trim().length >= 2;
       case 6:
-        // Bank must be verified AND account-holder name must match Aadhaar/PAN or GST company name.
-        return !!bankResult && !bankNameMismatch;
+        // Bank must be verified. If names mismatch but share common tokens
+        // (partial overlap), the applicant can self-declare and proceed.
+        if (!bankResult) return false;
+        if (!bankNameMismatch) return true;
+        if (bankPartialMatch && nameDeclarationChecked) return true;
+        return false;
       case 7:
         return selfieUploaded && videoCompleted;
       case 8: {
@@ -1767,8 +1788,57 @@ function OnboardContent() {
                       name2={panResult.registered_name}
                     />
                   )}
-                  {/* Hard block when PAN name doesn't match Aadhaar */}
-                  {panAadhaarMismatch && (
+                  {/* Partial overlap → allow with self-declaration */}
+                  {panAadhaarMismatch && panAadhaarPartialMatch && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+                      <p className="text-sm text-amber-800">
+                        <AlertTriangle className="mr-1.5 inline h-4 w-4 shrink-0" />
+                        <strong>Names are different but appear to belong to the same person.</strong>{" "}
+                        Please confirm below that both names are yours.
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                            As per Aadhaar
+                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                            {aadhaarResult?.name}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                            As per PAN
+                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                            {panResult?.registered_name}
+                          </p>
+                        </div>
+                      </div>
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 hover:border-brand-300 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={nameDeclarationChecked}
+                          onChange={(e) => setNameDeclarationChecked(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        <span className="text-sm text-ink-700">
+                          I hereby declare that both{" "}
+                          <strong className="text-ink-900">{aadhaarResult?.name}</strong> (Aadhaar)
+                          and{" "}
+                          <strong className="text-ink-900">{panResult?.registered_name}</strong>{" "}
+                          (PAN) belong to me and are variations of my legal name.
+                        </span>
+                      </label>
+                      {nameDeclarationChecked && (
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                          Declaration accepted — you may continue.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {/* Hard block when names have zero overlap (completely different person) */}
+                  {panAadhaarMismatch && !panAadhaarPartialMatch && (
                     <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
                       <AlertTriangle className="mr-1.5 inline h-4 w-4 shrink-0" />
                       <strong>Name mismatch — Continue is blocked.</strong> The PAN must belong to
@@ -2033,8 +2103,84 @@ function OnboardContent() {
                       name2={bankResult.nameAtBank}
                     />
                   )}
-                  {/* Hard block if name doesn't match any reference */}
-                  {bankNameMismatch && (
+                  {/* Partial overlap → allow with self-declaration showing all 3 names */}
+                  {bankNameMismatch && bankPartialMatch && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+                      <p className="text-sm text-amber-800">
+                        <AlertTriangle className="mr-1.5 inline h-4 w-4 shrink-0" />
+                        <strong>Names across your documents don&apos;t match exactly.</strong>{" "}
+                        Please review all the names below and confirm they all belong to you.
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        {aadhaarResult?.name && (
+                          <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                              As per Aadhaar
+                            </p>
+                            <p className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                              {aadhaarResult.name}
+                            </p>
+                          </div>
+                        )}
+                        {panResult?.registered_name && (
+                          <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                              As per PAN
+                            </p>
+                            <p className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                              {panResult.registered_name}
+                            </p>
+                          </div>
+                        )}
+                        <div className="rounded-lg border border-amber-200 bg-white/70 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">
+                            As per Bank Account
+                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                            {bankResult?.nameAtBank}
+                          </p>
+                        </div>
+                      </div>
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3 hover:border-brand-300 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={nameDeclarationChecked}
+                          onChange={(e) => setNameDeclarationChecked(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        <span className="text-sm text-ink-700">
+                          I hereby declare that{" "}
+                          {[
+                            aadhaarResult?.name && (
+                              <strong key="a" className="text-ink-900">{aadhaarResult.name}</strong>
+                            ),
+                            panResult?.registered_name && (
+                              <strong key="p" className="text-ink-900">{panResult.registered_name}</strong>
+                            ),
+                            bankResult?.nameAtBank && (
+                              <strong key="b" className="text-ink-900">{bankResult.nameAtBank}</strong>
+                            ),
+                          ]
+                            .filter(Boolean)
+                            .reduce<React.ReactNode[]>((acc, node, i, arr) => {
+                              acc.push(node);
+                              if (i < arr.length - 2) acc.push(", ");
+                              else if (i === arr.length - 2) acc.push(" and ");
+                              return acc;
+                            }, [])}{" "}
+                          — all these names belong to me and are variations of my legal name.
+                        </span>
+                      </label>
+                      {nameDeclarationChecked && (
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                          Declaration accepted — you may continue.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {/* Hard block when names have zero overlap (completely different person) */}
+                  {bankNameMismatch && !bankPartialMatch && (
                     <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
                       <AlertTriangle className="mr-1.5 inline h-4 w-4 shrink-0" />
                       <strong>Name mismatch — Continue is blocked.</strong> The bank account holder name
@@ -2739,7 +2885,9 @@ function OnboardContent() {
                   )}
                   <p>
                     <span className="text-ink-500">Name Match:</span>{" "}
-                    {nameMismatch ? (
+                    {nameMismatch && nameDeclarationChecked ? (
+                      <span className="text-amber-600">Mismatch (self-declared ✓)</span>
+                    ) : nameMismatch ? (
                       <span className="text-amber-600">Mismatch (docs uploaded)</span>
                     ) : (
                       <span className="text-emerald-600">All match</span>

@@ -16,7 +16,7 @@ import {
   Ban,
 } from "lucide-react";
 import Link from "next/link";
-import { Lightning, QrCode, ShieldCheck } from "@phosphor-icons/react";
+import { Lightning, ShieldCheck } from "@phosphor-icons/react";
 import { ServicePageHeader } from "@/components/dashboard/ServicePage";
 import { Button } from "@/components/ui/Button";
 import {
@@ -35,7 +35,6 @@ import {
 import { SummaryPanel, AsideTips } from "@/components/dashboard/services/SummaryPanel";
 import { AmountChips } from "@/components/dashboard/services/AmountChips";
 import { FloatField } from "@/components/dashboard/services/FloatField";
-import { OperatorGrid } from "@/components/dashboard/services/OperatorGrid";
 import { PillTabs } from "@/components/dashboard/services/StepHeader";
 import { generateRefId, formatINR, cn } from "@/lib/utils";
 import { useAuth } from "@/lib/useAuth";
@@ -103,8 +102,6 @@ export default function WalletPage() {
   const [fetching, setFetching] = useState(true);
   const [mode, setMode] = useState<"add" | "withdraw">("add");
   const [amount, setAmount] = useState("");
-  const [payVia, setPayVia] = useState<"page" | "vpa">("page");
-  const [vpa, setVpa] = useState("");
   const [channels, setChannels] = useState<PgChannel[]>([]);
   const [channel, setChannel] = useState<string>("");
   const [channelsLoading, setChannelsLoading] = useState(false);
@@ -279,7 +276,6 @@ export default function WalletPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: amt,
-          ...(payVia === "vpa" && vpa ? { vpa } : {}),
           ...(channel ? { channel } : {}),
           idempotencyKey: generateRefId("TOPREQ"),
         }),
@@ -511,11 +507,8 @@ export default function WalletPage() {
                   },
                   {
                     label: "Method",
-                    value: payVia === "vpa" ? "UPI collect" : "Payment page",
+                    value: "Payment page",
                   },
-                  ...(payVia === "vpa"
-                    ? [{ label: "UPI ID", value: vpa || "—", mono: true, muted: !vpa }]
-                    : []),
                   ...(pending
                     ? [{ label: "Reference", value: pending.refId, mono: true }]
                     : []),
@@ -539,7 +532,6 @@ export default function WalletPage() {
               <AsideTips
                 items={[
                   { icon: <Lightning weight="duotone" />, text: "Money lands in your wallet the moment the payment succeeds." },
-                  { icon: <QrCode weight="duotone" />, text: "UPI collect sends a request to your UPI app — approve it there." },
                   { icon: <ShieldCheck weight="duotone" />, text: "Failed or expired payments are never debited." },
                 ]}
               />
@@ -709,33 +701,6 @@ export default function WalletPage() {
                     })}
                   </div>
                 </Field>
-              )}
-
-              <Field label="Payment method">
-                <OperatorGrid
-                  name="Payment method"
-                  showLogo={false}
-                  columns={2}
-                  size="sm"
-                  options={[
-                    { value: "page", label: "Payment page", meta: "UPI / cards / net banking" },
-                    { value: "vpa", label: "UPI collect", meta: "Request sent to your VPA" },
-                  ]}
-                  value={payVia}
-                  onChange={(v) => setPayVia(v as "page" | "vpa")}
-                />
-              </Field>
-
-              {payVia === "vpa" && (
-                <FloatField
-                  id="vpa"
-                  label="Your UPI ID"
-                  required
-                  mono
-                  value={vpa}
-                  onChange={(e) => setVpa(e.target.value.trim())}
-                  hint="e.g. name@bank — approve the collect request in your UPI app."
-                />
               )}
 
               {exceedsMax && selectedChannel?.maxAmount && (

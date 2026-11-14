@@ -159,7 +159,7 @@ export default function AboutPage() {
             {[
               "For hundreds of millions of Indians, the nearest bank branch is a bus ride, a lost half-day and a long queue. The shop at the corner is open 14 hours, runs on trust and already knows every customer by name.",
               "BankingPoint24 converts that shop into the branch. Withdraw cash on a fingerprint, send money anywhere in seconds, pay any bill, book a bus or flight. The shopkeeper earns a commission on every single transaction.",
-              "Zero joining fee. Every charge shown before you confirm. Commission credited the moment a transaction settles. That is the BankingPoint24 promise — unchanged since day one in Anand, Gujarat."
+              "Every charge shown before you confirm. Commission credited the moment a transaction settles. That is the BankingPoint24 promise — unchanged since day one in Anand, Gujarat."
             ].map((p, i) => (
               <StaggerItem
                 key={i}

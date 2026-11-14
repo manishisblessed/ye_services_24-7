@@ -68,6 +68,9 @@ const TENANT_ADMIN_PAGE_ALLOWLIST = [
   "/dashboard/admin/network",
   "/dashboard/admin/sub-admins",
   "/dashboard/admin/admins",
+  // Rate Schemes: tenant-isolated per platformOwnerId. A tenant admin/partner
+  // manages ONLY their own schemes & slabs (API scopes every row by namespace).
+  "/dashboard/admin/schemes",
 ];
 
 const TENANT_ADMIN_API_ALLOWLIST = [
@@ -76,6 +79,10 @@ const TENANT_ADMIN_API_ALLOWLIST = [
   "/api/admin/network",
   "/api/admin/sub-admins",
   "/api/admin/admins",
+  // Scheme Manager API (list/create/update/delete + slabs + mdr-slabs + assign
+  // + meta + vendor-preview). Every endpoint scopes rows to the caller's own
+  // tenant namespace, so this is safe to expose to tenant members.
+  "/api/admin/schemes",
 ];
 
 function isTenantMemberToken(token: {

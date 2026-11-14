@@ -4,6 +4,8 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
+import { tenantUserWhere } from "@/lib/security/ownership";
+import { schemeNamespaceWhere } from "@/lib/scheme/tenant";
 
 export const fetchCache = "force-no-store";
 
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
   try {
     admin = await requireAdminActivity(req, {
       action: "scheme.assign",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "Scheme",
     });
     await enforceRateLimit(`scheme:assign:${admin.id}`, RATE_LIMITS.default);
@@ -42,21 +44,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   const { schemeId, userIds } = parsed.data;
 
+  // Tenant isolation: every target user must be in the caller's tenant (a WLP
+  // only touches its own retailers; a native admin only native users). Applied
+  // to BOTH assign and unassign so a tenant can't clear another's assignments.
+  const scope = await tenantUserWhere(admin);
+  const inScope = await prisma.user.findMany({
+    where: { AND: [{ id: { in: userIds } }, scope] },
+    select: { id: true, role: true },
+  });
+  if (inScope.length !== userIds.length) {
+    return NextResponse.json(
+      { error: "One or more selected users are outside your network." },
+      { status: 403 }
+    );
+  }
+
   if (schemeId) {
-    const scheme = await prisma.scheme.findUnique({
-      where: { id: schemeId },
+    // The scheme must belong to the caller's own namespace.
+    const scheme = await prisma.scheme.findFirst({
+      where: { id: schemeId, ...schemeNamespaceWhere(admin) },
       select: { active: true },
     });
     if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
     if (!scheme.active) return NextResponse.json({ error: "Cannot assign an inactive scheme" }, { status: 400 });
 
-    // Verify all target users exist and are network users (non-admin roles).
+    // Verify all target users are network users (non-admin roles).
     const ASSIGNABLE_ROLES = ["SUPER_DISTRIBUTOR", "MASTER_DISTRIBUTOR", "DISTRIBUTOR", "RETAILER"];
-    const targets = await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, role: true },
-    });
-    const invalid = targets.filter((u) => !ASSIGNABLE_ROLES.includes(u.role));
+    const invalid = inScope.filter((u) => !ASSIGNABLE_ROLES.includes(u.role));
     if (invalid.length > 0) {
       return NextResponse.json(
         {
@@ -68,7 +82,7 @@ export async function POST(req: Request) {
   }
 
   const result = await prisma.user.updateMany({
-    where: { id: { in: userIds } },
+    where: { AND: [{ id: { in: userIds } }, scope] },
     data: { schemeId },
   });
 

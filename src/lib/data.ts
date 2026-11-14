@@ -307,7 +307,7 @@ export const faqs: FaqItem[] = [
   },
   {
     q: "What documents do I need to open a counter?",
-    a: "Just your PAN, your Aadhaar and a few shop details. Verification is a short video e-KYC done from your phone — no courier, no agent visit, no joining fee. Most partners bill their first customer the same day they sign up."
+    a: "Just your PAN, your Aadhaar and a few shop details. Verification is a short video e-KYC done from your phone — no courier, no agent visit. Most partners bill their first customer the same day they sign up."
   },
   {
     q: "When do I actually see my commission?",
@@ -396,7 +396,7 @@ export const pricingPlans: PricingPlan[] = [
   {
     name: "Retailer",
     tagline: "Run a single counter",
-    description: "Open your shop counter today and start earning on 30+ everyday services — zero joining fee.",
+    description: "Open your shop counter today and start earning on 30+ everyday services.",
     features: [
       "AePS cash withdrawals",
       "Money transfer & UPI collect",

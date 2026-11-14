@@ -16,13 +16,18 @@ export type ResolvedScheme = {
 };
 
 /**
- * The single active platform default scheme (Scheme.isDefault = true, active).
- * Admin APIs enforce the single-default invariant, so at most one row matches.
- * Returns null when no default is configured.
+ * The single active default scheme (Scheme.isDefault = true, active) WITHIN a
+ * namespace. Admin APIs enforce the single-default invariant per namespace, so
+ * at most one row matches. Pass the user's `platformOwnerId`:
+ *   - a tenant-root id → that white-label tenant's own default scheme
+ *   - null             → the native BankingPoint24 platform default
+ * Returns null when no default is configured for that namespace.
  */
-export async function getDefaultScheme(): Promise<{ id: string; name: string } | null> {
+export async function getDefaultScheme(
+  platformOwnerId: string | null = null,
+): Promise<{ id: string; name: string } | null> {
   return prisma.scheme.findFirst({
-    where: { isDefault: true, active: true },
+    where: { isDefault: true, active: true, platformOwnerId: platformOwnerId ?? null },
     select: { id: true, name: true },
   });
 }
@@ -44,7 +49,7 @@ export async function getDefaultScheme(): Promise<{ id: string; name: string } |
 export async function resolveUserScheme(userId: string): Promise<ResolvedScheme> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { schemeId: true },
+    select: { schemeId: true, platformOwnerId: true },
   });
   if (!user) return { schemeId: null, schemeName: null, source: "NONE" };
 
@@ -57,9 +62,11 @@ export async function resolveUserScheme(userId: string): Promise<ResolvedScheme>
     if (scheme) return { schemeId: scheme.id, schemeName: scheme.name, source: "USER_SCHEME" };
   }
 
-  // 2. Fall back to the platform default (flag-gated).
+  // 2. Fall back to the default scheme OF THE USER'S OWN TENANT (flag-gated).
+  //    A white-label partner's retailers fall back to that partner's default
+  //    scheme; native users fall back to the native platform default.
   if (flags.schemeDefaultFallback) {
-    const def = await getDefaultScheme();
+    const def = await getDefaultScheme(user.platformOwnerId ?? null);
     if (def) return { schemeId: def.id, schemeName: def.name, source: "DEFAULT_SCHEME" };
   }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isAdminRole, isTenantRoot } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { getCardClassificationSetting } from "@/lib/settings";
 import { priceScopeLabel } from "@/lib/services/priceScope";
@@ -18,8 +18,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const admin = await requireRole("MASTER_ADMIN", "ADMIN");
-    if (!isAdminRole(admin.role))
+    // Reference data (approved rate cards, providers, POS companies) is shared
+    // platform infrastructure that tenants price ON TOP of — tenant admins /
+    // partners need it to build their own slabs, so they may read it too.
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
+    if (!isAdminRole(admin.role) && !isTenantRoot(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     if (e instanceof AuthError)

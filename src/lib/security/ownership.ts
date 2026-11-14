@@ -110,6 +110,25 @@ export function tenantOwnedWhere(user: TenantActor): Record<string, unknown> {
   return { platformOwnerId: ownerId ?? "__no_tenant__" };
 }
 
+/**
+ * Prisma `where` fragment that pins a `platformOwnerId`-namespaced CONFIG model
+ * (Scheme, …) to the caller's OWN namespace — unlike {@link tenantOwnedWhere},
+ * native staff are scoped to the platform namespace (platformOwnerId NULL)
+ * rather than seeing every tenant's config. This gives each tenant an isolated
+ * scheme namespace and keeps native admins managing only the platform schemes.
+ */
+export function namespaceWhere(user: TenantActor): { platformOwnerId: string | null } {
+  return { platformOwnerId: tenantOwnerId(user) };
+}
+
+/**
+ * The namespace a caller writes config into: their tenant-root id, or null for
+ * native platform staff. Pair with {@link namespaceWhere} on reads.
+ */
+export function configNamespace(user: TenantActor): string | null {
+  return tenantOwnerId(user);
+}
+
 /** Throw 403 unless `user` owns (or administers) the given resource owner id.
  *  Only NATIVE platform staff get the blanket bypass; tenant staff must prove
  *  access via `assertCanAccessUser` (tenant/hierarchy aware). */

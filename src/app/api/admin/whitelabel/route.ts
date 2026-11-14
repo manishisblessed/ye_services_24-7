@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { isPlatformStaff } from "@/lib/security/ownership";
+import { activateTenantOwner } from "@/lib/cloudflare/domains";
 
 /**
  * Admin white-label tenant management.
@@ -113,13 +114,11 @@ export async function PUT(req: Request) {
   });
 
   // Activation side-effect: a LIVE tenant's owner is promoted to tenant owner so
-  // their onboarding/admin powers unlock immediately (no separate manual step).
+  // their onboarding/admin powers unlock immediately (no separate manual step),
+  // and their starter default scheme is seeded so retailers can transact.
   // Suspending revokes the flag, freezing new onboarding under that tenant.
   if (status === "LIVE") {
-    await prisma.user.update({
-      where: { id: profile.userId },
-      data: { isTenantOwner: true },
-    });
+    await activateTenantOwner(profile.userId);
   } else if (status === "SUSPENDED") {
     await prisma.user.update({
       where: { id: profile.userId },

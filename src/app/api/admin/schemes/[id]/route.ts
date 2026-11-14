@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole, AuthError } from "@/lib/auth-server";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isAdminRole, isTenantRoot } from "@/lib/security/ownership";
+import { schemeNamespaceWhere } from "@/lib/scheme/tenant";
 import { prisma } from "@/lib/db";
 import { serializeScheme, serializeSlab } from "@/lib/scheme/serialize";
 import { resolveServiceVendorInfo } from "@/lib/scheme/serviceVendor";
@@ -18,10 +19,10 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
 
-    const scheme = await prisma.scheme.findUnique({
-      where: { id: params.id },
+    const scheme = await prisma.scheme.findFirst({
+      where: { id: params.id, ...schemeNamespaceWhere(user) },
       include: {
         _count: { select: { slabs: true, users: true, mdrSlabs: true } },
         slabs: { orderBy: [{ service: "asc" }, { minAmount: "asc" }] },
@@ -81,8 +82,8 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   const params = await props.params;
   let admin;
   try {
-    admin = await requireRole("MASTER_ADMIN", "ADMIN");
-    if (!isAdminRole(admin.role))
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
+    if (!isAdminRole(admin.role) && !isTenantRoot(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`scheme:write:${admin.id}`, RATE_LIMITS.sensitiveWrite);
   } catch (e: unknown) {
@@ -108,11 +109,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     return toErrorResponse(e);
   }
 
-  const existing = await prisma.scheme.findUnique({ where: { id: params.id } });
+  // Scoped to the caller's namespace: a cross-tenant id reads as "not found".
+  const existing = await prisma.scheme.findFirst({
+    where: { id: params.id, ...schemeNamespaceWhere(admin) },
+  });
   if (!existing) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
 
   if (body.name && body.name !== existing.name) {
-    const dupe = await prisma.scheme.findUnique({ where: { name: body.name } });
+    const dupe = await prisma.scheme.findFirst({
+      where: { name: body.name, platformOwnerId: existing.platformOwnerId },
+      select: { id: true },
+    });
     if (dupe) return NextResponse.json({ error: `A scheme named "${body.name}" already exists` }, { status: 409 });
   }
 
@@ -128,7 +135,10 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
   const updated = await prisma.$transaction(async (tx) => {
     if (body.isDefault === true) {
-      await tx.scheme.updateMany({ where: { isDefault: true, id: { not: params.id } }, data: { isDefault: false } });
+      await tx.scheme.updateMany({
+        where: { isDefault: true, id: { not: params.id }, platformOwnerId: existing.platformOwnerId },
+        data: { isDefault: false },
+      });
     }
     return tx.scheme.update({
       where: { id: params.id },
@@ -170,8 +180,8 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   const params = await props.params;
   let admin;
   try {
-    admin = await requireRole("MASTER_ADMIN", "ADMIN");
-    if (!isAdminRole(admin.role))
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
+    if (!isAdminRole(admin.role) && !isTenantRoot(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`scheme:write:${admin.id}`, RATE_LIMITS.sensitiveWrite);
     const { code, type } = readStepUpCode(req);
@@ -186,8 +196,8 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
     return toErrorResponse(e);
   }
 
-  const existing = await prisma.scheme.findUnique({
-    where: { id: params.id },
+  const existing = await prisma.scheme.findFirst({
+    where: { id: params.id, ...schemeNamespaceWhere(admin) },
     include: { _count: { select: { users: true } } },
   });
   if (!existing) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });

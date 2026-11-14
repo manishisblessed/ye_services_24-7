@@ -836,12 +836,23 @@ enum RateType {
 
 model Scheme {
   id          String  @id @default(cuid())
-  name        String  @unique
+  // Scheme name. Uniqueness is PER TENANT (per platformOwnerId namespace),
+  // enforced by a COALESCE("platformOwnerId",'') unique index created in the
+  // 20261114_scheme_tenant_isolation migration — NOT a plain @unique, because
+  // Postgres treats NULL owners as distinct. App code dedupes via findFirst.
+  name        String
   description String?
   active      Boolean @default(true)
   isDefault   Boolean @default(false)
   createdById String?
   createdBy   User?   @relation("SchemeCreator", fields: [createdById], references: [id])
+
+  // White-label tenancy: the tenant-root user id that OWNS this scheme (its
+  // namespace). NULL = native BankingPoint24 platform scheme. Every scheme
+  // query from an admin route is scoped to the caller's namespace so one
+  // tenant's pricing can never read or mutate another's. The single-default
+  // invariant (isDefault) is enforced per namespace, not globally.
+  platformOwnerId String?
 
   // Hierarchical derivation: a network parent (SD/MD/DT) derives their own
   // scheme from the one assigned to them, adding margin per slab. ownerId is
@@ -866,6 +877,7 @@ model Scheme {
   @@index([isDefault])
   @@index([ownerId])
   @@index([parentSchemeId])
+  @@index([platformOwnerId])
 }
 
 model SchemeSlab {

@@ -7,6 +7,7 @@ import { serializeSlab } from "@/lib/scheme/serialize";
 import { validateNonOverlapping } from "@/lib/scheme/resolver";
 import { resolveServiceVendorLock } from "@/lib/scheme/serviceVendor";
 import { bbpsServiceProviderMismatch } from "@/lib/services/priceScope";
+import { schemeInNamespace } from "@/lib/scheme/tenant";
 
 export const fetchCache = "force-no-store";
 
@@ -36,13 +37,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string;
   try {
     admin = await requireAdminActivity(req, {
       action: "scheme.slab.update",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "SchemeSlab",
       entityId: params.slabId,
     });
   } catch (e: unknown) {
     return toErrorResponse(e);
   }
+
+  // The parent scheme must belong to the caller's namespace.
+  if (!(await schemeInNamespace(params.id, admin)))
+    return NextResponse.json({ error: "Slab not found" }, { status: 404 });
 
   const existing = await prisma.schemeSlab.findUnique({ where: { id: params.slabId } });
   if (!existing || existing.schemeId !== params.id)
@@ -116,13 +121,17 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   try {
     admin = await requireAdminActivity(req, {
       action: "scheme.slab.delete",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "SchemeSlab",
       entityId: params.slabId,
     });
   } catch (e: unknown) {
     return toErrorResponse(e);
   }
+
+  // The parent scheme must belong to the caller's namespace.
+  if (!(await schemeInNamespace(params.id, admin)))
+    return NextResponse.json({ error: "Slab not found" }, { status: 404 });
 
   const existing = await prisma.schemeSlab.findUnique({ where: { id: params.slabId } });
   if (!existing || existing.schemeId !== params.id)

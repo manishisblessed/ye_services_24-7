@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { schemeNamespaceWhere } from "@/lib/scheme/tenant";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -67,10 +68,12 @@ export async function POST(req: Request) {
 
   const { schemeId, childIds } = parsed.data;
 
-  // Validate the scheme exists and is active (when assigning).
+  // Validate the scheme exists, is active, and belongs to the caller's own
+  // tenant namespace (a tenant parent can never price a child off a native or
+  // foreign-tenant scheme, and vice-versa).
   if (schemeId) {
-    const scheme = await prisma.scheme.findUnique({
-      where: { id: schemeId },
+    const scheme = await prisma.scheme.findFirst({
+      where: { id: schemeId, ...schemeNamespaceWhere(caller) },
       select: { active: true },
     });
     if (!scheme)

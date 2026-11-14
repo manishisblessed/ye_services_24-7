@@ -147,6 +147,40 @@ export function namesMatch(a: string, b: string): boolean {
   return similarity >= 0.6;
 }
 
+/**
+ * Partial name overlap check for cross-document verification.
+ *
+ * Returns true when the two names share at least one meaningful word (≥ 3
+ * chars, to skip single-letter initials) — either as an exact match or as a
+ * substring of another word.  This covers Indian naming patterns where:
+ *   • Initials expand on one document ("K C Prathap Reddy" vs "CHANDRAPRATHAP
+ *     REDDY KOTLO" — "prathap" ⊂ "chandraprathap", "reddy" matches exactly).
+ *   • Order and tokenisation differ between Aadhaar / PAN / Bank.
+ */
+export function namesPartiallyOverlap(a: string, b: string): boolean {
+  if (!a || !b) return false;
+
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "")
+      .trim()
+      .replace(/\s+/g, " ");
+
+  const wordsA = normalize(a).split(" ").filter((w) => w.length >= 3);
+  const wordsB = normalize(b).split(" ").filter((w) => w.length >= 3);
+
+  if (wordsA.length === 0 || wordsB.length === 0) return false;
+
+  for (const wa of wordsA) {
+    for (const wb of wordsB) {
+      if (wa === wb) return true;
+      if (wb.includes(wa) || wa.includes(wb)) return true;
+    }
+  }
+  return false;
+}
+
 /** Generate a strong, human-friendly random password (10 chars, mixed case + digits). */
 export function generateRandomPassword(length = 10): string {
   const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";

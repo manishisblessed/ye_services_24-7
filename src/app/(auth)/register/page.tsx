@@ -320,7 +320,7 @@ export default function JoinPage() {
             </form>
 
             <AuthLinksRow className="mt-6 border-t border-ink-100 pt-5">
-              <span className="text-ink-400">Zero joining fee · no hidden charges</span>
+              <span className="text-ink-400">No hidden charges</span>
               <span className="text-ink-400">Callback within one working day</span>
             </AuthLinksRow>
           </>

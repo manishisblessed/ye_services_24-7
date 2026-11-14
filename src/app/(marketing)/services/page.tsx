@@ -191,7 +191,7 @@ export default function ServicesPage() {
                     Every service. One wallet. Commission on each.
                   </p>
                   <p className="mt-3 text-sm text-white/75 md:text-base">
-                    Open your counter today. No joining fee, KYC in under five minutes.
+                    Open your counter today. KYC in under five minutes.
                   </p>
                 </div>
                 <Link href="/register" className="shrink-0 rounded-2xl focus-energy">

@@ -9,6 +9,7 @@ import { validateNonOverlapping } from "@/lib/scheme/resolver";
 import { resolveServiceVendorLock } from "@/lib/scheme/serviceVendor";
 import { SERVICE_CODES } from "@/lib/scheme/constants";
 import { bbpsServiceProviderMismatch } from "@/lib/services/priceScope";
+import { schemeNamespaceWhere } from "@/lib/scheme/tenant";
 
 export const fetchCache = "force-no-store";
 
@@ -51,7 +52,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   try {
     admin = await requireAdminActivity(req, {
       action: "scheme.slab.create",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "SchemeSlab",
       entityId: params.id,
     });
@@ -59,7 +60,12 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     return toErrorResponse(e);
   }
 
-  const scheme = await prisma.scheme.findUnique({ where: { id: params.id }, select: { id: true } });
+  // Scope the parent scheme to the caller's namespace: a tenant can only add
+  // slabs to its own schemes, never another tenant's (cross-tenant id → 404).
+  const scheme = await prisma.scheme.findFirst({
+    where: { id: params.id, ...schemeNamespaceWhere(admin) },
+    select: { id: true },
+  });
   if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
 
   const parsed = SlabBody.safeParse(await req.json().catch(() => ({})));

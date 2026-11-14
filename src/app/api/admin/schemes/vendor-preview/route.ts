@@ -24,7 +24,9 @@ const Query = z.object({
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
+    // Read-only rate-card preview; tenant admins/partners price on top of the
+    // same approved cards, so they may preview the vendor cost too.
+    await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
   } catch (e) {
     if (e instanceof AuthError) return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;

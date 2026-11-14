@@ -146,11 +146,11 @@ const TESTIMONIALS = [
   { name: "Rajesh Patel", role: "Kirana Store · Ahmedabad", quote: "Within two months, I was earning ₹18,000/month extra just from AePS and recharges. Best decision I made for my shop." },
   { name: "Priya Sharma", role: "Mobile Shop · Delhi", quote: "My customers love the bill payment facility. It brings them to my shop even when they don't need a recharge." },
   { name: "Mohammed Irfan", role: "Travel Agent · Bangalore", quote: "Money transfer is my top earner. The instant settlement means I never run out of float." },
-  { name: "Sunita Devi", role: "Medical Store · Patna", quote: "I was skeptical at first, but the ₹0 joining fee convinced me. Now I earn more from services than medicine margins." },
+  { name: "Sunita Devi", role: "Medical Store · Patna", quote: "I was skeptical at first, but the easy onboarding convinced me. Now I earn more from services than medicine margins." },
 ];
 
 const FAQ = [
-  { q: "How much does it cost to join?", a: "Absolutely free. There is no joining fee, no monthly subscription. You only need a float balance to start transactions." },
+  { q: "How much does it cost to join?", a: "Absolutely free. There is no monthly subscription. You only need a float balance to start transactions." },
   { q: "How fast do I receive my commission?", a: "Instantly. Every successful transaction credits your wallet in real-time — no waiting for monthly payouts." },
   { q: "What documents do I need?", a: "PAN card, Aadhaar, a bank account, and a selfie. The entire e-KYC takes under 5 minutes." },
   { q: "Can I run this from my existing shop?", a: "Yes — any shop with a smartphone and internet can become a service counter. No separate infrastructure needed." },
@@ -354,7 +354,7 @@ function StatsStrip({ color }: { color: string }) {
   const stats = [
     { value: 60, suffix: "+", label: "Services Live" },
     { value: 1600, suffix: "+", label: "Billers on BBPS" },
-    { value: 0, suffix: "", label: "Joining Fee", display: "₹0" },
+    { value: 5, suffix: " min", label: "e-KYC Time", display: "5 min" },
     { value: 24, suffix: "/7", label: "Platform Uptime" },
   ];
   return (

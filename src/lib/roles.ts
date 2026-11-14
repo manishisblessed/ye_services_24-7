@@ -415,6 +415,14 @@ export const navByRole: Record<Role, NavGroup[]> = {
         { href: "/dashboard/admin/sub-admins", label: "Team Access", icon: UserCog },
       ]
     },
+    {
+      // Pricing Studio — the partner (and their admins) manage their OWN rate
+      // schemes. Every scheme & slab is isolated to this tenant by the API.
+      heading: "Pricing Studio",
+      items: [
+        { href: "/dashboard/admin/schemes", label: "Rate Schemes", icon: Layers },
+      ]
+    },
     { heading: "Partner Hub", items: partnerHub },
     { heading: "My Profile", items: account }
   ],

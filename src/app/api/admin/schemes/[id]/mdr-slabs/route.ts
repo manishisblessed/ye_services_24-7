@@ -8,6 +8,7 @@ import { validateMdrSlab } from "@/lib/mdr/resolver";
 import { validateMdrAgainstFloor } from "@/lib/mdr/floor";
 import { findApprovedBrandRate } from "@/lib/brand/mdr";
 import { findApprovedRailRate } from "@/lib/rail/mdr";
+import { schemeNamespaceWhere, schemeInNamespace } from "@/lib/scheme/tenant";
 
 /**
  * POS slabs are governed by the manually-approved brand rate card: the vendor
@@ -303,7 +304,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   try {
     admin = await requireAdminActivity(req, {
       action: "mdr_slab.create",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "MdrSlab",
       entityId: params.id,
     });
@@ -370,18 +371,23 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
   const { global: isGlobal, ...slabFields } = b;
 
-  // Resolve target scheme(s).
+  // Resolve target scheme(s). "Global" fans out across EVERY active scheme in
+  // the caller's OWN namespace only — a tenant's global edit never touches the
+  // platform's or another tenant's schemes.
   const targetSchemeIds: string[] = [];
   if (isGlobal) {
     const allSchemes = await prisma.scheme.findMany({
-      where: { active: true },
+      where: { active: true, ...schemeNamespaceWhere(admin) },
       select: { id: true },
     });
     if (allSchemes.length === 0)
       return NextResponse.json({ error: "No active schemes found" }, { status: 404 });
     for (const s of allSchemes) targetSchemeIds.push(s.id);
   } else {
-    const scheme = await prisma.scheme.findUnique({ where: { id: params.id }, select: { id: true } });
+    const scheme = await prisma.scheme.findFirst({
+      where: { id: params.id, ...schemeNamespaceWhere(admin) },
+      select: { id: true },
+    });
     if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
     targetSchemeIds.push(params.id);
   }
@@ -504,13 +510,17 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     admin = await requireAdminActivity(req, {
       action: "mdr_slab.update",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "MdrSlab",
       entityId: params.id,
     });
   } catch (e) {
     return toErrorResponse(e);
   }
+
+  // The parent scheme must belong to the caller's namespace.
+  if (!(await schemeInNamespace(params.id, admin)))
+    return NextResponse.json({ error: "Slab not found" }, { status: 404 });
 
   const parsed = UpdateBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
@@ -714,13 +724,17 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   try {
     admin = await requireAdminActivity(req, {
       action: "mdr_slab.delete",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "MdrSlab",
       entityId: params.id,
     });
   } catch (e) {
     return toErrorResponse(e);
   }
+
+  // The parent scheme must belong to the caller's namespace.
+  if (!(await schemeInNamespace(params.id, admin)))
+    return NextResponse.json({ error: "Slab not found" }, { status: 404 });
 
   const parsed = DeleteBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)

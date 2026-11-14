@@ -6,6 +6,7 @@ import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { serializeScheme } from "@/lib/scheme/serialize";
+import { schemeNamespace, schemeNamespaceWhere } from "@/lib/scheme/tenant";
 
 export const fetchCache = "force-no-store";
 
@@ -13,9 +14,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    // White-label partners (and their ADMIN staff) manage their OWN schemes,
+    // exactly like a native admin manages the platform's — scoped per tenant.
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
 
     const schemes = await prisma.scheme.findMany({
+      where: schemeNamespaceWhere(user),
       orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
       include: { _count: { select: { slabs: true, users: true, mdrSlabs: true } } },
     });
@@ -41,7 +45,7 @@ export async function POST(req: Request) {
   try {
     admin = await requireAdminActivity(req, {
       action: "scheme.create",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "Scheme",
     });
     await enforceRateLimit(`scheme:create:${admin.id}`, RATE_LIMITS.default);
@@ -54,14 +58,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   const body = parsed.data;
 
-  const exists = await prisma.scheme.findUnique({ where: { name: body.name } });
+  // Namespace: native staff create platform schemes; a tenant creates its own.
+  const ownerId = schemeNamespace(admin);
+
+  // Name uniqueness is per namespace (DB enforces via COALESCE unique index).
+  const exists = await prisma.scheme.findFirst({
+    where: { name: body.name, platformOwnerId: ownerId },
+    select: { id: true },
+  });
   if (exists)
     return NextResponse.json({ error: `A scheme named "${body.name}" already exists` }, { status: 409 });
 
-  // Creating a default scheme must demote any current default (single default).
+  // Creating a default scheme must demote the current default IN THIS namespace.
   const created = await prisma.$transaction(async (tx) => {
     if (body.isDefault) {
-      await tx.scheme.updateMany({ where: { isDefault: true }, data: { isDefault: false } });
+      await tx.scheme.updateMany({
+        where: { isDefault: true, platformOwnerId: ownerId },
+        data: { isDefault: false },
+      });
     }
     return tx.scheme.create({
       data: {
@@ -70,6 +84,7 @@ export async function POST(req: Request) {
         active: body.active,
         isDefault: body.isDefault,
         createdById: admin.id,
+        platformOwnerId: ownerId,
       },
       include: { _count: { select: { slabs: true, users: true } } },
     });

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { activateTenantOwner } from "@/lib/cloudflare/domains";
 
 /**
  * POST /api/platform/whitelabel/promote-owner
@@ -43,10 +44,8 @@ export async function POST(req: Request) {
     );
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { isTenantOwner: true },
-  });
+  // Grants tenant-owner powers + seeds their starter default scheme.
+  await activateTenantOwner(userId);
 
   await prisma.auditLog.create({
     data: {

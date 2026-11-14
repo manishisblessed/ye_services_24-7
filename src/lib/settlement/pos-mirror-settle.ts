@@ -2,8 +2,6 @@ import { flags } from "@/lib/env";
 import { getSetting, isCardClassificationEnabled } from "@/lib/settings";
 import { prisma } from "@/lib/db";
 import { handlePosCapture } from "@/lib/settlement/pos";
-import { getDefaultScheme } from "@/lib/scheme/resolve-scheme";
-
 /**
  * POS settlement sweep — MIRROR-DRIVEN.
  *
@@ -59,7 +57,12 @@ function istStartDaysAgo(days: number): Date {
  * remain the final safety net for anything that still can't be priced.
  */
 async function eligibleTerminalIds(): Promise<string[]> {
-  const defaultPricesEveryone = flags.schemeDefaultFallback && !!(await getDefaultScheme());
+  // System-wide heuristic: is default-fallback pricing in play for ANYONE
+  // (native OR any tenant)? Per-capture gates remain the real safety net, so
+  // this stays namespace-agnostic (any active default scheme counts).
+  const defaultPricesEveryone =
+    flags.schemeDefaultFallback &&
+    (await prisma.scheme.count({ where: { isDefault: true, active: true } })) > 0;
 
   const machines = await prisma.posMachine.findMany({
     where: {
