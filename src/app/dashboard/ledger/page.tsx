@@ -10,6 +10,7 @@ import {
   FileDown,
   Lock,
   Undo2,
+  Download,
 } from "lucide-react";
 import { Receipt } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -74,6 +75,43 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 const REASON_OPTIONS = ["All", ...Object.keys(REASON_LABELS)];
+
+async function downloadLedgerReceipt(t: WalletTxn) {
+  try {
+    const label = REASON_LABELS[t.reason] ?? t.reason;
+    const refId = t.refId ?? t.id;
+    const date = new Date(t.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    const res = await fetch("/api/receipt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refId,
+        service: label,
+        amount: t.txnAmount ?? t.amount,
+        meta: {
+          Type: t.direction === "CREDIT" ? "Credit" : "Debit",
+          ...(t.note ? { Description: t.note } : {}),
+          ...(t.txnAmount != null ? { "Txn amount": `₹${t.txnAmount.toFixed(2)}` } : {}),
+          ...(t.charges != null && t.charges > 0 ? { "MDR / Charges": `₹${t.charges.toFixed(2)}` } : {}),
+          "Net amount": `${t.direction === "CREDIT" ? "+" : "−"}₹${t.amount.toFixed(2)}`,
+          ...(t.balanceAfter != null ? { "Balance after": `₹${t.balanceAfter.toFixed(2)}` } : {}),
+          Date: date,
+        },
+        status: "SUCCESS",
+      }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Receipt-${refId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch { /* best-effort */ }
+}
 
 export default function LedgerPage() {
   const [data, setData] = useState<LedgerData | null>(null);
@@ -253,6 +291,7 @@ export default function LedgerPage() {
                   <th className="px-5 py-3 text-right font-semibold">Amount</th>
                   <th className="px-5 py-3 text-right font-semibold">Balance after</th>
                   <th className="px-5 py-3 font-semibold">Date</th>
+                  <th className="px-5 py-3 text-center font-semibold">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100 text-ink-800">
@@ -347,6 +386,17 @@ export default function LedgerPage() {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
+                    </td>
+                    <td className="px-5 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => downloadLedgerReceipt(t)}
+                        className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                        title="Download receipt"
+                      >
+                        <Download className="h-3 w-3" />
+                        PDF
+                      </button>
                     </td>
                   </tr>
                 ))}
