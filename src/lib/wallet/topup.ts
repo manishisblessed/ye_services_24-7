@@ -30,6 +30,7 @@ import { logger } from "../logger";
 import { isAmountMismatch } from "./guards";
 import { assertPushWithinCap, WalletOpError } from "./operations";
 import { handleTopupCapture } from "../settlement/pg";
+import { priceSchemeSettlement } from "../settlement/engine";
 
 const topupId = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 12);
 
@@ -41,6 +42,20 @@ const PG_MDR_PROVIDERS = new Set(["CHAGANS_PG"]);
 
 function isPgMdrProvider(name?: string | null): boolean {
   return PG_MDR_PROVIDERS.has((name ?? "").toUpperCase());
+}
+
+/**
+ * Per-gateway MDR scope key for a Chagans PG payin. Chagans multiplexes two
+ * gateways (Comet / Star) behind one partner name, but each has its own MDR
+ * pipeline (RailMdrRate + slabs) keyed by scopeKey. The gateway id lives in the
+ * transaction request (`gatewayId`) / the resolved channel. Non-Chagans
+ * partners just use their own name.
+ */
+function pgScopeKey(partner?: string | null, gatewayId?: string | null): string {
+  if ((partner ?? "").toUpperCase() === "CHAGANS_PG") {
+    return gatewayId === "star" ? "CHAGANS_STAR" : "CHAGANS_COMET";
+  }
+  return partner ?? "CHAGANS_PG";
 }
 
 export type TopupState = "INITIATED" | "PROCESSING" | "SUCCESS" | "FAILED" | "HOLD";
@@ -111,8 +126,42 @@ export async function initiateTopup(input: {
     );
   }
 
-  const refId = `TOPUP${topupId()}`;
   const collectAmount = sel.prepareAmount(toNumber(round(input.amount)));
+
+  // ── Pricing guard (Star / Comet PG) ──────────────────────────────────────
+  // MONEY-SAFETY: never let a user START a PG-MDR top-up unless an accurate MDR
+  // scheme slab resolves for them on this gateway. The instrument (card/UPI/…)
+  // is unknown at init time, so we price with `anyPaymentMode` — which requires
+  // a slab that matches regardless of instrument (i.e. a non-mode-pinned slab).
+  // Without this, a customer could be charged on the gateway and then see the
+  // credit blocked at settlement (NO_SCHEME). Blocking up-front prevents that.
+  if (isPgMdrProvider(upi.name)) {
+    const scopeKey = pgScopeKey(upi.name, sel.channel);
+    const price = await priceSchemeSettlement({
+      userId: input.userId,
+      serviceKind: "PG",
+      grossAmount: collectAmount,
+      scopeKey,
+      settlementType: "T0",
+      anyPaymentMode: true,
+    });
+    if (!price) {
+      logger.warn({
+        action: "wallet.topup_blocked_no_scheme",
+        userId: input.userId,
+        scopeKey,
+        amount: collectAmount,
+        channel: input.channel ?? null,
+      });
+      throw new TopupError(
+        "This payment gateway isn\u2019t available for your account yet \u2014 the pricing scheme hasn\u2019t been configured. Please contact support.",
+        403,
+        "NO_PG_SCHEME",
+      );
+    }
+  }
+
+  const refId = `TOPUP${topupId()}`;
 
   const txn = await prisma.transaction.create({
     data: {
@@ -187,12 +236,15 @@ export async function initiateTopup(input: {
 export async function settleTopup(
   refId: string,
   webhookVerified?: VerifiedPayin,
-): Promise<{ refId: string; status: TopupState }> {
+): Promise<{ refId: string; status: TopupState; amount?: number }> {
   const txn = await prisma.transaction.findUnique({ where: { refId } });
   if (!txn || txn.service !== "WALLET_TOPUP") {
     throw new TopupError("Top-up not found", 404, "NOT_FOUND");
   }
-  if (txn.status === "SUCCESS") return { refId, status: "SUCCESS" };
+  // Net amount actually credited to the wallet = gross − MDR fee (fee is 0 for
+  // full-credit providers), so this is correct for every provider.
+  const creditedNet = toNumber(txn.amount) - toNumber(txn.fee ?? 0);
+  if (txn.status === "SUCCESS") return { refId, status: "SUCCESS", amount: creditedNet };
   if (txn.status === "FAILED") return { refId, status: "FAILED" };
 
   // ------- Determine paid / failed / pending ---------------------------
@@ -278,12 +330,8 @@ export async function settleTopup(
       // The gateway id is stored in the transaction request at initiation time.
       const reqObj = (txn.request && typeof txn.request === "object" ? txn.request : {}) as Record<string, unknown>;
       const gatewayId = typeof reqObj.gatewayId === "string" ? reqObj.gatewayId : null;
-      const scopeKey =
-        txn.partner === "CHAGANS_PG"
-          ? gatewayId === "star"
-            ? "CHAGANS_STAR"
-            : "CHAGANS_COMET" // default to Comet for any pre-existing rows without gatewayId
-          : (txn.partner ?? "CHAGANS_PG");
+      // Defaults to Comet for any pre-existing rows without a stored gatewayId.
+      const scopeKey = pgScopeKey(txn.partner, gatewayId);
       const result = await handleTopupCapture({
         transactionId: txn.id,
         grossAmount: gross,
@@ -323,6 +371,7 @@ export async function settleTopup(
       return {
         refId,
         status: result.status === "SETTLED" || result.status === "DUPLICATE" ? "SUCCESS" : "FAILED",
+        amount: result.netAmount ?? gross,
       };
     }
 
@@ -377,7 +426,7 @@ export async function settleTopup(
       utr,
     });
 
-    return { refId, status: "SUCCESS" };
+    return { refId, status: "SUCCESS", amount: Number(txn.amount) };
   }
 
   // ------- FAILED / EXPIRED -------------------------------------------

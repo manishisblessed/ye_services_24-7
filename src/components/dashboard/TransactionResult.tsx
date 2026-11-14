@@ -201,12 +201,17 @@ export function TransactionResult({
 
   const downloadReceipt = useCallback(() => {
     if (!result) return;
-    const w = window.open("", "_blank", "width=460,height=650");
-    if (!w) return;
-    w.document.write(buildReceiptHtml(result, userCode));
-    w.document.close();
-    w.addEventListener("afterprint", () => w.close());
-    setTimeout(() => w.print(), 300);
+    // Download a self-contained receipt file directly (no print dialog).
+    const html = buildReceiptHtml(result, userCode);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Receipt-${result.refId}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, [result, userCode]);
 
   if (!result) return null;

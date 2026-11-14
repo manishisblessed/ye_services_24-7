@@ -203,14 +203,14 @@ export default function WalletPage() {
       try {
         const res = await fetch(`/api/wallet/topup?refId=${encodeURIComponent(topup.refId)}`);
         if (!res.ok) return false;
-        const d = (await res.json()) as { status: string };
+        const d = (await res.json()) as { status: string; amount?: number };
         if (d.status === "SUCCESS") {
           stopPolling();
           setPending(null);
           setResult({
             refId: topup.refId,
             service: "Wallet top-up",
-            amount: topup.amount,
+            amount: d.amount ?? topup.amount,
             meta: { Status: "Credited to wallet" },
           });
           fetchWallet();
