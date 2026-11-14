@@ -199,19 +199,41 @@ export function TransactionResult({
     if (!result) setCopied(false);
   }, [result]);
 
-  const downloadReceipt = useCallback(() => {
+  const downloadReceipt = useCallback(async () => {
     if (!result) return;
-    // Download a self-contained receipt file directly (no print dialog).
-    const html = buildReceiptHtml(result, userCode);
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Receipt-${result.refId}.html`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try {
+      const res = await fetch("/api/receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          refId: result.refId,
+          service: result.service,
+          amount: result.amount,
+          customer: result.customer,
+          meta: result.meta,
+          status: result.status ?? "SUCCESS",
+          userCode: userCode ?? undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("receipt failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Receipt-${result.refId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // Fallback: open printable HTML receipt if PDF generation fails
+      const w = window.open("", "_blank", "width=460,height=650");
+      if (!w) return;
+      w.document.write(buildReceiptHtml(result, userCode));
+      w.document.close();
+      w.addEventListener("afterprint", () => w.close());
+      setTimeout(() => w.print(), 300);
+    }
   }, [result, userCode]);
 
   if (!result) return null;
