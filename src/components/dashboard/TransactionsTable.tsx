@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Download } from "lucide-react";
 import { Receipt } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/Badge";
 import { IconTile } from "@/components/ui/Icon";
@@ -9,6 +9,33 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { BankLogo } from "@/components/dashboard/BankLogo";
 import type { Transaction } from "@/lib/data";
 import { cn, formatINR } from "@/lib/utils";
+
+async function downloadTxnReceipt(t: Transaction) {
+  try {
+    const res = await fetch("/api/receipt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refId: t.id,
+        service: t.service,
+        amount: t.amount,
+        customer: t.customer || undefined,
+        meta: { Status: t.status },
+        status: t.status === "Success" ? "SUCCESS" : t.status === "Pending" ? "PENDING" : "FAILED",
+      }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Receipt-${t.id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch { /* best-effort */ }
+}
 
 const statusVariant: Record<
   Transaction["status"],
@@ -43,7 +70,7 @@ export function TransactionsTable({
    *  commission on a txn belongs to the upline, not the retailer). */
   showCommission?: boolean;
 }) {
-  const colCount = showCommission ? 7 : 6;
+  const colCount = showCommission ? 8 : 7;
 
   return (
     <div className="min-w-0 overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-sm">
@@ -102,6 +129,7 @@ export function TransactionsTable({
                 )}
                 <th scope="col" className={th}>Status</th>
                 <th scope="col" className={th}>Date</th>
+                <th scope="col" className={cn(th, "text-center")}>Receipt</th>
               </tr>
             </thead>
             <tbody className="text-ink-800">
@@ -155,6 +183,17 @@ export function TransactionsTable({
                         </Badge>
                       </td>
                       <td className={cn(td, "text-xs text-ink-500")}>{t.date}</td>
+                      <td className={cn(td, "text-center")}>
+                        <button
+                          type="button"
+                          onClick={() => downloadTxnReceipt(t)}
+                          className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                          title={`Download receipt for ${t.id}`}
+                        >
+                          <Download className="h-3 w-3" />
+                          PDF
+                        </button>
+                      </td>
                     </tr>
                   ))}
             </tbody>

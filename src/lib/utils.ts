@@ -147,15 +147,34 @@ export function namesMatch(a: string, b: string): boolean {
   return similarity >= 0.6;
 }
 
+/** Levenshtein edit distance between two strings. */
+function editDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+  return dp[m][n];
+}
+
 /**
  * Partial name overlap check for cross-document verification.
  *
  * Returns true when the two names share at least one meaningful word (≥ 3
- * chars, to skip single-letter initials) — either as an exact match or as a
- * substring of another word.  This covers Indian naming patterns where:
+ * chars, to skip single-letter initials) — either as an exact match, a
+ * substring, or a close spelling variant (edit distance ≤ 2).
+ *
+ * This covers Indian naming patterns where:
  *   • Initials expand on one document ("K C Prathap Reddy" vs "CHANDRAPRATHAP
  *     REDDY KOTLO" — "prathap" ⊂ "chandraprathap", "reddy" matches exactly).
  *   • Order and tokenisation differ between Aadhaar / PAN / Bank.
+ *   • Spellings vary slightly ("Thallada" vs "Tallada", edit distance = 1).
  */
 export function namesPartiallyOverlap(a: string, b: string): boolean {
   if (!a || !b) return false;
@@ -176,6 +195,7 @@ export function namesPartiallyOverlap(a: string, b: string): boolean {
     for (const wb of wordsB) {
       if (wa === wb) return true;
       if (wb.includes(wa) || wa.includes(wb)) return true;
+      if (Math.abs(wa.length - wb.length) <= 2 && editDistance(wa, wb) <= 2) return true;
     }
   }
   return false;

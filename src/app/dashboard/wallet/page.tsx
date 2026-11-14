@@ -14,6 +14,7 @@ import {
   FileDown,
   CheckCircle2,
   Ban,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { Lightning, ShieldCheck } from "@phosphor-icons/react";
@@ -74,6 +75,39 @@ const REASON_LABELS: Record<string, string> = {
   PAYOUT: "Payout",
   RENTAL: "POS rental",
 };
+
+async function downloadWalletReceipt(t: WalletTxn) {
+  try {
+    const label = REASON_LABELS[t.reason] ?? t.reason;
+    const refId = t.refId ?? t.id;
+    const res = await fetch("/api/receipt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        refId,
+        service: label,
+        amount: t.txnAmount ?? t.amount,
+        meta: {
+          Type: t.direction,
+          ...(t.charges ? { "MDR / Charges": `₹${t.charges.toFixed(2)}` } : {}),
+          "Net amount": `₹${t.amount.toFixed(2)}`,
+          "Balance after": `₹${t.balanceAfter.toFixed(2)}`,
+        },
+        status: "SUCCESS",
+      }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Receipt-${refId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch { /* best-effort */ }
+}
 
 type PendingTopup = {
   refId: string;
@@ -408,6 +442,22 @@ export default function WalletPage() {
             timeStyle: "short",
           })}
         </span>
+      ),
+    },
+    {
+      key: "id",
+      header: "Receipt",
+      align: "center" as const,
+      render: (t) => (
+        <button
+          type="button"
+          onClick={() => downloadWalletReceipt(t)}
+          className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+          title="Download receipt"
+        >
+          <Download className="h-3 w-3" />
+          PDF
+        </button>
       ),
     },
   ];
