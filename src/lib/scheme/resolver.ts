@@ -163,6 +163,7 @@ export function normalizeProviderTag(provider?: string | null): string | null {
   if (p.startsWith("PAYSPRINT")) return "PAYSPRINT";
   if (p.startsWith("NPCI")) return "NPCI";
   if (p.startsWith("EKYCHUB")) return "EKYCHUB";
+  if (p.startsWith("CHAGANS")) return "CHAGANS";
   return p;
 }
 

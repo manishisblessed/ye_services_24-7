@@ -2,6 +2,7 @@ import { type ServiceCode, type TxnStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getPartner } from "@/lib/partners";
 import { rechargekitStatus } from "@/lib/partners/sameday-rechargekit";
+import { chagansCcCheckStatus } from "@/lib/partners/chagans-cc-bill";
 import {
   finalizeServiceTransaction,
   correctTerminalToSuccess,
@@ -30,11 +31,12 @@ const BBPS_SERVICES: ServiceCode[] = [
   "RECHARGE_BROADBAND",
 ];
 
-type Rail = "bbps" | "rechargekit";
+type Rail = "bbps" | "rechargekit" | "chagans_cc";
 type ProviderStatus = "SUCCESS" | "PENDING" | "FAILED" | "REFUNDED";
 
 function railFor(partner: string | null, service: ServiceCode): Rail | null {
   if (partner === "SAMEDAY_RECHARGEKIT") return "rechargekit";
+  if (partner === "CHAGANS_CC_BILL") return "chagans_cc";
   // BBPS is served only by Pay2New. RECHARGEKIT_DIRECT shares BILL_CREDIT_CARD
   // but has no status API, so it is not auto-resolvable here.
   if ((partner === "SAMEDAY_PAY2NEW" || partner === null) && BBPS_SERVICES.includes(service)) return "bbps";
@@ -46,6 +48,20 @@ async function resolveProviderStatus(
   rail: Rail,
   refs: string[]
 ): Promise<{ status: ProviderStatus; matchedRef: string; payRef: string | null; amount: number | null; raw: unknown } | null> {
+  if (rail === "chagans_cc") {
+    for (const ref of refs) {
+      const r = await chagansCcCheckStatus(ref);
+      if (r.ok)
+        return {
+          status: r.data.status,
+          matchedRef: ref,
+          payRef: r.data.orderId || null,
+          amount: typeof r.data.amount === "number" && r.data.amount > 0 ? r.data.amount : null,
+          raw: r.raw,
+        };
+    }
+    return null;
+  }
   if (rail === "rechargekit") {
     for (const ref of refs) {
       let r = await rechargekitStatus({ txnId: ref });

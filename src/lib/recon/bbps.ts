@@ -7,12 +7,16 @@ import { logger } from "@/lib/logger";
 import { deriveTxnRefs } from "./refs";
 import { finalizeServiceTransaction, FINALIZABLE_TXN_SELECT } from "@/lib/services/finalize";
 import type { BbpsProvider } from "@/lib/partners/types";
+import { chagansCcCheckStatus } from "@/lib/partners/chagans-cc-bill";
 
 // The BBPS rail is served exclusively by SameDay Pay2New. Scoping recon to this
 // partner keeps us from polling RechargeKit CC-2 / RechargeKit-Direct rows
 // (also BILL_CREDIT_CARD) against the Pay2New status API, which would never
 // resolve them. RechargeKit CC-2 has its own reconciler.
 const PAY2NEW_PARTNER = "SAMEDAY_PAY2NEW";
+
+/** Chagans CC Bill partner tag — uses its own checkStatus (POST /bbps/checkStatus). */
+const CHAGANS_CC_PARTNER = "CHAGANS_CC_BILL";
 
 const BBPS_SERVICES: ServiceCode[] = [
   "BILL_ELECTRICITY", "BILL_WATER", "BILL_GAS",
@@ -56,10 +60,21 @@ type BbpsStatus = "SUCCESS" | "PENDING" | "FAILED" | "REFUNDED";
  */
 async function tryResolve(
   bbps: BbpsProvider,
-  txn: { partnerTxnId: string | null; request: unknown; response: unknown }
+  txn: { partnerTxnId: string | null; request: unknown; response: unknown; partner?: string | null }
 ): Promise<{ status: BbpsStatus; payRef: string | null; raw: unknown } | null> {
-  if (!bbps.status) return null;
   const refs = deriveTxnRefs({ partnerTxnId: txn.partnerTxnId, request: txn.request, response: txn.response });
+
+  if (txn.partner === CHAGANS_CC_PARTNER) {
+    for (const ref of refs) {
+      const r = await chagansCcCheckStatus(ref);
+      if (r.ok) {
+        return { status: r.data.status as BbpsStatus, payRef: r.data.orderId ?? ref, raw: r.raw };
+      }
+    }
+    return null;
+  }
+
+  if (!bbps.status) return null;
   for (const ref of refs) {
     let r = await bbps.status({ orderId: ref });
     if (!r.ok) r = await bbps.status({ requestId: ref });
@@ -102,18 +117,18 @@ export async function runBbpsReconciliation(): Promise<BbpsReconSummary> {
     where: {
       status: { in: ["PROCESSING", "NEEDS_REVIEW"] },
       service: { in: BBPS_SERVICES },
-      partner: PAY2NEW_PARTNER,
+      partner: { in: [PAY2NEW_PARTNER, CHAGANS_CC_PARTNER] },
       createdAt: { lt: new Date(now - DRAIN_AGE_MS) },
     },
     orderBy: { createdAt: "asc" },
     take: 200,
-    select: { ...FINALIZABLE_TXN_SELECT, request: true, response: true, createdAt: true },
+    select: { ...FINALIZABLE_TXN_SELECT, request: true, response: true, createdAt: true, partner: true },
   });
 
   let drained = 0;
   for (const txn of inflight) {
     try {
-      const resolved = await tryResolve(bbps, txn);
+      const resolved = await tryResolve(bbps, { ...txn, partner: txn.partner });
       if (!resolved || resolved.status === "PENDING") {
         drained++;
         continue;
@@ -143,7 +158,7 @@ export async function runBbpsReconciliation(): Promise<BbpsReconSummary> {
     where: {
       status: "PROCESSING",
       service: { in: BBPS_SERVICES },
-      partner: PAY2NEW_PARTNER,
+      partner: { in: [PAY2NEW_PARTNER, CHAGANS_CC_PARTNER] },
       createdAt: { lt: new Date(now - STUCK_THRESHOLD_MS) },
     },
     select: { id: true, refId: true, createdAt: true },
@@ -170,7 +185,7 @@ export async function runBbpsReconciliation(): Promise<BbpsReconSummary> {
     where: {
       status: "NEEDS_REVIEW",
       service: { in: BBPS_SERVICES },
-      partner: PAY2NEW_PARTNER,
+      partner: { in: [PAY2NEW_PARTNER, CHAGANS_CC_PARTNER] },
       createdAt: { lt: new Date(now - STUCK_THRESHOLD_MS) },
     },
     select: { id: true, refId: true, userId: true, createdAt: true },
@@ -213,18 +228,23 @@ export async function runBbpsReconciliation(): Promise<BbpsReconSummary> {
     where: {
       status: { in: ["SUCCESS", "FAILED"] },
       service: { in: BBPS_SERVICES },
-      partner: PAY2NEW_PARTNER,
+      partner: { in: [PAY2NEW_PARTNER, CHAGANS_CC_PARTNER] },
       partnerTxnId: { not: null },
       updatedAt: { gte: new Date(now - VERIFY_WINDOW_MS) },
     },
     orderBy: { updatedAt: "desc" },
     take: 200,
-    select: { id: true, refId: true, status: true, partnerTxnId: true, userId: true },
+    select: { id: true, refId: true, status: true, partnerTxnId: true, userId: true, partner: true },
   });
 
   for (const row of recentTerminal) {
     try {
-      const r = await bbps.status({ orderId: row.partnerTxnId! });
+      let r: { ok: boolean; data: { status: string } };
+      if (row.partner === CHAGANS_CC_PARTNER) {
+        r = await chagansCcCheckStatus(row.partnerTxnId!);
+      } else {
+        r = await bbps.status({ orderId: row.partnerTxnId! });
+      }
       if (!r.ok) continue;
       verified++;
 

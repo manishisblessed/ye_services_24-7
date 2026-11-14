@@ -33,6 +33,7 @@ function railSupportsHoldAndRecon(partner: string, service: ServiceCode): boolea
   // behaviour (it cannot be auto-reconciled, so holding it would strand funds).
   if (partner === "SAMEDAY_RECHARGEKIT") return true; // RechargeKit CC-2 (has status)
   if (partner === "SAMEDAY_PAY2NEW") return RECON_CAPABLE_BBPS_SERVICES.includes(service); // BBPS / Pay2New (has status)
+  if (partner === "CHAGANS_CC_BILL") return service === "BILL_CREDIT_CARD"; // Chagans CC Bill (has checkStatus)
   return false;
 }
 
