@@ -72,6 +72,7 @@ const ROLE_AVATAR: Record<string, string> = {
   distributor: "bg-brand-50 text-brand-700",
   "master-distributor": "bg-royal-50 text-royal-700",
   "super-distributor": "bg-amber-50 text-amber-700",
+  "whitelabel-partner": "bg-violet-50 text-violet-700",
 };
 
 function initials(name: string): string {

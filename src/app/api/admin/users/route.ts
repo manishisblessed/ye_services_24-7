@@ -182,6 +182,7 @@ export async function GET(req: Request) {
         distributor: "DISTRIBUTOR",
         "master-distributor": "MASTER_DISTRIBUTOR",
         "super-distributor": "SUPER_DISTRIBUTOR",
+        "whitelabel-partner": "WHITELABEL_PARTNER",
         admin: "ADMIN",
         "master-admin": "MASTER_ADMIN",
       };

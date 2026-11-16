@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { OG_LOGO_DATA_URL } from "./_og-logo-data";
 
 export const runtime = "edge";
 export const alt = "BankingPoint24 — Payments. Powered for India.";
@@ -23,32 +24,10 @@ export default async function OpengraphImage() {
           fontFamily: "system-ui, sans-serif"
         }}
       >
-        {/* Top: logo lockup — teal squircle + wordmark */}
-        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          <svg width="86" height="86" viewBox="0 0 64 64" fill="none">
-            <defs>
-              <linearGradient id="og-globe" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#1B5FA0"/>
-                <stop offset="100%" stopColor="#2A9D8F"/>
-              </linearGradient>
-              <linearGradient id="og-leaf" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#2A9D8F"/>
-                <stop offset="100%" stopColor="#5EAD3B"/>
-              </linearGradient>
-              <linearGradient id="og-swoosh" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#5EAD3B"/>
-                <stop offset="100%" stopColor="#8BC34A"/>
-              </linearGradient>
-            </defs>
-            <circle cx="26" cy="32" r="22" fill="url(#og-globe)"/>
-            <path d="M8,36 Q18,24 32,28 Q42,30 48,22" stroke="rgba(255,255,255,0.5)" strokeWidth="4" fill="none" strokeLinecap="round"/>
-            <path d="M10,42 Q20,32 34,34 Q44,36 48,30" stroke="rgba(255,255,255,0.3)" strokeWidth="3" fill="none" strokeLinecap="round"/>
-            <path d="M36,12 Q48,10 56,18 Q52,14 42,14 Q36,15 32,20" fill="url(#og-leaf)" opacity="0.9"/>
-            <path d="M38,40 Q50,38 58,46 Q54,42 44,42 Q38,43 34,48" fill="url(#og-swoosh)" opacity="0.85"/>
-          </svg>
-          <div style={{ fontSize: 56, fontWeight: 800, letterSpacing: -1 }}>
-            BankingPoint24
-          </div>
+        {/* Top: real BankingPoint24 logo lockup */}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={OG_LOGO_DATA_URL} alt="BankingPoint24" width={380} height={94} style={{ objectFit: "contain" }} />
         </div>
 
         {/* Middle headline */}

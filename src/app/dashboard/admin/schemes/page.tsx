@@ -2067,7 +2067,7 @@ function AssignModal({
           <p className="text-xs text-ink-400">
             {ownerId
               ? "This is a derived scheme — it can only be assigned to the owner's direct children."
-              : "Admin can assign this scheme directly to any user — SD, MD, DT, or RT. A direct assignment overrides the cascade for that individual user without affecting others in their network."}
+              : "Admin can assign this scheme directly to any user — WLP, SD, MD, DT, or RT. A direct assignment overrides the cascade for that individual user without affecting others in their network."}
           </p>
 
           {/* Available users — scoped to who can actually hold this scheme */}

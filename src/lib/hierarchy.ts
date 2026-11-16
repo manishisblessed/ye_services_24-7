@@ -54,7 +54,8 @@ export type NetworkRoleSlug =
   | "retailer"
   | "distributor"
   | "master-distributor"
-  | "super-distributor";
+  | "super-distributor"
+  | "whitelabel-partner";
 
 /** Role filter value used by the shared user picker (`all` = every tier). */
 export type RoleTabValue = "all" | NetworkRoleSlug;
@@ -67,6 +68,7 @@ export type RoleTabValue = "all" | NetworkRoleSlug;
  */
 export const ROLE_TABS: readonly { value: RoleTabValue; label: string }[] = [
   { value: "all", label: "All" },
+  { value: "whitelabel-partner", label: "WLP" },
   { value: "super-distributor", label: "SD" },
   { value: "master-distributor", label: "MD" },
   { value: "distributor", label: "DT" },
@@ -79,6 +81,7 @@ export const ROLE_SHORT_LABEL: Record<string, string> = {
   distributor: "DT",
   "master-distributor": "MD",
   "super-distributor": "SD",
+  "whitelabel-partner": "WLP",
 };
 
 /** Staff/admin roles (not part of the onboarding chain). */
