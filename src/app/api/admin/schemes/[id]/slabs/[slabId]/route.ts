@@ -7,7 +7,8 @@ import { serializeSlab } from "@/lib/scheme/serialize";
 import { validateNonOverlapping } from "@/lib/scheme/resolver";
 import { resolveServiceVendorLock } from "@/lib/scheme/serviceVendor";
 import { bbpsServiceProviderMismatch } from "@/lib/services/priceScope";
-import { schemeInNamespace } from "@/lib/scheme/tenant";
+import { schemeInNamespace, resolveServiceSlabFloor } from "@/lib/scheme/tenant";
+import { hasTenantWideScope, tenantOwnerId } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -96,6 +97,28 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string;
     requireCard: true,
   });
   if (!lock.ok) return NextResponse.json({ error: lock.error }, { status: 400 });
+
+  // Tenant floor: charge must be at least the base rate from BankingPoint24's
+  // scheme assigned to the WLP owner.
+  if (hasTenantWideScope(admin)) {
+    const ownerId = tenantOwnerId(admin);
+    if (ownerId) {
+      const mergedChargeType = body.chargeType ?? existing.chargeType;
+      const mergedChargeValue = body.chargeValue ?? Number(existing.chargeValue);
+      const floor = await resolveServiceSlabFloor(ownerId, existing.service, nextProvider ?? null, nextMin);
+      if (floor && floor.chargeType === mergedChargeType) {
+        if (mergedChargeValue < floor.chargeValue - 1e-6) {
+          const display = floor.chargeType === "FLAT"
+            ? `₹${floor.chargeValue}`
+            : `${(floor.chargeValue * 100).toFixed(2)}%`;
+          return NextResponse.json(
+            { error: `Charge must be at least ${display} (the base rate assigned by BankingPoint24). You can set a higher charge to earn a margin.` },
+            { status: 400 },
+          );
+        }
+      }
+    }
+  }
 
   const updated = await prisma.schemeSlab.update({
     where: { id: params.slabId },

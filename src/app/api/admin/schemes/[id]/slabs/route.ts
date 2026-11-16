@@ -9,7 +9,8 @@ import { validateNonOverlapping } from "@/lib/scheme/resolver";
 import { resolveServiceVendorLock } from "@/lib/scheme/serviceVendor";
 import { SERVICE_CODES } from "@/lib/scheme/constants";
 import { bbpsServiceProviderMismatch } from "@/lib/services/priceScope";
-import { schemeNamespaceWhere } from "@/lib/scheme/tenant";
+import { schemeNamespaceWhere, resolveServiceSlabFloor } from "@/lib/scheme/tenant";
+import { hasTenantWideScope, tenantOwnerId } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -100,6 +101,28 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     requireCard: true,
   });
   if (!lock.ok) return NextResponse.json({ error: lock.error }, { status: 400 });
+
+  // Tenant floor: the scheme BankingPoint24 assigned to the WLP sets the minimum
+  // charge a partner can set for their retailers. If a floor slab exists for this
+  // service+provider+band, the tenant's charge must be at least that amount.
+  if (hasTenantWideScope(admin)) {
+    const ownerId = tenantOwnerId(admin);
+    if (ownerId) {
+      const floor = await resolveServiceSlabFloor(ownerId, body.service, body.provider ?? null, body.minAmount);
+      if (floor && floor.chargeType === body.chargeType) {
+        const tenantCharge = body.chargeValue;
+        if (tenantCharge < floor.chargeValue - 1e-6) {
+          const display = floor.chargeType === "FLAT"
+            ? `₹${floor.chargeValue}`
+            : `${(floor.chargeValue * 100).toFixed(2)}%`;
+          return NextResponse.json(
+            { error: `Charge must be at least ${display} (the base rate assigned by BankingPoint24). You can set a higher charge to earn a margin.` },
+            { status: 400 },
+          );
+        }
+      }
+    }
+  }
 
   // Cascade model: admin schemes carry charges only — no commission. Commission
   // is set by each network parent when they derive a scheme for their children.

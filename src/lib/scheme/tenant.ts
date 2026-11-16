@@ -58,10 +58,16 @@ export async function schemeInNamespace(
  * Seed a starter default scheme for a white-label tenant the first time it goes
  * live. Idempotent: a no-op once the tenant already owns any scheme.
  *
- * The starter scheme CLONES the native platform default (its service slabs and
- * MDR slabs) so a partner's retailers can transact from day one, and the
- * partner can then edit the pricing. If no platform default exists, an empty
- * active default scheme is created so the partner has something to build on.
+ * Template priority:
+ *   1. The scheme that BankingPoint24 assigned to the WLP owner (user.schemeId)
+ *      — this is the "cost basis" the platform gave the partner, and cloning it
+ *      gives the partner a working starter whose rates match their deal.
+ *   2. The native platform default scheme (Scheme.isDefault, platformOwnerId null)
+ *      — fallback when the WLP has no scheme assigned yet.
+ *   3. Nothing — an empty active default so the partner has something to build on.
+ *
+ * The partner can then edit the cloned slabs (raising charges above the floor
+ * set by BankingPoint24's scheme assignment) and assign to their retailers.
  *
  * `ownerUserId` is the tenant-root user id (WhitelabelProfile.userId).
  */
@@ -73,11 +79,32 @@ export async function ensureTenantDefaultScheme(ownerUserId: string): Promise<{ 
   });
   if (existing) return { created: false, schemeId: existing.id };
 
-  // Source pricing = the native platform default scheme (if configured).
-  const source = await prisma.scheme.findFirst({
-    where: { isDefault: true, active: true, platformOwnerId: null },
-    include: { slabs: true, mdrSlabs: true },
+  // Template priority: WLP's own assigned scheme > native platform default.
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerUserId },
+    select: { schemeId: true },
   });
+
+  let source: Awaited<ReturnType<typeof prisma.scheme.findFirst>> & {
+    slabs: Awaited<ReturnType<typeof prisma.schemeSlab.findMany>>;
+    mdrSlabs: Awaited<ReturnType<typeof prisma.mdrSlab.findMany>>;
+  } | null = null;
+
+  // 1. Prefer the scheme BankingPoint24 assigned to the WLP owner.
+  if (owner?.schemeId) {
+    source = await prisma.scheme.findFirst({
+      where: { id: owner.schemeId, active: true },
+      include: { slabs: true, mdrSlabs: true },
+    });
+  }
+
+  // 2. Fall back to the native platform default.
+  if (!source) {
+    source = await prisma.scheme.findFirst({
+      where: { isDefault: true, active: true, platformOwnerId: null },
+      include: { slabs: true, mdrSlabs: true },
+    });
+  }
 
   const created = await prisma.$transaction(async (tx) => {
     const scheme = await tx.scheme.create({
@@ -149,4 +176,118 @@ export async function ensureTenantDefaultScheme(ownerUserId: string): Promise<{ 
   });
 
   return { created: true, schemeId: created.id };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Parent-scheme floor: the scheme BankingPoint24 assigned to the WLP owner
+// acts as the MINIMUM pricing floor for the tenant's own schemes. A partner
+// must charge their retailers AT LEAST what the platform charges them.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type RateType = "FLAT" | "PERCENT";
+
+export type SlabFloor = {
+  chargeType: RateType;
+  chargeValue: number;
+  chargeGstInclusive: boolean;
+};
+
+export type MdrFloor = {
+  mdrType: RateType;
+  mdrValue: number;
+  mdrValueT0: number;
+};
+
+/**
+ * Resolve the MINIMUM service-slab charge a tenant may set. Returns the
+ * matching slab from the scheme that BankingPoint24 assigned to the WLP owner,
+ * or null when the owner has no assigned scheme or no slab covers this band.
+ *
+ * Matching: same service + provider + the parent slab's band covers the given
+ * representative amount. When multiple slabs match, the narrowest (most specific
+ * provider) wins, then lowest minAmount (tightest band).
+ */
+export async function resolveServiceSlabFloor(
+  ownerUserId: string,
+  service: string,
+  provider: string | null,
+  amount: number,
+): Promise<SlabFloor | null> {
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerUserId },
+    select: { schemeId: true },
+  });
+  if (!owner?.schemeId) return null;
+
+  // Prefer an exact provider match; fall back to the wildcard (null provider).
+  const slab = await prisma.schemeSlab.findFirst({
+    where: {
+      schemeId: owner.schemeId,
+      service: service as never,
+      active: true,
+      minAmount: { lte: amount },
+      maxAmount: { gte: amount },
+      ...(provider ? { provider } : {}),
+    },
+    select: { chargeType: true, chargeValue: true, chargeGstInclusive: true },
+    orderBy: { minAmount: "desc" },
+  }) ?? (provider ? await prisma.schemeSlab.findFirst({
+    where: {
+      schemeId: owner.schemeId,
+      service: service as never,
+      active: true,
+      minAmount: { lte: amount },
+      maxAmount: { gte: amount },
+      provider: null,
+    },
+    select: { chargeType: true, chargeValue: true, chargeGstInclusive: true },
+    orderBy: { minAmount: "desc" },
+  }) : null);
+
+  if (!slab) return null;
+  return {
+    chargeType: slab.chargeType as RateType,
+    chargeValue: Number(slab.chargeValue),
+    chargeGstInclusive: slab.chargeGstInclusive,
+  };
+}
+
+/**
+ * Resolve the MINIMUM MDR a tenant may set for POS/PG/QR/UPI slabs. Returns the
+ * matching MDR slab from the scheme BankingPoint24 assigned to the WLP owner,
+ * or null when no parent slab covers this configuration.
+ */
+export async function resolveMdrSlabFloor(
+  ownerUserId: string,
+  serviceKind: string,
+  paymentMode: string,
+  company: string | null,
+  amount: number,
+): Promise<MdrFloor | null> {
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerUserId },
+    select: { schemeId: true },
+  });
+  if (!owner?.schemeId) return null;
+
+  const slab = await prisma.mdrSlab.findFirst({
+    where: {
+      schemeId: owner.schemeId,
+      serviceKind: serviceKind as never,
+      paymentMode,
+      active: true,
+      minAmount: { lte: amount },
+      maxAmount: { gte: amount },
+      ...(company ? { company } : {}),
+    },
+    select: { mdrType: true, mdrValue: true, mdrValueT0: true },
+    orderBy: { minAmount: "desc" },
+  });
+
+  if (!slab) return null;
+  return {
+    mdrType: slab.mdrType as RateType,
+    mdrValue: Number(slab.mdrValue),
+    mdrValueT0: Number(slab.mdrValueT0),
+  };
 }

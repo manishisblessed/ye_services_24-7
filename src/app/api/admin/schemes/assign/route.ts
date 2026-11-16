@@ -68,13 +68,16 @@ export async function POST(req: Request) {
     if (!scheme) return NextResponse.json({ error: "Scheme not found" }, { status: 404 });
     if (!scheme.active) return NextResponse.json({ error: "Cannot assign an inactive scheme" }, { status: 400 });
 
-    // Verify all target users are network users (non-admin roles).
-    const ASSIGNABLE_ROLES = ["SUPER_DISTRIBUTOR", "MASTER_DISTRIBUTOR", "DISTRIBUTOR", "RETAILER"];
+    // Verify all target users are network users or white-label partners.
+    const ASSIGNABLE_ROLES = [
+      "SUPER_DISTRIBUTOR", "MASTER_DISTRIBUTOR", "DISTRIBUTOR", "RETAILER",
+      "WHITELABEL_PARTNER",
+    ];
     const invalid = inScope.filter((u) => !ASSIGNABLE_ROLES.includes(u.role));
     if (invalid.length > 0) {
       return NextResponse.json(
         {
-          error: `Schemes can only be assigned to network users (SD, MD, DT, RT). ${invalid.length} of the selected user(s) have an admin/unsupported role.`,
+          error: `Schemes can only be assigned to network users (SD, MD, DT, RT) or white-label partners. ${invalid.length} of the selected user(s) have an admin/unsupported role.`,
         },
         { status: 400 }
       );

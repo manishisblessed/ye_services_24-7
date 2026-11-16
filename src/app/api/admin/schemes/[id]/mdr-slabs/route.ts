@@ -8,7 +8,8 @@ import { validateMdrSlab } from "@/lib/mdr/resolver";
 import { validateMdrAgainstFloor } from "@/lib/mdr/floor";
 import { findApprovedBrandRate } from "@/lib/brand/mdr";
 import { findApprovedRailRate } from "@/lib/rail/mdr";
-import { schemeNamespaceWhere, schemeInNamespace } from "@/lib/scheme/tenant";
+import { schemeNamespaceWhere, schemeInNamespace, resolveMdrSlabFloor } from "@/lib/scheme/tenant";
+import { hasTenantWideScope, tenantOwnerId } from "@/lib/security/ownership";
 
 /**
  * POS slabs are governed by the manually-approved brand rate card: the vendor
@@ -405,6 +406,25 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   );
   if (floorErr) return NextResponse.json({ error: floorErr }, { status: 400 });
 
+  // Tenant floor: MDR must be at least the base rate from BankingPoint24's scheme.
+  if (hasTenantWideScope(admin)) {
+    const ownerId = tenantOwnerId(admin);
+    if (ownerId) {
+      const mdrFloor = await resolveMdrSlabFloor(ownerId, b.serviceKind, b.paymentMode, b.company ?? null, b.minAmount);
+      if (mdrFloor && mdrFloor.mdrType === b.mdrType) {
+        if (b.mdrValue < mdrFloor.mdrValue - 1e-6) {
+          const display = mdrFloor.mdrType === "PERCENT"
+            ? `${(mdrFloor.mdrValue * 100).toFixed(2)}%`
+            : `₹${mdrFloor.mdrValue}`;
+          return NextResponse.json(
+            { error: `MDR service charge must be at least ${display} (the base rate from BankingPoint24). Set a higher rate to earn a margin.` },
+            { status: 400 },
+          );
+        }
+      }
+    }
+  }
+
   // POS/QR use the Minimum-MDR pool equality; other rails use the ≤-margin guard.
   const marginErr = usesPoolModel
     ? validatePosCommissionEquality(b, posMinMdr, posMinMdrT0)
@@ -649,6 +669,27 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     { matchAllScopes: true }
   );
   if (floorErr) return NextResponse.json({ error: floorErr }, { status: 400 });
+
+  // Tenant floor: MDR must be at least the base rate from BankingPoint24's scheme.
+  if (hasTenantWideScope(admin)) {
+    const ownerId = tenantOwnerId(admin);
+    if (ownerId) {
+      const mergedMdrType = b.mdrType ?? existing.mdrType;
+      const mergedMdrValue = b.mdrValue ?? Number(existing.mdrValue);
+      const mdrFloor = await resolveMdrSlabFloor(ownerId, existing.serviceKind, next.paymentMode, next.company ?? null, next.minAmount);
+      if (mdrFloor && mdrFloor.mdrType === mergedMdrType) {
+        if (mergedMdrValue < mdrFloor.mdrValue - 1e-6) {
+          const display = mdrFloor.mdrType === "PERCENT"
+            ? `${(mdrFloor.mdrValue * 100).toFixed(2)}%`
+            : `₹${mdrFloor.mdrValue}`;
+          return NextResponse.json(
+            { error: `MDR service charge must be at least ${display} (the base rate from BankingPoint24). Set a higher rate to earn a margin.` },
+            { status: 400 },
+          );
+        }
+      }
+    }
+  }
 
   const mergedForCheck = {
     mdrType: b.mdrType ?? existing.mdrType,
