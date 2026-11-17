@@ -28,7 +28,7 @@ const LABELS: Record<string, { title: string; description: string }> = {
   "onboarding.invite_expiry": {
     title: "Onboarding link validity",
     description:
-      "How many days a shared onboarding link (and document re-upload link) stays valid. Only affects links generated after this is changed.",
+      "How many days a shared onboarding link (and document re-upload link) stays valid. Minimum 30 days · maximum 90 days. Only affects links generated after this is changed — existing invites keep their original expiry.",
   },
   "wallet.ops_approval_threshold": {
     title: "Wallet ops approval threshold (inactive)",
@@ -77,6 +77,41 @@ const FIELD_LABELS: Record<string, string> = {
   cometMax: "Comet max per-transaction (₹)",
   starEnabled: "Star PG enabled (T+0 same-day)",
   starMax: "Star max per-transaction (₹)",
+};
+
+/**
+ * Per-setting per-field HTML input constraints. Keeps the generic number
+ * renderer in sync with the zod schema limits so an admin sees the allowed
+ * range right in the UI before hitting server-side validation.
+ */
+const FIELD_CONSTRAINTS: Record<string, Record<string, { min?: number; max?: number; step?: number }>> = {
+  "onboarding.invite_expiry": {
+    // schema: z.number().int().min(30).max(90).default(30)
+    days: { min: 30, max: 90, step: 1 },
+  },
+  "settlement.t1":        { hour: { min: 0, max: 23, step: 1 } },
+  "pos.rental_billing":   { hour: { min: 0, max: 23, step: 1 } },
+  "incentive.monthly":    { hour: { min: 0, max: 23, step: 1 } },
+  "settlement.pos_t1":    { hour: { min: 0, max: 23, step: 1 } },
+  "settlement.pg_t1":     { hour: { min: 0, max: 23, step: 1 } },
+  "settlement.qr_t1":     { hour: { min: 0, max: 23, step: 1 } },
+  "settlement.pos_ingest": {
+    lookbackDays: { min: 1, max: 31, step: 1 },
+    maxPages:     { min: 1, max: 200, step: 1 },
+  },
+  "pos.mirror_sync": {
+    lookbackDays: { min: 1, max: 31, step: 1 },
+    maxPages:     { min: 1, max: 500, step: 1 },
+  },
+  "limits.qr_claim": {
+    maxAgeDays:         { min: 1, step: 1 },
+    switchGraceMinutes: { min: 0, step: 1 },
+    dailyCount:         { min: 1, step: 1 },
+  },
+  "pg.channel_limits": {
+    cometMax: { min: 100, max: 1_000_000, step: 100 },
+    starMax:  { min: 100, max: 100_000,   step: 100 },
+  },
 };
 
 const inputCls =
@@ -186,13 +221,26 @@ export default function PlatformControlsPage() {
                       );
                     }
                     if (typeof value === "number") {
+                      const constraints = FIELD_CONSTRAINTS[key]?.[field] ?? {};
                       return (
                         <label key={field} className="block text-xs text-ink-500">
                           {label}
+                          {(constraints.min !== undefined || constraints.max !== undefined) && (
+                            <span className="ml-1.5 text-ink-300">
+                              ({constraints.min !== undefined && constraints.max !== undefined
+                                ? `${constraints.min}–${constraints.max}`
+                                : constraints.min !== undefined
+                                ? `min ${constraints.min}`
+                                : `max ${constraints.max}`})
+                            </span>
+                          )}
                           <input
                             type="number"
                             className={`${inputCls} mt-1 block w-48`}
                             value={value}
+                            min={constraints.min}
+                            max={constraints.max}
+                            step={constraints.step ?? 1}
                             onChange={(e) => setField(key, field, Number(e.target.value))}
                           />
                         </label>
