@@ -285,6 +285,7 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
+  const search = searchParams.get("search")?.trim() || null;
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
   const limit = Math.min(100, parseInt(searchParams.get("limit") ?? "20"));
 
@@ -303,6 +304,40 @@ export async function GET(req: Request) {
     // AND the (possibly OR-based) status filter with the scope OR so neither
     // clause clobbers the other.
     where = { AND: [statusWhere, { OR: scopeOr }] };
+  }
+
+  // ── Full-text search across invite fields + linked user/inviter ──
+  if (search) {
+    const textOr: any[] = [
+      { name: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+
+    // Resolve userCode / name matches so admins can find an invite by the
+    // registered user's code (e.g. "RT0116") or the inviter's name.
+    const matchingUsers = await prisma.user.findMany({
+      where: {
+        OR: [
+          { userCode: { contains: search, mode: "insensitive" } },
+          { name: { contains: search, mode: "insensitive" } },
+        ],
+      },
+      select: { id: true },
+      take: 200,
+    });
+    if (matchingUsers.length) {
+      const ids = matchingUsers.map((u) => u.id);
+      textOr.push({ userId: { in: ids } }, { invitedById: { in: ids } });
+    }
+
+    const searchFilter = { OR: textOr };
+    where =
+      where.AND
+        ? { AND: [...where.AND, searchFilter] }
+        : Object.keys(where).length
+        ? { AND: [where, searchFilter] }
+        : searchFilter;
   }
 
   const [invites, total] = await Promise.all([

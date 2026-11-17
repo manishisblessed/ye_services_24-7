@@ -158,6 +158,10 @@ export default function AdminInvitesPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   const [showCreate, setShowCreate] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<string | null>(null);
   const [detailData, setDetailData] = useState<any>(null);
@@ -169,21 +173,30 @@ export default function AdminInvitesPage() {
 
   const fetchInvites = useCallback(async () => {
     setLoading(true);
-    const url = filter
-      ? `/api/admin/invite?status=${filter}`
-      : "/api/admin/invite";
-    const res = await fetch(url);
+    const params = new URLSearchParams();
+    if (filter) params.set("status", filter);
+    if (search) params.set("search", search);
+    params.set("page", String(page));
+    params.set("limit", String(pageSize));
+    const res = await fetch(`/api/admin/invite?${params}`);
     if (res.ok) {
       const data = await res.json();
       setInvites(data.invites);
       setTotal(data.total);
     }
     setLoading(false);
-  }, [filter]);
+  }, [filter, search, page]);
 
   useEffect(() => {
     fetchInvites();
   }, [fetchInvites]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filter, search]);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   async function viewDetail(id: string) {
     setSelectedInvite(id);
@@ -295,6 +308,36 @@ export default function AdminInvitesPage() {
       />
 
       <FilterBar title="Invites" count={total}>
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearch(searchInput);
+          }}
+        >
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") setSearch(searchInput);
+              }}
+              placeholder="Name, phone, email, or user code…"
+              className="h-10 w-64 rounded-2xl border border-ink-200 bg-white pl-9 pr-8 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => { setSearchInput(""); setSearch(""); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-400 hover:text-ink-700"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </form>
         <Select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -513,6 +556,36 @@ export default function AdminInvitesPage() {
           </table>
         </div>
         </SectionCard>
+      )}
+
+      {/* Pagination */}
+      {total > pageSize && (
+        <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-ink-100">
+          <p className="text-sm text-ink-500">
+            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Prev
+            </Button>
+            <span className="text-sm text-ink-600">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Next →
+            </Button>
+          </div>
+        </div>
       )}
 
       <ConfirmDialog
