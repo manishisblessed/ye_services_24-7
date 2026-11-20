@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Save, AlertCircle, CheckCircle2, Rocket, RefreshCw, Copy, Check, Upload, Loader2, X } from "lucide-react";
 
 const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? "bankingpoint-24.com";
-const SERVER_IP = process.env.NEXT_PUBLIC_SERVER_IP ?? "13.55.164.240";
+const SERVER_IP = process.env.NEXT_PUBLIC_SERVER_IP ?? "13.207.77.130";
 import { Globe, Headset, LockKey, PaintBrush, WifiHigh, Info, CheckCircle as PhCheckCircle } from "@phosphor-icons/react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";

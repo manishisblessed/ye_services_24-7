@@ -18,7 +18,7 @@ import { sendOpsAlert } from "@/lib/monitoring/alerts";
  *   34.126.212.125
  *
  * Our server IP whitelisted with Chagans:
- *   13.55.164.240
+ *   13.207.77.130
  */
 export const dynamic = "force-dynamic";
 

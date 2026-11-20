@@ -236,6 +236,7 @@ export async function initiateTopup(input: {
 export async function settleTopup(
   refId: string,
   webhookVerified?: VerifiedPayin,
+  opts?: { forceResettle?: boolean },
 ): Promise<{ refId: string; status: TopupState; amount?: number }> {
   const txn = await prisma.transaction.findUnique({ where: { refId } });
   if (!txn || txn.service !== "WALLET_TOPUP") {
@@ -245,7 +246,17 @@ export async function settleTopup(
   // full-credit providers), so this is correct for every provider.
   const creditedNet = toNumber(txn.amount) - toNumber(txn.fee ?? 0);
   if (txn.status === "SUCCESS") return { refId, status: "SUCCESS", amount: creditedNet };
-  if (txn.status === "FAILED") return { refId, status: "FAILED" };
+  if (txn.status === "FAILED") {
+    if (opts?.forceResettle && webhookVerified) {
+      await prisma.transaction.update({
+        where: { id: txn.id },
+        data: { status: "PROCESSING", errorCode: null, errorMessage: null },
+      });
+      logger.info({ action: "wallet.topup_force_resettle", refId, from: "FAILED" });
+    } else {
+      return { refId, status: "FAILED" };
+    }
+  }
 
   // ------- Determine paid / failed / pending ---------------------------
   let paid = false;
