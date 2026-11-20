@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getPosMachines } from "@/lib/partners/sameday-pos";
-import { isAdminRole, scopeDirectUserIdFilter } from "@/lib/security/ownership";
+import { isPlatformStaff, scopeDirectUserIdFilter } from "@/lib/security/ownership";
 import type { SessionUser } from "@/lib/auth-server";
 import type {
   PosMachine as ExternalPosMachine,
@@ -404,7 +404,7 @@ export type ScopedTerminal = { tid: string; assignedAt: Date | null };
 export async function scopePosTerminals(
   user: SessionUser
 ): Promise<{ all: boolean; tids: string[]; terminals: ScopedTerminal[] }> {
-  if (isAdminRole(user.role))
+  if (isPlatformStaff(user))
     return { all: true, tids: [], terminals: [] };
 
   const scope = await scopeDirectUserIdFilter(user);

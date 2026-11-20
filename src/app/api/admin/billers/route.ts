@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { partnerStatus } from "@/lib/partners";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -9,7 +10,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const billers = await prisma.biller.groupBy({
       by: ["category"],

@@ -15,6 +15,7 @@ import {
   WalletLienError,
 } from "@/lib/wallet/lien";
 import { toNumber, dec } from "@/lib/money";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,18 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   const parsed = ActionBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
+  const lienRecord = await prisma.walletLien.findUnique({
+    where: { id: params.id },
+    select: { targetUserId: true },
+  });
+  if (!lienRecord)
+    return NextResponse.json({ error: "Lien not found" }, { status: 404 });
+  try {
+    await assertCanAccessUser(lienRecord.targetUserId, admin);
+  } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   try {
     const lien =

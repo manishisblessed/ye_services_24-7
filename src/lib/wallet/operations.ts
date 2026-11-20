@@ -26,7 +26,7 @@ import { getSetting } from "@/lib/settings";
  * the wallet-ops or network tab (both surfaces expose push/pull).
  */
 export function canManageWalletOps(user: { role: string; allowedTabs?: string[] }): boolean {
-  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN") return true;
+  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN" || user.role === "WHITELABEL_PARTNER") return true;
   if (user.role === "SUPPORT") {
     const tabs = user.allowedTabs ?? [];
     return tabs.includes("wallet-ops") || tabs.includes("network");

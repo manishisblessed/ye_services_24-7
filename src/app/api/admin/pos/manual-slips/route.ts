@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toNumber } from "@/lib/money";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * GET /api/admin/pos/manual-slips
@@ -16,7 +17,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });

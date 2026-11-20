@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { AuthError, type SessionUser } from "@/lib/auth-server";
-import { getDescendantIds, isAdminRole } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { toNumber } from "@/lib/money";
 import { SETTLED_VIA, startOfTodayIst } from "@/lib/settlement/engine";
 
@@ -216,11 +216,9 @@ const COMMISSION_ROLES = new Set([
   "SUPER_DISTRIBUTOR",
 ]);
 
-/** Self + full downline for network roles; `null` (unrestricted) for admins. */
+/** Self + full downline for network roles; `null` (unrestricted) for platform staff. */
 async function resolveAllowedUserIds(user: SessionUser): Promise<string[] | null> {
-  if (isAdminRole(user.role)) return null;
-  const descendants = await getDescendantIds(user.id);
-  return [user.id, ...descendants];
+  return scopedUserIds(user);
 }
 
 function buildWhere(

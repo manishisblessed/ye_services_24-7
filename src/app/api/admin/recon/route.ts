@@ -7,6 +7,7 @@ import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { runLedgerIntegrityAudit } from "@/lib/recon/integrity";
 import { runDailyPayoutReconciliation } from "@/lib/recon/payouts";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin reconciliation console.
@@ -21,7 +22,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
+    const reconAdmin = await requireRole("MASTER_ADMIN", "ADMIN");
+    if (!isPlatformStaff(reconAdmin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const [runs, mismatches] = await Promise.all([
       prisma.auditLog.findMany({
@@ -75,6 +78,8 @@ export async function POST(req: Request) {
       roles: ["MASTER_ADMIN", "ADMIN"],
       entity: "System",
     });
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`recon:trigger:${user.id}`, RATE_LIMITS.sensitiveWrite);
 
     const parsed = PostBody.safeParse(await req.json());

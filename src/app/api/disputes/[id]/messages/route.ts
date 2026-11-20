@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { canAccessUser, isPlatformStaff, hasTenantWideScope } from "@/lib/security/ownership";
 import { addDisputeMessage } from "@/lib/disputes/service";
 
 /**
@@ -33,9 +33,9 @@ export async function POST(
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
   const { id } = await params;
-  const admin = isAdminRole(user.role);
+  const isStaff = isPlatformStaff(user) || hasTenantWideScope(user);
   const dispute = await prisma.dispute.findUnique({ where: { id }, select: { userId: true } });
-  if (!dispute || (!admin && dispute.userId !== user.id)) {
+  if (!dispute || !(await canAccessUser(dispute.userId, user))) {
     return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
   }
 
@@ -43,7 +43,7 @@ export async function POST(
     const message = await addDisputeMessage({
       disputeId: id,
       authorId: user.id,
-      fromSupport: admin,
+      fromSupport: isStaff,
       body: parsed.data.body,
     });
     return NextResponse.json({ ok: true, messageId: message.id }, { status: 201 });

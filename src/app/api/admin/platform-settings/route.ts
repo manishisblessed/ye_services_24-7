@@ -6,6 +6,7 @@ import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import { getAllSettings, isSettingKey, setSetting } from "@/lib/settings";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,9 @@ export const dynamic = "force-dynamic";
 /** GET — every platform setting with its effective (stored or default) value. */
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     return NextResponse.json({ settings: await getAllSettings() });
   } catch (e) {
     if (e instanceof AuthError)

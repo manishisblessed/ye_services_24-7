@@ -5,7 +5,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
-import { getDescendantIds } from "@/lib/security/ownership";
+import { getDescendantIds, assertCanAccessUser } from "@/lib/security/ownership";
 import { NETWORK_TIERS, getParentRole } from "@/lib/hierarchy";
 
 export const fetchCache = "force-no-store";
@@ -306,16 +306,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
-  } catch (e) {
-    if (e instanceof AuthError)
-      return NextResponse.json({ error: e.message }, { status: e.statusCode });
-    throw e;
-  }
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
+    const { id: userId } = await params;
+    try { await assertCanAccessUser(userId, admin); } catch {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-  const { id: userId } = await params;
-
-  const transfers = await prisma.hierarchyTransfer.findMany({
+    const transfers = await prisma.hierarchyTransfer.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     select: {
@@ -333,5 +330,10 @@ export async function GET(
     },
   });
 
-  return NextResponse.json({ transfers });
+    return NextResponse.json({ transfers });
+  } catch (e) {
+    if (e instanceof AuthError)
+      return NextResponse.json({ error: e.message }, { status: e.statusCode });
+    throw e;
+  }
 }

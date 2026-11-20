@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AuthError, requireAuth } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
 import { getDailyUserReport } from "@/lib/reports/daily";
-import { isAdminRole, getDescendantIds } from "@/lib/security/ownership";
+import { isAdminRole, getDescendantIds, isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -54,10 +54,15 @@ export async function GET(req: Request) {
   const q = parsed.data;
 
   try {
-    // Ownership scoping: admins see everyone; non-admins see self + downline.
-    const userIds = isAdminRole(user.role)
-      ? null
-      : [user.id, ...(await getDescendantIds(user.id))];
+    // Ownership scoping: platform staff see everyone; tenant admins see their
+    // own members; non-admins see self + downline.
+    let userIds: string[] | null = null;
+    if (!isAdminRole(user.role)) {
+      userIds = [user.id, ...(await getDescendantIds(user.id))];
+    } else if (!isPlatformStaff(user)) {
+      const ownerId = tenantOwnerId(user);
+      userIds = ownerId ? await getTenantMemberIds(ownerId) : [user.id];
+    }
 
     const report = await getDailyUserReport({
       date: q.date ?? null,

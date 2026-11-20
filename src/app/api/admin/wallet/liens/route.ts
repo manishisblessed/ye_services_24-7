@@ -17,6 +17,7 @@ import {
 import { toNumber, dec } from "@/lib/money";
 import { formatNumber } from "@/lib/utils";
 import { walletOpMaxAmount, WALLET_OP_ABSOLUTE_MAX } from "@/lib/settings";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds, hasTenantWideScope, assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -68,6 +69,12 @@ export async function POST(req: Request) {
       },
       { status: 400 }
     );
+
+  try {
+    await assertCanAccessUser(parsed.data.targetUserId, admin);
+  } catch {
+    return NextResponse.json({ error: "Target user is not part of your network" }, { status: 403 });
+  }
 
   const maxOp = await walletOpMaxAmount();
   if (parsed.data.amount > maxOp)
@@ -154,6 +161,14 @@ export async function GET(req: Request) {
         { userCode: { contains: q, mode: "insensitive" } },
       ],
     };
+  }
+
+  if (!isPlatformStaff(admin)) {
+    const ownerId = tenantOwnerId(admin);
+    if (ownerId && hasTenantWideScope(admin)) {
+      const memberIds = await getTenantMemberIds(ownerId);
+      where.targetUserId = where.targetUserId ?? { in: memberIds };
+    }
   }
 
   try {

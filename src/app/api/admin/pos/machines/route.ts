@@ -4,7 +4,7 @@ import { nanoid } from "@/lib/nanoid";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { flags } from "@/lib/env";
 import { clientIp } from "@/lib/security/audit";
@@ -32,8 +32,8 @@ export const maxDuration = 120;
 export async function GET(req: Request) {
   let admin;
   try {
-    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
-    if (!isAdminRole(admin.role))
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(admin) && admin.role !== "WHITELABEL_PARTNER" && !admin.platformOwnerId)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     if (e instanceof AuthError)
@@ -47,19 +47,21 @@ export async function GET(req: Request) {
       { status: 503 }
     );
 
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
   const pageSize = Math.min(100, Math.max(10, Number(searchParams.get("pageSize") ?? 50)));
   const status = searchParams.get("status") ?? "";
-  // Inventory origin filter: "SYNC" (partner API) | "MANUAL" (External POS).
   const source = (searchParams.get("source") ?? "").trim().toUpperCase();
   const search = (searchParams.get("search") ?? "").trim();
-  // assignee: "all" | "assigned" | "unassigned" | "user:<id>" | plain userId
   const rawAssignee = searchParams.get("assignee") ?? "all";
   const includeDownline = searchParams.get("includeDownline") === "true";
   const assignee = rawAssignee.startsWith("user:") ? rawAssignee.slice(5) : rawAssignee;
 
   const where: Prisma.PosMachineWhereInput = {};
+  if (memberIds) where.assignedUserId = { in: memberIds };
 
   if (status) where.status = status;
   if (source === "SYNC" || source === "MANUAL") where.source = source;

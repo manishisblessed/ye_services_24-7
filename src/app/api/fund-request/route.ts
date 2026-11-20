@@ -4,7 +4,7 @@ import { nanoid } from "@/lib/nanoid";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
-import { isAdminRole } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { assertKycCurrent, ReKycRequiredError } from "@/lib/security/kycGate";
 import { assertLivenessReady, LivenessRequiredError } from "@/lib/security/livenessGate";
 import { toNumber } from "@/lib/money";
@@ -33,19 +33,14 @@ export async function GET() {
     throw e;
   }
 
+  const allowedIds = await scopedUserIds(user);
   let where: Record<string, unknown>;
-  if (isAdminRole(user.role)) {
-    // MASTER_ADMIN / ADMIN / SUPPORT see all fund requests.
+  if (!allowedIds) {
     where = {};
   } else if (user.role === "RETAILER") {
     where = { requesterId: user.id };
   } else {
-    where = {
-      OR: [
-        { requesterId: user.id },
-        { requester: { parentId: user.id } },
-      ],
-    };
+    where = { requesterId: { in: allowedIds } };
   }
 
   const requests = await prisma.fundRequest.findMany({

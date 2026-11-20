@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import { dec, toNumber } from "@/lib/money";
 import { runT1SettlementForUser } from "@/lib/settlement/t1";
+import { tenantOwnerId, getTenantMemberIds, assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,10 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const url = new URL(req.url);
     const view = url.searchParams.get("view") ?? "overview";
@@ -30,7 +34,9 @@ export async function GET(req: Request) {
 
     if (view === "merchants") {
       const status = url.searchParams.get("status") ?? "all";
-      const where = status !== "all" ? { status: status as never } : {};
+      const where: Record<string, unknown> = {};
+      if (status !== "all") where.status = status;
+      if (memberIds) where.userId = { in: memberIds };
       const [rows, total] = await Promise.all([
         prisma.aepsMerchant.findMany({
           where,
@@ -71,7 +77,9 @@ export async function GET(req: Request) {
 
     if (view === "accounts") {
       const status = url.searchParams.get("status") ?? "PENDING_APPROVAL";
-      const where = status !== "all" ? { status: status as never } : {};
+      const where: Record<string, unknown> = {};
+      if (status !== "all") where.status = status;
+      if (memberIds) where.userId = { in: memberIds };
       const [rows, total] = await Promise.all([
         prisma.aepsSettlementAccount.findMany({
           where,
@@ -102,14 +110,16 @@ export async function GET(req: Request) {
     }
 
     if (view === "settlements") {
+      const settlementWhere = memberIds ? { userId: { in: memberIds } } : {};
       const [rows, total] = await Promise.all([
         prisma.aepsSettlement.findMany({
+          where: settlementWhere,
           orderBy: { createdAt: "desc" },
           skip: (page - 1) * pageSize,
           take: pageSize,
           include: { user: { select: { id: true, name: true, email: true } } },
         }),
-        prisma.aepsSettlement.count(),
+        prisma.aepsSettlement.count({ where: settlementWhere }),
       ]);
       return NextResponse.json({
         settlements: rows.map((s) => ({
@@ -130,19 +140,23 @@ export async function GET(req: Request) {
     }
 
     // overview
+    const merchantOverviewWhere = memberIds ? { userId: { in: memberIds } } : {};
+    const userOverviewWhere = memberIds
+      ? { deletedAt: null, aepsBalance: { gt: 0 }, id: { in: memberIds } }
+      : { deletedAt: null, aepsBalance: { gt: 0 } };
+    const settlementOverviewWhere = memberIds
+      ? { status: "SUCCESS" as const, createdAt: { gte: new Date(Date.now() - 24 * 3_600_000) }, userId: { in: memberIds } }
+      : { status: "SUCCESS" as const, createdAt: { gte: new Date(Date.now() - 24 * 3_600_000) } };
     const [merchantsByStatus, pendingAccounts, floatAgg, settledToday] = await Promise.all([
-      prisma.aepsMerchant.groupBy({ by: ["status"], _count: true }),
-      prisma.aepsSettlementAccount.count({ where: { status: "PENDING_APPROVAL" } }),
+      prisma.aepsMerchant.groupBy({ by: ["status"], where: merchantOverviewWhere, _count: true }),
+      prisma.aepsSettlementAccount.count({ where: { status: "PENDING_APPROVAL", ...(memberIds ? { userId: { in: memberIds } } : {}) } }),
       prisma.user.aggregate({
-        where: { deletedAt: null, aepsBalance: { gt: 0 } },
+        where: userOverviewWhere,
         _sum: { aepsBalance: true },
         _count: true,
       }),
       prisma.settlementRun.aggregate({
-        where: {
-          status: "SUCCESS",
-          createdAt: { gte: new Date(Date.now() - 24 * 3_600_000) },
-        },
+        where: settlementOverviewWhere,
         _sum: { amount: true },
         _count: true,
       }),
@@ -216,6 +230,9 @@ export async function POST(req: Request) {
   try {
     switch (body.action) {
       case "onboard_merchant": {
+        try { await assertCanAccessUser(body.userId, admin); } catch {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
         const user = await prisma.user.findFirst({
           where: {
             id: body.userId,
@@ -273,6 +290,9 @@ export async function POST(req: Request) {
       }
 
       case "settle_user": {
+        try { await assertCanAccessUser(body.userId, admin); } catch {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
         const r = await runT1SettlementForUser(body.userId, admin.id);
         await audit("aeps.settle_user_manual", { ...r, userId: body.userId });
         if (r.status === "FAILED")

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import {
   samedaySettlementConfigured,
   settlementBalance,
@@ -31,7 +32,9 @@ export type ProviderBalance = {
  */
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const [sameday, ekychub, chagans] = await Promise.all([
       withTimeout(probeSameday(), {

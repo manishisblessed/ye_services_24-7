@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth-server";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { getQrClaimOverview } from "@/lib/qr/claims";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import type { Prisma, QrClaimStatus, QrSettlementKind } from "@prisma/client";
 
 /**
@@ -28,7 +29,9 @@ const ALL: QrClaimStatus[] = [
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

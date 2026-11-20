@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 /**
  * Master-admin: identity duplicate exceptions.
@@ -19,16 +20,21 @@ export const dynamic = "force-dynamic";
 const NETWORK_TIERS: Role[] = ["SUPER_DISTRIBUTOR", "MASTER_DISTRIBUTOR", "DISTRIBUTOR", "RETAILER"];
 
 export async function GET(req: Request) {
+  let admin;
   try {
-    // Read access — all admin roles may view; approval is master-admin only.
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
   } catch (e) {
     return toErrorResponse(e);
   }
 
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
   const url = new URL(req.url);
   const status = url.searchParams.get("status") ?? "PENDING";
-  const where = status === "ALL" ? {} : { status: status as never };
+  const where: Record<string, unknown> = {};
+  if (status !== "ALL") where.status = status;
+  if (memberIds) where.userId = { in: memberIds };
 
   const rows = await prisma.identityException.findMany({
     where,

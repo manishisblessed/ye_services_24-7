@@ -25,7 +25,7 @@ import {
 } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { dec, add, sub, toNumber } from "@/lib/money";
-import { isAdminRole, getDescendantIds } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { flags } from "@/lib/env";
 import type { SessionUser } from "@/lib/auth-server";
 import type {
@@ -42,11 +42,9 @@ import { getDailyUserReport } from "./daily";
 /*  Shared helpers                                                        */
 /* --------------------------------------------------------------------- */
 
-/** Allowed user ids for `user`: null = admin (everything), else self+downline. */
+/** Allowed user ids for `user`: null = platform staff (everything), else tenant/downline. */
 async function allowedUserIds(user: SessionUser): Promise<string[] | null> {
-  if (isAdminRole(user.role)) return null;
-  const descendants = await getDescendantIds(user.id);
-  return [user.id, ...descendants];
+  return scopedUserIds(user);
 }
 
 /** Build a `createdAt` (or any date column) range filter, or undefined. */

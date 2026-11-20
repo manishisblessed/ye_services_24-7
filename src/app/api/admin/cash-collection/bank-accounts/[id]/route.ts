@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 const PatchBody = z
   .object({
@@ -52,7 +52,7 @@ export async function GET(
     throw e;
   }
 
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const account = await prisma.companyBankAccount.findUnique({
@@ -83,7 +83,7 @@ export async function PATCH(
     throw e;
   }
 
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const parsed = PatchBody.safeParse(await req.json());
@@ -144,7 +144,7 @@ export async function DELETE(
     throw e;
   }
 
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const existing = await prisma.companyBankAccount.findUnique({

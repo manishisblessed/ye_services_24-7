@@ -8,6 +8,7 @@ import {
 } from "@/lib/pos/settlementReport";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
   let user: SessionUser;
   try {
     user = await requireAuth();
-    if (!canViewPosSettlementReport(user)) {
+    if (!canViewPosSettlementReport(user) || !isPlatformStaff(user)) {
       throw new AuthError("Forbidden", 403);
     }
     await enforceRateLimit(`admin:pos-settle-report:${user.id}`, RATE_LIMITS.reportQuery);

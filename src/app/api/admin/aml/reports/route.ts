@@ -6,6 +6,7 @@ import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toNumber } from "@/lib/money";
 import { csvCell } from "@/lib/statements/walletStatement";
 import { amlLimitsFromEnv, istDayStartUtc } from "@/lib/aml/engine";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * AML regulatory report exports (Phase 5).
@@ -37,6 +38,8 @@ export async function GET(req: Request) {
   let admin;
   try {
     admin = await requireRole("MASTER_ADMIN", "ADMIN");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`aml:report:${admin.id}`, RATE_LIMITS.reportQuery);
   } catch (e) {
     return toErrorResponse(e);

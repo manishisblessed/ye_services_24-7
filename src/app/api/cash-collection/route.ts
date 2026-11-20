@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { isAdminRole } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
 import { assertKycCurrent, ReKycRequiredError } from "@/lib/security/kycGate";
 import { assertLivenessReady, LivenessRequiredError } from "@/lib/security/livenessGate";
@@ -51,12 +51,13 @@ export async function GET(req: Request) {
   const status = url.searchParams.get("status") ?? undefined;
   const skip = (page - 1) * limit;
 
-  const where = isAdminRole(user.role)
+  const allowedIds = await scopedUserIds(user);
+  const where = !allowedIds
     ? {
         ...(status && { status: status as "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" }),
       }
     : {
-        requesterId: user.id,
+        requesterId: allowedIds.length === 1 ? allowedIds[0] : { in: allowedIds },
         ...(status && { status: status as "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" }),
       };
 

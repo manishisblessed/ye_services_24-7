@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds, assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -11,12 +12,20 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
 
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
     const where: Record<string, unknown> = { active: true };
-    if (userId) where.userId = userId;
+    if (memberIds) where.userId = { in: memberIds };
+    if (userId) {
+      if (memberIds && !memberIds.includes(userId))
+        return NextResponse.json({ slabs: [] });
+      where.userId = userId;
+    }
 
     const slabs = await prisma.commissionSlab.findMany({
       where: where as any,
@@ -70,6 +79,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
     const { userId, service, minAmount, maxAmount, flat, percent } = parsed.data;
+
+    try {
+      await assertCanAccessUser(userId, admin);
+    } catch {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     if (!flat && !percent)
       return NextResponse.json(

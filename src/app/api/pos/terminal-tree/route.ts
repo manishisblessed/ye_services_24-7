@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { assertServiceEnabled, ServiceDisabledError } from "@/lib/services/guard";
 import { SERVICE_KEYS } from "@/lib/services/catalog";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { flags } from "@/lib/env";
 
@@ -42,10 +42,18 @@ export async function GET(req: Request) {
       { status: 503 }
     );
 
-  // Admins see everything — skip hierarchy scoping.
-  if (isAdminRole(user.role)) {
+  // Platform staff see everything; tenant admins see their tenant's terminals.
+  const isStaff = isPlatformStaff(user);
+  const ownerId = tenantOwnerId(user);
+  const isTenantAdmin = ownerId && hasTenantWideScope(user);
+
+  if (isStaff || isTenantAdmin) {
+    const assignedFilter: Record<string, unknown> = isTenantAdmin
+      ? { assignedUserId: { in: await getTenantMemberIds(ownerId) } }
+      : { assignedUserId: { not: null } };
+
     const terminals = await prisma.posMachine.findMany({
-      where: { assignedUserId: { not: null }, tid: { not: null } },
+      where: { ...assignedFilter, tid: { not: null } },
       select: {
         tid: true,
         mid: true,

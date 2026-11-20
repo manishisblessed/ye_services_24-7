@@ -8,6 +8,7 @@ import { generateRandomPassword } from "@/lib/utils";
 import { NETWORK_TIERS } from "@/lib/hierarchy";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("suspend"), reason: z.string().optional() }),
@@ -50,11 +51,12 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     try {
       admin = await requireAdminActivity(req, {
         action: `user.${body.action}`,
-        roles: ["MASTER_ADMIN", "ADMIN"],
+        roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
         entity: "User",
         entityId: params.id,
         body,
       });
+      await assertCanAccessUser(params.id, admin);
     } catch (e) {
       return toErrorResponse(e);
     }

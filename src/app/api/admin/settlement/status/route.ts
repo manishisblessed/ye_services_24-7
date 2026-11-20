@@ -8,6 +8,7 @@ import {
   settlementList,
   settlementStatus,
 } from "@/lib/partners/sameday-settlement";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin — settlement status & listing.
@@ -20,7 +21,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

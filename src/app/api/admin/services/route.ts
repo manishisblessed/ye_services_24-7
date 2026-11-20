@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { seedServiceRoutes } from "@/lib/services/catalog";
 
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
   }
 
   // Defense in depth: explicit admin-role gate (SUPPORT included).
-  if (!isAdminRole(admin.role))
+  if (!isPlatformStaff(admin))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const json = await req.json().catch(() => ({}));

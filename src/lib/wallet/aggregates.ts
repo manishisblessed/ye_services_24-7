@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { add, dec, toNumber, type Money } from "@/lib/money";
+import type { SessionUser } from "@/lib/auth-server";
+import { tenantUserWhere } from "@/lib/security/ownership";
 
 /**
  * Ledger aggregation layer — read-only rollups over user wallet balances.
@@ -42,10 +44,16 @@ export type CumulativeBalances = {
 };
 
 /** Platform-wide liability rollup, broken down by network tier. */
-export async function getCumulativeBalances(): Promise<CumulativeBalances> {
+export async function getCumulativeBalances(actor?: SessionUser): Promise<CumulativeBalances> {
+  const tenantScope = actor ? await tenantUserWhere(actor) : {};
+  const baseWhere = { role: { in: [...BALANCE_TIERS] as string[] }, deletedAt: null };
+  const where = Object.keys(tenantScope).length
+    ? { AND: [baseWhere, tenantScope] }
+    : baseWhere;
+
   const groups = await prisma.user.groupBy({
     by: ["role"],
-    where: { role: { in: [...BALANCE_TIERS] }, deletedAt: null },
+    where: where as never,
     _count: true,
     _sum: { walletBalance: true, aepsBalance: true, heldBalance: true, lienBalance: true },
   });
@@ -120,11 +128,14 @@ export async function getUserWiseBalances(params: {
   q?: string;
   page?: number;
   pageSize?: number;
+  actor?: SessionUser;
 }): Promise<UserWiseBalances> {
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(200, Math.max(10, params.pageSize ?? 50));
 
-  const where = {
+  const tenantScope = params.actor ? await tenantUserWhere(params.actor) : {};
+
+  const baseWhere = {
     deletedAt: null,
     role:
       params.role && params.role !== "ALL"
@@ -142,6 +153,10 @@ export async function getUserWiseBalances(params: {
         }
       : {}),
   };
+
+  const where = Object.keys(tenantScope).length
+    ? { AND: [baseWhere, tenantScope] }
+    : baseWhere;
 
   const [users, total, sums] = await Promise.all([
     prisma.user.findMany({

@@ -16,7 +16,7 @@ import { Prisma } from "@prisma/client";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { creditWallet, LedgerError } from "@/lib/ledger";
-import { isAdminRole } from "@/lib/security/ownership";
+import { canAccessUser, isPlatformStaff, hasTenantWideScope } from "@/lib/security/ownership";
 import { toNumber } from "@/lib/money";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
 
@@ -72,8 +72,7 @@ export async function GET(
   if (!row)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Users can only view their own requests; admins can view all
-  if (!isAdminRole(user.role) && row.requesterId !== user.id)
+  if (row.requesterId !== user.id && !(await canAccessUser(row.requesterId, user)))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   return NextResponse.json({ collection: row });
@@ -143,7 +142,9 @@ export async function PATCH(
   }
 
   // ── ADMIN-only below ──────────────────────────────────────────────────────
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user) && !hasTenantWideScope(user))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!(await canAccessUser(row.requesterId, user)))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   if (action === "reject") {

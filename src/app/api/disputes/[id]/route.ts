@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { canAccessUser, isPlatformStaff, hasTenantWideScope } from "@/lib/security/ownership";
 
 /**
  * GET /api/disputes/[id] — full ticket with the conversation thread.
@@ -37,8 +37,7 @@ export async function GET(
     },
   });
 
-  const admin = isAdminRole(user.role);
-  if (!dispute || (!admin && dispute.userId !== user.id)) {
+  if (!dispute || !(await canAccessUser(dispute.userId, user))) {
     return NextResponse.json({ error: "Dispute not found" }, { status: 404 });
   }
 
@@ -60,7 +59,7 @@ export async function GET(
       resolution: dispute.resolution,
       reopenCount: dispute.reopenCount,
       createdAt: dispute.createdAt,
-      ...(admin ? { raisedBy: { name: dispute.user.name, role: dispute.user.role, phone: dispute.user.phone } } : {}),
+      ...((isPlatformStaff(user) || hasTenantWideScope(user)) ? { raisedBy: { name: dispute.user.name, role: dispute.user.role, phone: dispute.user.phone } } : {}),
       messages: dispute.messages.map((m) => ({
         id: m.id,
         body: m.body,

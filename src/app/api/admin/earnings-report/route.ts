@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import {
   buildEarningsReport,
   fetchEarningsReportRows,
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
   let user;
   try {
     user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`admin:earnings-report:${user.id}`, RATE_LIMITS.reportQuery);
   } catch (e) {
     return toErrorResponse(e);

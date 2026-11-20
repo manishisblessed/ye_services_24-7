@@ -5,6 +5,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,10 @@ const UpdateBody = z.object({
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
+    try { await assertCanAccessUser(params.id, admin); } catch {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: params.id },
@@ -50,10 +54,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     const admin = await requireAdminActivity(req, {
       action: "user.services.update",
-      roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT"],
+      roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER"],
       entity: "User",
       entityId: params.id,
     });
+    await assertCanAccessUser(params.id, admin);
 
     const parsed = UpdateBody.safeParse(await req.json());
     if (!parsed.success)

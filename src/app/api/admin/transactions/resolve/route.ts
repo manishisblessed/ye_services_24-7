@@ -4,6 +4,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { correctOneTransaction } from "@/lib/recon/reconcileOne";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -47,6 +48,8 @@ export async function POST(req: Request) {
       roles: ["MASTER_ADMIN", "ADMIN"],
       entity: "Transaction",
     });
+    if (!isPlatformStaff(actor))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`txn:resolve:${actor.id}`, RATE_LIMITS.sensitiveWrite);
 
     const parsed = Body.safeParse(await req.json().catch(() => ({})));

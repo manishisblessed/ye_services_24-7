@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
-import { isSelfOrDirectChild, isAdminRole } from "@/lib/security/ownership";
+import { isSelfOrDirectChild, isPlatformStaff } from "@/lib/security/ownership";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { clientIp, logSecurityEvent } from "@/lib/security/audit";
 import {
@@ -45,7 +45,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string; d
 
     // Audit trail: record which downline member's document a parent opened.
     // Skip admins' own views. Best-effort — never blocks the response.
-    if (!isAdminRole(user.role)) {
+    if (!isPlatformStaff(user)) {
       await logSecurityEvent({
         action: "network.kyc_document_viewed",
         userId: user.id,

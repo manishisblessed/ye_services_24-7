@@ -4,7 +4,7 @@ import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { creditWallet, debitWallet, LedgerError, schedulePosRentalRetryIfNeeded } from "@/lib/ledger";
 import { toNumber } from "@/lib/money";
-import { isAdminRole } from "@/lib/security/ownership";
+import { canAccessUser } from "@/lib/security/ownership";
 import { assertKycCurrent, ReKycRequiredError } from "@/lib/security/kycGate";
 import { assertLivenessReady, LivenessRequiredError } from "@/lib/security/livenessGate";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
@@ -54,11 +54,8 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   if (fundReq.status !== "PENDING")
     return NextResponse.json({ error: "Request already processed" }, { status: 409 });
 
-  // Admins (incl. MASTER_ADMIN) may decide any request; otherwise only the
-  // requester's direct parent in the hierarchy may approve/reject.
-  const isAdmin = isAdminRole(user.role);
   const isParent = fundReq.requester.parentId === user.id;
-  if (!isAdmin && !isParent)
+  if (!isParent && !(await canAccessUser(fundReq.requesterId, user)))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   if (parsed.data.action === "reject") {

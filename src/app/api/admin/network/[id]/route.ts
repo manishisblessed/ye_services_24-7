@@ -11,6 +11,7 @@ import { generateRandomPassword } from "@/lib/utils";
 import { dec, toNumber } from "@/lib/money";
 import { istMidnightForDate } from "@/lib/rekyc/dates";
 import { isNetworkTier } from "@/lib/security/kycGate";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,10 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+    try { await assertCanAccessUser(params.id, admin); } catch {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const u = await prisma.user.findFirst({
       where: { id: params.id, deletedAt: null },
       select: {
@@ -155,10 +159,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     admin = await requireAdminActivity(req, {
       action: "network.user.update",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
       entityId: params.id,
     });
+    await assertCanAccessUser(params.id, admin);
   } catch (e) {
     return toErrorResponse(e);
   }

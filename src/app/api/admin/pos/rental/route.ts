@@ -10,6 +10,7 @@ import { dec, toNumber } from "@/lib/money";
 import { debitWallet, LedgerError } from "@/lib/ledger";
 import { runPosRentalBilling, rentalBillingSummary, istPeriodKey, computeRentalAmounts } from "@/lib/pos/rental";
 import { getSetting, setSetting } from "@/lib/settings";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -18,7 +19,9 @@ export const maxDuration = 60;
 /** GET — rental console: plans, subscriptions, invoices, and revenue rollup. */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const rentalAdmin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    if (!isPlatformStaff(rentalAdmin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const url = new URL(req.url);
     const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
@@ -194,6 +197,8 @@ export async function POST(req: Request) {
       roles: ["MASTER_ADMIN", "ADMIN"],
       entity: "PosRental",
     });
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

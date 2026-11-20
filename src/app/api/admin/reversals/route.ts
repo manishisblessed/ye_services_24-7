@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds, assertCanAccessUser } from "@/lib/security/ownership";
 import { requireStepUp, readStepUpCode } from "@/lib/security/stepUp";
 import { recordAdminActivity, readActionLocation } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
@@ -44,7 +45,12 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
     const pageSize = 25;
 
-    const where = status !== "all" ? { status: status as never } : {};
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
+    const where: Record<string, unknown> = {};
+    if (status !== "all") where.status = status;
+    if (memberIds) where.targetUserId = { in: memberIds };
     const [rows, total] = await Promise.all([
       prisma.reversal.findMany({
         where,
@@ -137,6 +143,12 @@ export async function POST(req: Request) {
   const parsed = CreateBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
+  try {
+    await assertCanAccessUser(parsed.data.targetUserId, admin);
+  } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   try {
     const rev = await createReversal({ actorId: admin.id, ...parsed.data });

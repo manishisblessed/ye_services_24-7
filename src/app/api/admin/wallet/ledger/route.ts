@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { dec, toNumber } from "@/lib/money";
 import { buildPayoutLedgerMemos } from "@/lib/payout/ledgerMemos";
 import { buildBreakdowns } from "@/lib/wallet/breakdown";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ const MEMO_MERGE_CAP = 5_000;
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE", "WHITELABEL_PARTNER");
     const { searchParams } = new URL(req.url);
 
     const q = searchParams.get("q") ?? "";
@@ -35,7 +36,11 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(searchParams.get("page") ?? 1));
     const pageSize = Math.min(100, Math.max(10, Number(searchParams.get("pageSize") ?? 50)));
 
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
     const where: Record<string, unknown> = {};
+    if (memberIds) where.userId = { in: memberIds };
     if (userId) where.userId = userId;
     if (walletType && ["PRIMARY", "AEPS"].includes(walletType)) where.walletType = walletType;
     if (direction && ["CREDIT", "DEBIT"].includes(direction)) where.direction = direction;

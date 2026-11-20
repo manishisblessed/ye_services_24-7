@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import { getSetting, setSetting } from "@/lib/settings";
@@ -21,7 +22,9 @@ export const maxDuration = 60;
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const url = new URL(req.url);
     const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { prisma } from "@/lib/db";
 import {
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     return toErrorResponse(e);
   }
 
-  if (!isAdminRole(admin.role))
+  if (!isPlatformStaff(admin))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {

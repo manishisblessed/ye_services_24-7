@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Role, Prisma } from "@prisma/client";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { isAdminRole, getDescendantIds } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -41,10 +41,7 @@ export async function GET(req: Request) {
   }
   const { role, q } = parsed.data;
 
-  // Ownership scope: admins see everyone, otherwise self + downline.
-  const allowedIds = isAdminRole(user.role)
-    ? null
-    : [user.id, ...(await getDescendantIds(user.id))];
+  const allowedIds = await scopedUserIds(user);
 
   const where: Prisma.UserWhereInput = {
     deletedAt: null,

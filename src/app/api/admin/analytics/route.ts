@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { dec, toNumber } from "@/lib/money";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,10 @@ export const maxDuration = 60;
  */
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const url = new URL(req.url);
     const to = url.searchParams.get("to")
@@ -26,7 +30,7 @@ export async function GET(req: Request) {
       ? new Date(`${url.searchParams.get("from")}T00:00:00.000Z`)
       : new Date(to.getTime() - 30 * 24 * 3_600_000);
 
-    const range = { createdAt: { gte: from, lte: to } };
+    const range = { createdAt: { gte: from, lte: to }, ...(memberIds ? { userId: { in: memberIds } } : {}) };
 
     const [byService, byStatus, daily, topUsersRaw] = await Promise.all([
       prisma.transaction.groupBy({
@@ -41,16 +45,26 @@ export async function GET(req: Request) {
         _count: true,
         _sum: { amount: true },
       }),
-      // Daily success volume — raw SQL for the date bucket (IST day).
-      prisma.$queryRaw<Array<{ day: string; count: bigint; volume: number }>>`
-        SELECT to_char("createdAt" + interval '330 minutes', 'YYYY-MM-DD') AS day,
-               COUNT(*)::bigint AS count,
-               COALESCE(SUM(amount), 0)::float AS volume
-        FROM "Transaction"
-        WHERE "createdAt" >= ${from} AND "createdAt" <= ${to} AND status = 'SUCCESS'
-        GROUP BY 1
-        ORDER BY 1
-      `,
+      memberIds
+        ? prisma.$queryRaw<Array<{ day: string; count: bigint; volume: number }>>`
+            SELECT to_char("createdAt" + interval '330 minutes', 'YYYY-MM-DD') AS day,
+                   COUNT(*)::bigint AS count,
+                   COALESCE(SUM(amount), 0)::float AS volume
+            FROM "Transaction"
+            WHERE "createdAt" >= ${from} AND "createdAt" <= ${to} AND status = 'SUCCESS'
+              AND "userId" IN (SELECT unnest(${memberIds}::text[]))
+            GROUP BY 1
+            ORDER BY 1
+          `
+        : prisma.$queryRaw<Array<{ day: string; count: bigint; volume: number }>>`
+            SELECT to_char("createdAt" + interval '330 minutes', 'YYYY-MM-DD') AS day,
+                   COUNT(*)::bigint AS count,
+                   COALESCE(SUM(amount), 0)::float AS volume
+            FROM "Transaction"
+            WHERE "createdAt" >= ${from} AND "createdAt" <= ${to} AND status = 'SUCCESS'
+            GROUP BY 1
+            ORDER BY 1
+          `,
       prisma.transaction.groupBy({
         by: ["userId"],
         where: { ...range, status: "SUCCESS" },

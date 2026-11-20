@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/db";
 import { getQrClaimOverview } from "@/lib/qr/claims";
@@ -41,7 +42,9 @@ const CreateBody = z
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

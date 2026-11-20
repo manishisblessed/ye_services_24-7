@@ -4,6 +4,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,8 @@ export async function POST(req: Request) {
       roles: ["MASTER_ADMIN", "ADMIN"],
       entity: "User",
     });
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const parsed = Body.safeParse(await req.json());
     if (!parsed.success)

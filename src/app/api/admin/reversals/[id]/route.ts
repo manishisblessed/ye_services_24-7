@@ -12,6 +12,7 @@ import {
   canManageReversals,
   ReversalError,
 } from "@/lib/reversal/service";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -46,6 +47,16 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     });
   } catch (e) {
     return toErrorResponse(e);
+  }
+
+  const reversal = await prisma.reversal.findUnique({
+    where: { id: params.id },
+    select: { targetUserId: true },
+  });
+  if (!reversal)
+    return NextResponse.json({ error: "Reversal not found" }, { status: 404 });
+  try { await assertCanAccessUser(reversal.targetUserId, admin); } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})));

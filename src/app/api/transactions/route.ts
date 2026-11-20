@@ -5,7 +5,7 @@ import { requireAuth, AuthError } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
 import { prisma } from "@/lib/db";
 import { toNumber } from "@/lib/money";
-import { isAdminRole } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { bankLogoSlug } from "@/lib/bank-logos";
 import { resolveTxnBankName } from "@/lib/txn/bankName";
 
@@ -46,9 +46,10 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") ?? "").trim();
   const statusFilter = searchParams.get("status");
 
-  const where: Record<string, unknown> = isAdminRole(user.role)
-    ? {}
-    : { userId: user.id };
+  const allowedIds = await scopedUserIds(user);
+  const where: Record<string, unknown> = allowedIds
+    ? { userId: { in: allowedIds } }
+    : {};
 
   if (statusFilter && statusFilter !== "All") {
     const map: Record<string, TxnStatus[]> = {

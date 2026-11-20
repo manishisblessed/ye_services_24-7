@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { canManageJoinRequests } from "@/lib/onboarding/joinAccess";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 const VALID_STATUSES = ["NEW", "CONTACTED", "INVITED", "CLOSED", "REJECTED"];
 
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
     throw e;
   }
 
-  if (!canManageJoinRequests(user)) {
+  if (!canManageJoinRequests(user) || !isPlatformStaff(user)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

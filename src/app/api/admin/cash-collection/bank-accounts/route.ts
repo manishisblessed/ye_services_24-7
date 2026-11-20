@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 const CreateBody = z
   .object({
@@ -46,7 +46,7 @@ export async function GET() {
     throw e;
   }
 
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const accounts = await prisma.companyBankAccount.findMany({
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     throw e;
   }
 
-  if (!isAdminRole(user.role))
+  if (!isPlatformStaff(user))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const parsed = CreateBody.safeParse(await req.json());

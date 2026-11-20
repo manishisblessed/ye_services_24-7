@@ -6,6 +6,7 @@ import {
   samedaySettlementConfigured,
   settlementCharges,
 } from "@/lib/partners/sameday-settlement";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin — settlement charge preview from the Same Day partner wallet.
@@ -40,7 +41,9 @@ function settlementDisabled(): NextResponse {
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

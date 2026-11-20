@@ -4,6 +4,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
   try {
     admin = await requireAdminActivity(req, {
       action: "user.instant_settlement.toggle",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "User",
     });
   } catch (e) {
@@ -34,6 +35,10 @@ export async function POST(req: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   const { userId, enabled } = parsed.data;
+
+  try { await assertCanAccessUser(userId, admin); } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const user = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null },

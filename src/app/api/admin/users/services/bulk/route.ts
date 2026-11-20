@@ -4,6 +4,7 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
+import { tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -22,15 +23,26 @@ export async function POST(req: Request) {
   try {
     const admin = await requireAdminActivity(req, {
       action: "user.services.bulk-update",
-      roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT"],
+      roles: ["MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER"],
       entity: "User",
     });
+
+    const ownerId = tenantOwnerId(admin);
+    const tenantIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const parsed = BulkBody.safeParse(await req.json());
     if (!parsed.success)
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-    const { userIds, serviceKeys, action } = parsed.data;
+    let { userIds } = parsed.data;
+    const { serviceKeys, action } = parsed.data;
+
+    if (tenantIds) {
+      const tenantSet = new Set(tenantIds);
+      userIds = userIds.filter((id) => tenantSet.has(id));
+      if (userIds.length === 0)
+        return NextResponse.json({ error: "No accessible users" }, { status: 403 });
+    }
 
     // Only known service keys can be assigned.
     const knownRoutes = await prisma.serviceRoute.findMany({

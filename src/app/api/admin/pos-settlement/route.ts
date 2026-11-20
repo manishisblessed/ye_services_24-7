@@ -4,6 +4,7 @@ import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 import { toNumber } from "@/lib/money";
 import { getSetting, setSetting } from "@/lib/settings";
 import { runPosT1SettlementSweep, runPosInstantSettlementSweep, getInstantLimitUsage } from "@/lib/settlement/pos";
@@ -22,13 +23,17 @@ export const dynamic = "force-dynamic";
  * recent entries, and configuration.
  */
 export async function GET(req: Request) {
+  let admin;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE", "WHITELABEL_PARTNER");
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;
   }
+
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
@@ -37,7 +42,12 @@ export async function GET(req: Request) {
   const pageSize = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize")) || 25));
 
   const where: Record<string, unknown> = {};
-  if (userId) where.userId = userId;
+  if (memberIds) where.userId = { in: memberIds };
+  if (userId) {
+    if (memberIds && !memberIds.includes(userId))
+      return NextResponse.json({ entries: [], pagination: { page: 1, pageSize, total: 0, totalPages: 1 } });
+    where.userId = userId;
+  }
   if (status) where.status = status;
 
   const [total, entries, config, t1Config, ingestConfig, instantButton, counts, instantLimit, instantByUser] =
@@ -62,11 +72,9 @@ export async function GET(req: Request) {
         _sum: { netAmount: true },
       }),
       getInstantLimitUsage(),
-      // Per-user NET instant-settlement taken TODAY (IST) — powers the "who has
-      // used the instant limit" breakdown on the dashboard.
       prisma.posSettlementEntry.groupBy({
         by: ["userId"],
-        where: { mode: "INSTANT", status: "SETTLED", settledAt: { gte: startOfTodayIst() } },
+        where: { mode: "INSTANT", status: "SETTLED", settledAt: { gte: startOfTodayIst() }, ...(memberIds ? { userId: { in: memberIds } } : {}) },
         _count: true,
         _sum: { netAmount: true },
       }),
@@ -160,6 +168,8 @@ export async function POST(req: Request) {
   } catch (e) {
     return toErrorResponse(e);
   }
+  if (!isPlatformStaff(admin))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const parsed = ActionBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)

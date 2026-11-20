@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * AML alert queue (Phase 5).
@@ -33,7 +34,9 @@ const PatchBody = z.object({
 
 export async function GET(req: Request) {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }
@@ -82,6 +85,8 @@ export async function PATCH(req: Request) {
       roles: ["MASTER_ADMIN", "ADMIN"],
       entity: "AmlAlert",
     });
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`aml:review:${admin.id}`, RATE_LIMITS.sensitiveWrite);
   } catch (e) {
     return toErrorResponse(e);

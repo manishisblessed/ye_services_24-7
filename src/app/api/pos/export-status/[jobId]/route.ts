@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth-server";
 import { getPosExportStatus } from "@/lib/partners/sameday-pos";
 import { prisma } from "@/lib/db";
 import { flags } from "@/lib/env";
-import { isAdminRole, scopeUserIdFilter } from "@/lib/security/ownership";
+import { isPlatformStaff, scopeUserIdFilter } from "@/lib/security/ownership";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 
 export const fetchCache = "force-no-store";
@@ -33,7 +33,7 @@ export async function GET(_req: Request, props: { params: Promise<{ jobId: strin
 
   // Ownership: a non-admin may only poll an export job they created. We match
   // against the audit row written when the job was created (within their scope).
-  if (!isAdminRole(user.role)) {
+  if (!isPlatformStaff(user)) {
     const scope = await scopeUserIdFilter(user);
     const owns = await prisma.auditLog.findFirst({
       where: { action: "pos.export.create", entityId: jobId, userId: scope.userId },

@@ -45,7 +45,7 @@ export class WalletLienError extends Error {
  * sub-admin (DB role SUPPORT) may only if granted the wallet-ops tab.
  */
 export function canManageLiens(user: { role: string; allowedTabs?: string[] }): boolean {
-  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN") return true;
+  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN" || user.role === "WHITELABEL_PARTNER") return true;
   if (user.role === "SUPPORT") return (user.allowedTabs ?? []).includes("wallet-ops");
   return false;
 }

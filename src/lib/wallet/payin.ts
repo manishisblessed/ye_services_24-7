@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { creditWallet } from "@/lib/ledger";
 import { getPayinAccountId } from "@/lib/commission/revenue";
 import { add, dec, gt, toNumber, type Money } from "@/lib/money";
+import type { SessionUser } from "@/lib/auth-server";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds, hasTenantWideScope } from "@/lib/security/ownership";
 
 /**
  * Company PAYIN monitoring wallet.
@@ -260,9 +262,18 @@ export type TopupsByUser = {
  * to real top-ups (refId `TOPUP…`) so the PG/QR commission placeholders that
  * reuse the WALLET_TOPUP service code are excluded. Read-only monitor view.
  */
-export async function getTopupsByUser(period: PayinPeriod): Promise<TopupsByUser> {
+export async function getTopupsByUser(period: PayinPeriod, actor?: SessionUser): Promise<TopupsByUser> {
   const since = istPeriodStart(period);
   const asOf = new Date().toISOString();
+
+  const userIdFilter: Record<string, unknown> = {};
+  if (actor && !isPlatformStaff(actor)) {
+    const ownerId = tenantOwnerId(actor);
+    if (ownerId && hasTenantWideScope(actor)) {
+      const memberIds = await getTenantMemberIds(ownerId);
+      userIdFilter.userId = { in: memberIds };
+    }
+  }
 
   const txns = await prisma.transaction.findMany({
     where: {
@@ -270,6 +281,7 @@ export async function getTopupsByUser(period: PayinPeriod): Promise<TopupsByUser
       status: "SUCCESS",
       refId: { startsWith: "TOPUP" },
       createdAt: { gte: since },
+      ...userIdFilter,
     },
     orderBy: { createdAt: "desc" },
     take: 1000,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { dec, toNumber } from "@/lib/money";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
 
     const machine = await prisma.posMachine.findFirst({
       where: { OR: [{ id: params.id }, { serial: params.id }, { tid: params.id }] },
@@ -33,6 +34,13 @@ export async function GET(_req: Request, props: { params: Promise<{ id: string }
       },
     });
     if (!machine) return NextResponse.json({ error: "Machine not found" }, { status: 404 });
+
+    if (!isPlatformStaff(admin)) {
+      const ownerId = tenantOwnerId(admin);
+      const memberIds = ownerId ? await getTenantMemberIds(ownerId) : [];
+      if (!machine.assignedUser || !memberIds.includes(machine.assignedUser.id))
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Resolve actor/party names for the timeline in one query.
     const logUserIds = Array.from(

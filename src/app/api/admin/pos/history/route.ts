@@ -6,6 +6,7 @@ import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import type { Prisma } from "@prisma/client";
+import { tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -22,13 +23,17 @@ const CSV_ROW_CAP = 5000;
  * `format=csv` streams the filtered report (capped at 5,000 rows).
  */
 export async function GET(req: Request) {
+  let admin;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;
   }
+
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim() || "";
@@ -47,7 +52,12 @@ export async function GET(req: Request) {
   const where: Prisma.PosAssignmentLogWhereInput = {};
   if (action) where.action = action;
   if (status) where.status = status;
-  if (userId) where.OR = [{ toUserId: userId }, { fromUserId: userId }];
+  if (memberIds) where.OR = [{ toUserId: { in: memberIds } }, { fromUserId: { in: memberIds } }];
+  if (userId) {
+    if (memberIds && !memberIds.includes(userId))
+      return NextResponse.json({ entries: [], summary: { assignments: 0, returns: 0, reassignments: 0, active: 0 }, pagination: { page: 1, pageSize, total: 0, totalPages: 1, hasPrev: false, hasNext: false } });
+    where.OR = [{ toUserId: userId }, { fromUserId: userId }];
+  }
   if (from || to) {
     where.createdAt = {};
     if (from) where.createdAt.gte = new Date(`${from}T00:00:00.000+05:30`);

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 
@@ -12,7 +13,9 @@ export const dynamic = "force-dynamic";
 /** GET — all company MDR floor entries. */
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const floors = await prisma.companyMdrFloor.findMany({
       orderBy: [{ serviceKind: "asc" }, { paymentMode: "asc" }, { minAmount: "asc" }],
     });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 
 export const fetchCache = "force-no-store";
@@ -34,7 +34,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     return toErrorResponse(e);
   }
 
-  if (!isAdminRole(admin.role))
+  if (!isPlatformStaff(admin))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const parsed = UpdateBody.safeParse(await req.json().catch(() => ({})));

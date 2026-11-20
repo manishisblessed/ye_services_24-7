@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
-import { isAdminRole, getDescendantIds } from "@/lib/security/ownership";
+import { isPlatformStaff, assertCanAccessUser, getDescendantIds } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 
 export const fetchCache = "force-no-store";
@@ -21,11 +21,13 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   try {
     const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
-    if (!isAdminRole(admin.role))
+    if (!isPlatformStaff(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const userId = new URL(req.url).searchParams.get("userId")?.trim();
     if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
+
+    await assertCanAccessUser(userId, admin);
 
     const user = await prisma.user.findFirst({
       where: { id: userId, deletedAt: null },

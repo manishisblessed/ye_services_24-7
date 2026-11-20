@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { getCardClassificationSetting } from "@/lib/settings";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,9 @@ function parseRail(kind: string): "PG" | "QR" | "BBPS" | "PAYOUT" | null {
 export async function GET(_req: Request, props: { params: Promise<{ kind: string }> }) {
   const params = await props.params;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const rail = parseRail(params.kind);
     if (!rail) return NextResponse.json({ error: "Unknown rail" }, { status: 404 });
 

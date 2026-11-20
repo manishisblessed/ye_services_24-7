@@ -6,6 +6,7 @@ import {
   samedaySettlementConfigured,
   settlementListAccounts,
 } from "@/lib/partners/sameday-settlement";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin — Same Day settlement beneficiary accounts.
@@ -38,7 +39,9 @@ function settlementDisabled(): NextResponse {
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     return toErrorResponse(e);
   }

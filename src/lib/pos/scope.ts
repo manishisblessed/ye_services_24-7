@@ -1,6 +1,6 @@
 import type { SessionUser } from "@/lib/auth-server";
 import { scopePosTerminals, resolveCompanyTerminals } from "@/lib/pos/assignments";
-import { isAdminRole } from "@/lib/security/ownership";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Ownership scoping for the POS transaction read-model, shared by the live feed
@@ -27,7 +27,7 @@ export async function resolvePosScope(
 
   if (companyFilter) {
     // Company filtering spans terminals across many holders → admin-only.
-    if (!isAdminRole(user.role))
+    if (!isPlatformStaff(user))
       return { ok: false, status: 403, error: "Company filtering is available to admins only" };
     const list = await resolveCompanyTerminals(companyFilter);
     let terminals = list.map((t) => ({ tid: t.tid, from: t.assignedAt }));

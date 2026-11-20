@@ -129,6 +129,19 @@ export function configNamespace(user: TenantActor): string | null {
   return tenantOwnerId(user);
 }
 
+/**
+ * The user ids this caller may see: null means unrestricted (platform staff),
+ * otherwise the concrete list (tenant members OR self+downline). Drop-in
+ * replacement for `isAdminRole(role) ? null : [self, ...descendants]`.
+ */
+export async function scopedUserIds(user: SessionUser): Promise<string[] | null> {
+  if (isPlatformStaff(user)) return null;
+  const ownerId = tenantOwnerId(user);
+  if (ownerId && hasTenantWideScope(user)) return getTenantMemberIds(ownerId);
+  const descendants = await getDescendantIds(user.id);
+  return [user.id, ...descendants];
+}
+
 /** Throw 403 unless `user` owns (or administers) the given resource owner id.
  *  Only NATIVE platform staff get the blanket bypass; tenant staff must prove
  *  access via `assertCanAccessUser` (tenant/hierarchy aware). */
@@ -187,12 +200,13 @@ export async function getDirectChildIds(userId: string): Promise<string[]> {
   return rows.map((r) => r.id);
 }
 
-/** True if `targetUserId` is a DIRECT child of `user` (or `user` is self/admin). */
+/** True if `targetUserId` is a DIRECT child of `user` (or admin within tenant). */
 export async function isSelfOrDirectChild(
   targetUserId: string,
   user: SessionUser
 ): Promise<boolean> {
-  if (isAdminRole(user.role)) return true;
+  if (isPlatformStaff(user)) return true;
+  if (hasTenantWideScope(user)) return canAccessUser(targetUserId, user);
   if (targetUserId === user.id) return true;
   const child = await prisma.user.findFirst({
     where: { id: targetUserId, parentId: user.id, deletedAt: null },

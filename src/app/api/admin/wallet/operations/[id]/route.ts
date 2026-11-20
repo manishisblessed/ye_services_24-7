@@ -12,6 +12,7 @@ import {
   canManageWalletOps,
   WalletOpError,
 } from "@/lib/wallet/operations";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -51,6 +52,18 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   const parsed = ActionBody.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
+  const opRecord = await prisma.walletOperation.findUnique({
+    where: { id: params.id },
+    select: { targetUserId: true },
+  });
+  if (!opRecord)
+    return NextResponse.json({ error: "Operation not found" }, { status: 404 });
+  try {
+    await assertCanAccessUser(opRecord.targetUserId, admin);
+  } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   try {
     const op =

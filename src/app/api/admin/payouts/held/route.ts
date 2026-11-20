@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { listHeldPayouts } from "@/lib/payout/service";
 import { toNumber } from "@/lib/money";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 /**
  * Admin "Held payouts" queue.
@@ -19,7 +20,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const items = await listHeldPayouts(200);
 

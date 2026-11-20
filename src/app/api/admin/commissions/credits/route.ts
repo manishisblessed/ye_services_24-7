@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toNumber } from "@/lib/money";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -13,13 +14,17 @@ export const dynamic = "force-dynamic";
  * userId, service, tier, date range. Supports pagination and summary stats.
  */
 export async function GET(req: Request) {
+  let admin;
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE", "WHITELABEL_PARTNER");
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;
   }
+
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
@@ -31,7 +36,12 @@ export async function GET(req: Request) {
   const pageSize = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize")) || 25));
 
   const where: Record<string, unknown> = {};
-  if (userId) where.userId = userId;
+  if (memberIds) where.userId = { in: memberIds };
+  if (userId) {
+    if (memberIds && !memberIds.includes(userId))
+      return NextResponse.json({ credits: [], summary: { byTier: [] }, pagination: { page: 1, pageSize: 25, total: 0, totalPages: 1 } });
+    where.userId = userId;
+  }
   if (service) where.service = service;
   if (tier) where.tier = tier;
   if (from || to) {

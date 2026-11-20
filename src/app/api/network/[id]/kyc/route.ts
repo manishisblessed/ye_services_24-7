@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
-import { isSelfOrDirectChild, isAdminRole } from "@/lib/security/ownership";
+import { isSelfOrDirectChild, isPlatformStaff } from "@/lib/security/ownership";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { clientIp, logSecurityEvent } from "@/lib/security/audit";
 import {
@@ -50,7 +50,7 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
     // Audit trail: a parent opened a downline member's KYC/documents. Skip
     // admins' own views (they have the dedicated KYC console). Best-effort —
     // never blocks the response.
-    if (!isAdminRole(user.role)) {
+    if (!isPlatformStaff(user)) {
       await logSecurityEvent({
         action: "network.kyc_viewed",
         userId: user.id,

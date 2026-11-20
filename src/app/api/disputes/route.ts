@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isAdminRole } from "@/lib/security/ownership";
+import { scopedUserIds } from "@/lib/security/ownership";
 import { createDispute } from "@/lib/disputes/service";
 
 /**
@@ -36,13 +36,14 @@ export async function GET(req: Request) {
   }
 
   const url = new URL(req.url);
-  const admin = isAdminRole(user.role);
+  const allowedIds = await scopedUserIds(user);
+  const isStaff = !allowedIds;
   const statusParam = STATUS.safeParse(url.searchParams.get("status"));
 
   const where: Prisma.DisputeWhereInput = {
-    ...(admin ? {} : { userId: user.id }),
+    ...(isStaff ? {} : allowedIds.length === 1 ? { userId: allowedIds[0] } : { userId: { in: allowedIds } }),
     ...(statusParam.success ? { status: statusParam.data } : {}),
-    ...(admin && url.searchParams.get("breached") === "true"
+    ...(isStaff && url.searchParams.get("breached") === "true"
       ? { slaBreachedAt: { not: null }, status: { in: ["OPEN", "UNDER_REVIEW", "AWAITING_USER"] } }
       : {}),
   };
@@ -71,7 +72,7 @@ export async function GET(req: Request) {
       resolvedAt: d.resolvedAt,
       messageCount: d._count.messages,
       createdAt: d.createdAt,
-      ...(admin ? { raisedBy: { name: d.user.name, role: d.user.role, phone: d.user.phone } } : {}),
+      ...(isStaff ? { raisedBy: { name: d.user.name, role: d.user.role, phone: d.user.phone } } : {}),
     })),
   });
 }

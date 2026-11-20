@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { prisma } from "@/lib/db";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 const UpdateBody = z.object({
   minAmount: z.number().min(0).optional(),
@@ -20,7 +21,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     const admin = await requireAdminActivity(req, {
       action: "commission.update",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "CommissionSlab",
       entityId: params.id,
     });
@@ -33,6 +34,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     });
     if (!existing)
       return NextResponse.json({ error: "Slab not found" }, { status: 404 });
+    if (existing.userId) await assertCanAccessUser(existing.userId, admin);
 
     const updated = await prisma.commissionSlab.update({
       where: { id: params.id },
@@ -69,7 +71,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   try {
     const admin = await requireAdminActivity(req, {
       action: "commission.deactivate",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "CommissionSlab",
       entityId: params.id,
     });
@@ -79,6 +81,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
     });
     if (!existing)
       return NextResponse.json({ error: "Slab not found" }, { status: 404 });
+    if (existing.userId) await assertCanAccessUser(existing.userId, admin);
 
     await prisma.commissionSlab.update({
       where: { id: params.id },

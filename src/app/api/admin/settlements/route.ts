@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
+import { isPlatformStaff, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 
@@ -8,7 +9,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
+
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const now = new Date();
     const days: { id: string; cycle: string; date: string; dateObj: Date }[] = [];
@@ -34,6 +38,7 @@ export async function GET() {
           where: {
             status: "SUCCESS",
             createdAt: { gte: dayStart, lte: dayEnd },
+            ...(memberIds ? { userId: { in: memberIds } } : {}),
           },
           _sum: { amount: true },
           _count: true,

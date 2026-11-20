@@ -8,6 +8,7 @@ import {
 } from "@/lib/wallet/aggregates";
 import { getPayinSummary, getLivePayinToday, getTopupsByUser, type PayinPeriod } from "@/lib/wallet/payin";
 import { getRevenueWalletSummary } from "@/lib/commission/revenue";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ const PAYIN_PERIODS: readonly PayinPeriod[] = ["today", "week", "month", "year"]
  */
 export async function GET(req: Request) {
   try {
-    const user = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE", "WHITELABEL_PARTNER");
     const { searchParams } = new URL(req.url);
     const view = searchParams.get("view") ?? "cumulative";
 
@@ -37,7 +38,10 @@ export async function GET(req: Request) {
       return NextResponse.json(await getRevenueWalletSummary());
     }
 
+    // Payin is platform-level acquiring data: only native platform staff see it.
     if (view === "payin-today") {
+      if (!isPlatformStaff(user))
+        return NextResponse.json({ totalCount: 0, totalAmount: 0, rails: [], since: new Date().toISOString(), asOf: new Date().toISOString() });
       return NextResponse.json(await getLivePayinToday());
     }
 
@@ -46,6 +50,8 @@ export async function GET(req: Request) {
       const period = (PAYIN_PERIODS as readonly string[]).includes(periodParam)
         ? (periodParam as PayinPeriod)
         : "today";
+      if (!isPlatformStaff(user))
+        return NextResponse.json({ accountId: null, balance: 0, period, since: new Date().toISOString(), totalCount: 0, totalAmount: 0, rails: [], asOf: new Date().toISOString() });
       return NextResponse.json(await getPayinSummary(period));
     }
 
@@ -54,7 +60,7 @@ export async function GET(req: Request) {
       const period = (PAYIN_PERIODS as readonly string[]).includes(periodParam)
         ? (periodParam as PayinPeriod)
         : "today";
-      return NextResponse.json(await getTopupsByUser(period));
+      return NextResponse.json(await getTopupsByUser(period, user));
     }
 
     if (view === "users") {
@@ -67,11 +73,12 @@ export async function GET(req: Request) {
         q: searchParams.get("q") ?? undefined,
         page: Number(searchParams.get("page") ?? 1),
         pageSize: Number(searchParams.get("pageSize") ?? 50),
+        actor: user,
       });
       return NextResponse.json(data);
     }
 
-    return NextResponse.json(await getCumulativeBalances());
+    return NextResponse.json(await getCumulativeBalances(user));
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });

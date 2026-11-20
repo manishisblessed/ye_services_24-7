@@ -7,6 +7,7 @@ import { clientIp, logSecurityEvent } from "@/lib/security/audit";
 import { decryptField } from "@/lib/crypto/fieldEncryption";
 import { presignKycVideoGet } from "@/lib/storage/s3Kyc";
 import { toErrorResponse } from "@/lib/security/apiErrors";
+import { assertCanAccessUser } from "@/lib/security/ownership";
 
 /**
  * Audited admin access to a user's onboarding liveness video (Phase 14).
@@ -26,7 +27,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request, props: { params: Promise<{ userId: string }> }) {
   const params = await props.params;
   try {
-    const admin = await requireRole("ADMIN", "MASTER_ADMIN");
+    const admin = await requireRole("ADMIN", "MASTER_ADMIN", "WHITELABEL_PARTNER");
+    await assertCanAccessUser(params.userId, admin);
     const ip = clientIp(req);
     const userAgent = req.headers.get("user-agent");
 
