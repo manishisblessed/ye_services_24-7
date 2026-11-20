@@ -71,6 +71,9 @@ const TENANT_ADMIN_PAGE_ALLOWLIST = [
   // Rate Schemes: tenant-isolated per platformOwnerId. A tenant admin/partner
   // manages ONLY their own schemes & slabs (API scopes every row by namespace).
   "/dashboard/admin/schemes",
+  // Invites: tenant-isolated. WLP admin can send invites for SD/MD/DT/RT
+  // within their own tenant boundary (API scopes by platformOwnerId).
+  "/dashboard/admin/invites",
 ];
 
 const TENANT_ADMIN_API_ALLOWLIST = [

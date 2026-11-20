@@ -6,6 +6,7 @@ import { RetailerOverview } from "@/components/dashboard/overview/RetailerOvervi
 import { DistributorOverview } from "@/components/dashboard/overview/DistributorOverview";
 import { MasterOverview } from "@/components/dashboard/overview/MasterOverview";
 import { AdminOverview } from "@/components/dashboard/overview/AdminOverview";
+import { WhitelabelAdminOverview } from "@/components/dashboard/overview/WhitelabelAdminOverview";
 import { TodaysBusinessOverview } from "@/components/dashboard/overview/TodaysBusinessOverview";
 import { NetworkOverview } from "@/components/dashboard/overview/NetworkOverview";
 import { RetailerBusinessOverview } from "@/components/dashboard/overview/RetailerBusinessOverview";
@@ -37,7 +38,18 @@ export default function DashboardHomePage() {
     ((dbRole === "ADMIN" || dbRole === "SUPPORT") &&
       allowedTabs.includes(BUSINESS_OVERVIEW_TAB));
 
+  // Tenant members (WLP root, tenant-owner, or any user with platformOwnerId)
+  // must not see the platform-wide AdminOverview — route them to their own
+  // tenant-scoped overview instead.
+  const isTenantMember =
+    displayRole === "whitelabel-partner" ||
+    (session.user as any)?.isTenantOwner === true ||
+    Boolean((session.user as any)?.platformOwnerId);
+
   const overview = (() => {
+    if (isTenantMember) {
+      return <WhitelabelAdminOverview session={legacySession as any} />;
+    }
     switch (displayRole) {
       case "master-admin":
       case "admin":
@@ -66,6 +78,9 @@ export default function DashboardHomePage() {
   // Retailers are the transacting leaf — they get a self-scoped "Today's
   // Business" summary of their own activity across all rails.
   const isRetailer = displayRole === "retailer";
+
+  // Tenant admins only see their own overview — no platform-wide panels.
+  if (isTenantMember) return overview;
 
   if (!canSeeBusinessOverview && !isNetworkTier && !isRetailer) return overview;
 

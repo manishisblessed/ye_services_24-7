@@ -274,12 +274,15 @@ export async function GET(req: Request) {
   // Master admin sees every invite. A plain admin can see invites either when
   // master admin has explicitly granted the "invites" tab, OR when their
   // allowedTabs is empty (empty = full access, mirroring the sidebar).
-  // In either case their view is scoped to their own hierarchy.
+  // WHITELABEL_PARTNER (tenant root) sees invites scoped to their own tenant.
+  // Tenant ADMIN/SUPPORT members also see their tenant's invites.
   const isMasterAdmin = user.role === "MASTER_ADMIN";
+  const isWlpRoot = user.role === "WHITELABEL_PARTNER";
+  const isTenantMember = !isMasterAdmin && !isWlpRoot && Boolean((user as any).platformOwnerId);
   const adminTabs = user.allowedTabs ?? [];
   const isPermittedAdmin =
     user.role === "ADMIN" && (adminTabs.length === 0 || adminTabs.includes("invites"));
-  if (!isMasterAdmin && !isPermittedAdmin) {
+  if (!isMasterAdmin && !isWlpRoot && !isPermittedAdmin && !isTenantMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -292,7 +295,13 @@ export async function GET(req: Request) {
   const now = new Date();
   const statusWhere = statusFilterWhere(status, now);
   let where: any = statusWhere;
-  if (!isMasterAdmin) {
+  if (isWlpRoot) {
+    // WLP partner sees all invites within their own tenant namespace.
+    where = { AND: [statusWhere, { platformOwnerId: user.id }] };
+  } else if (isTenantMember) {
+    // Tenant staff member: scope to their company's namespace.
+    where = { AND: [statusWhere, { platformOwnerId: (user as any).platformOwnerId }] };
+  } else if (!isMasterAdmin) {
     const { actorIds, treeIds } = await getAdminInviteScope(user);
     // Visible if the admin (or someone in their tree) created the invite, or
     // the invite targets a user in their tree (registered userId / pending

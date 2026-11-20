@@ -119,7 +119,7 @@ export function AdminOverview({ session }: { session: Session }) {
     try {
       const res = await fetch("/api/admin/stats");
       const data = await res.json();
-      setStats(data);
+      if (res.ok) setStats(data);
     } catch {
       /* silent */
     } finally {
@@ -131,8 +131,8 @@ export function AdminOverview({ session }: { session: Session }) {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
-  const livePartners = stats?.serviceHealth.filter((s) => s.live).length ?? 0;
-  const totalPartners = stats?.serviceHealth.length ?? 0;
+  const livePartners = stats?.serviceHealth?.filter((s) => s.live).length ?? 0;
+  const totalPartners = stats?.serviceHealth?.length ?? 0;
 
   return (
     <div className="space-y-6">

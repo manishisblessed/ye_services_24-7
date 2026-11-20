@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRole, AuthError } from "@/lib/auth-server";
+import { requireAuth, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { NETWORK_TIERS, type DbRole } from "@/lib/hierarchy";
 
@@ -16,11 +16,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   let user;
   try {
-    user = await requireRole("MASTER_ADMIN");
+    user = await requireAuth();
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;
+  }
+
+  const isWlpRoot = user.role === "WHITELABEL_PARTNER";
+  const isTenantMember = !isWlpRoot && Boolean((user as any).platformOwnerId);
+  if (user.role !== "MASTER_ADMIN" && !isWlpRoot && !isTenantMember) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -39,10 +45,18 @@ export async function GET(req: Request) {
 
   const parentRole = NETWORK_TIERS[tierIdx + 1];
 
+  // Tenant scope: WLP root → their own id; tenant member → their company's owner id.
+  const tenantOwnerId = isWlpRoot
+    ? user.id
+    : isTenantMember
+      ? (user as any).platformOwnerId
+      : null;
+
   const parents = await prisma.user.findMany({
     where: {
       role: parentRole,
       status: "ACTIVE",
+      ...(tenantOwnerId ? { platformOwnerId: tenantOwnerId } : {}),
     },
     select: {
       id: true,

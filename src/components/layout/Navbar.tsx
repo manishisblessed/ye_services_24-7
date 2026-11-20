@@ -325,7 +325,7 @@ export function Navbar() {
                 aria-hidden
                 className={cn("hidden h-5 w-px xl:block", onDark ? "bg-white/15" : "bg-ink-200")}
               />
-              <Link href={tenant ? "/admin" : "/login"} className="rounded-2xl focus-energy">
+              <Link href="/login" className="rounded-2xl focus-energy">
                 <Button
                   variant="outline"
                   size="sm"
@@ -608,7 +608,7 @@ function MobileDrawer({
                 <ArrowRight size={16} weight="bold" aria-hidden />
               </Button>
             </Link>
-            <Link href={tenant ? "/admin" : "/login"} onClick={onClose} className="rounded-2xl focus-energy">
+            <Link href="/login" onClick={onClose} className="rounded-2xl focus-energy">
               <Button variant="outline" size="lg" tabIndex={-1} className="w-full">
                 Sign in
               </Button>

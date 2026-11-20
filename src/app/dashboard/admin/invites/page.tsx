@@ -47,6 +47,8 @@ const MASTER_ADMIN_ROLE_OPTIONS: { value: string; label: string }[] = [
 function getAllowedRoles(userRole: string): { value: string; label: string }[] {
   if (userRole === "MASTER_ADMIN") return MASTER_ADMIN_ROLE_OPTIONS;
   if (userRole === "ADMIN") return ROLE_OPTIONS.filter((r) => r.value === "SUPER_DISTRIBUTOR");
+  // WLP root can invite any network tier (SD/MD/DT/RT) within their company.
+  if (userRole === "WHITELABEL_PARTNER") return ROLE_OPTIONS;
   return ROLE_OPTIONS;
 }
 
@@ -645,7 +647,10 @@ function CreateInviteForm({
   const [parentsLoading, setParentsLoading] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
 
-  const needsParent = userRole === "MASTER_ADMIN" && form.role !== "SUPER_DISTRIBUTOR" && form.role !== "WHITELABEL_PARTNER";
+  const needsParent =
+    (userRole === "MASTER_ADMIN" || userRole === "WHITELABEL_PARTNER") &&
+    form.role !== "SUPER_DISTRIBUTOR" &&
+    form.role !== "WHITELABEL_PARTNER";
 
   useEffect(() => {
     if (!needsParent) {
