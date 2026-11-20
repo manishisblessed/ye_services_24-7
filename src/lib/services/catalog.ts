@@ -279,7 +279,7 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
   },
   {
     key: SERVICE_KEYS.BBPS_CREDIT_CARD,
-    name: "Credit Card Bill Payment",
+    name: "SameDay · Credit Card Bill Payment",
     type: "SERVICE",
     kind: "BBPS",
     provider: "SAMEDAY",
@@ -289,7 +289,7 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
   },
   {
     key: SERVICE_KEYS.RECHARGEKIT_CC,
-    name: "Credit Card Bill Payment-2",
+    name: "SameDay · CC Bill Payment-2",
     type: "SERVICE",
     kind: "BBPS",
     provider: "SAMEDAY",
@@ -299,7 +299,7 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
   },
   {
     key: SERVICE_KEYS.BBPS_CHAGANS,
-    name: "CC Bill Payment (BBPS)",
+    name: "Chagans · CC Bill Payment (BBPS)",
     type: "SERVICE",
     kind: "BBPS",
     provider: "CHAGANS",
@@ -309,7 +309,7 @@ export const KNOWN_SERVICE_ROUTES: ServiceRouteSeed[] = [
   },
   {
     key: SERVICE_KEYS.RECHARGEKIT_DIRECT,
-    name: "Offline CC Bill Payment",
+    name: "SameDay · Offline CC Bill Payment",
     type: "SERVICE",
     kind: "BBPS",
     provider: "RECHARGEKIT",
