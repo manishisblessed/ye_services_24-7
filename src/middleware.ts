@@ -58,34 +58,25 @@ const ADMIN_PATHS: Array<{ prefix: string; roles: string[] }> = [
  *
  * A "tenant member" is any account bound to a white-label company: a
  * WHITELABEL_PARTNER (tenant root), a flagged tenant owner, or any user with a
- * platformOwnerId. Such accounts may ONLY touch the curated, tenant-scoped
- * slice of the admin surface below — every other /dashboard/admin page and
- * /api/admin endpoint is denied by default (deny-by-default), so an unaudited
- * platform route can never leak cross-tenant data to a tenant admin.
+ * platformOwnerId. Tenant admins have full platform functionality EXCEPT for
+ * platform-owner-only pages listed in the denylist below.
  */
-const TENANT_ADMIN_PAGE_ALLOWLIST = [
-  "/dashboard/admin/users",
-  "/dashboard/admin/network",
-  "/dashboard/admin/sub-admins",
-  "/dashboard/admin/admins",
-  // Rate Schemes: tenant-isolated per platformOwnerId. A tenant admin/partner
-  // manages ONLY their own schemes & slabs (API scopes every row by namespace).
-  "/dashboard/admin/schemes",
-  // Invites: tenant-isolated. WLP admin can send invites for SD/MD/DT/RT
-  // within their own tenant boundary (API scopes by platformOwnerId).
-  "/dashboard/admin/invites",
+const TENANT_ADMIN_PAGE_DENYLIST = [
+  "/dashboard/admin/audit",       // Activity Log — platform-wide
+  "/dashboard/admin/system",      // System Health — platform-wide
+  "/dashboard/admin/join-requests", // Entry Gate — platform-wide
+  "/dashboard/admin/kyc",         // ID Verification — platform-wide
+  "/dashboard/admin/disputes",    // Helpdesk — platform-wide
+  "/dashboard/admin/whitelabel",  // Partner Brands — WLP management
 ];
 
-const TENANT_ADMIN_API_ALLOWLIST = [
-  "/api/admin/invite",
-  "/api/admin/users",
-  "/api/admin/network",
-  "/api/admin/sub-admins",
-  "/api/admin/admins",
-  // Scheme Manager API (list/create/update/delete + slabs + mdr-slabs + assign
-  // + meta + vendor-preview). Every endpoint scopes rows to the caller's own
-  // tenant namespace, so this is safe to expose to tenant members.
-  "/api/admin/schemes",
+const TENANT_ADMIN_API_DENYLIST = [
+  "/api/admin/audit",
+  "/api/admin/system",
+  "/api/admin/join-requests",
+  "/api/admin/kyc",
+  "/api/admin/disputes",
+  "/api/admin/whitelabel",
 ];
 
 function isTenantMemberToken(token: {
@@ -148,15 +139,13 @@ export async function middleware(req: NextRequest) {
     requestHeaders.delete(TENANT_DOMAIN_HEADER);
   }
 
-  // ── 2b. Tenant-member API firewall. Deny-by-default: a white-label tenant
-  //        account may only reach the tenant-scoped /api/admin endpoints in the
-  //        allowlist. Everything else in the admin API namespace is 403 so an
-  //        unaudited platform route can't leak cross-tenant data.
+  // ── 2b. Tenant-member API firewall. Tenant admins have full admin API access
+  //        except for platform-owner-only endpoints in the denylist.
   if (pathname.startsWith("/api/admin")) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (token && isTenantMemberToken(token)) {
-      const allowed = TENANT_ADMIN_API_ALLOWLIST.some((p) => pathname.startsWith(p));
-      if (!allowed) {
+      const denied = TENANT_ADMIN_API_DENYLIST.some((p) => pathname.startsWith(p));
+      if (denied) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
@@ -181,11 +170,11 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Tenant members in the admin area are confined to the curated allowlist.
+    // Tenant members: block only platform-owner-only admin pages.
     if (
       pathname.startsWith("/dashboard/admin") &&
       isTenantMemberToken(token) &&
-      !TENANT_ADMIN_PAGE_ALLOWLIST.some((p) => pathname.startsWith(p))
+      TENANT_ADMIN_PAGE_DENYLIST.some((p) => pathname.startsWith(p))
     ) {
       const url = req.nextUrl.clone();
       url.pathname = "/dashboard";

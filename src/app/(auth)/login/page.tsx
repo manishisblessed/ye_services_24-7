@@ -31,10 +31,11 @@ import {
 } from "@/components/auth/AuthCard";
 import { StepPanels } from "@/components/auth/StepRail";
 import { cn } from "@/lib/utils";
+import { useTenant } from "@/components/providers/TenantProvider";
 
 type PublicRole = "retailer" | "distributor" | "master-distributor" | "super-distributor" | "whitelabel-partner";
 
-const roleOptions: { id: PublicRole; label: string; icon: PhosphorIcon; tagline: string }[] = [
+const ALL_ROLE_OPTIONS: { id: PublicRole; label: string; icon: PhosphorIcon; tagline: string }[] = [
   { id: "retailer", label: "Retailer", icon: Storefront, tagline: "Run a single shop" },
   { id: "distributor", label: "Distributor", icon: UsersThree, tagline: "Manage retailers" },
   { id: "master-distributor", label: "Master Dist.", icon: TreeStructure, tagline: "White-label & API" },
@@ -71,6 +72,14 @@ function safeCallbackUrl(raw: string | null): string {
 function LoginForm({ location }: { location: LocationData }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tenant = useTenant();
+
+  // On white-label domains, Whitelabel Partner login is not applicable —
+  // that account exists only on the main platform.
+  const roleOptions = tenant
+    ? ALL_ROLE_OPTIONS.filter((r) => r.id !== "whitelabel-partner")
+    : ALL_ROLE_OPTIONS;
+
   const [role, setRole] = useState<PublicRole>("retailer");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");

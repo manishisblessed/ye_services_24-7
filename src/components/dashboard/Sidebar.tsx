@@ -84,14 +84,41 @@ export function Sidebar({
   // loading — service links stay hidden until the allowlist is known.
   const effectiveServices = useEffectiveServices();
 
+  // Tenant members: staff roles (ADMIN/SUB_ADMIN/FINANCE) scoped to a WLP
+  // namespace get the full admin nav minus platform-owner-only pages.
+  // The WLP root itself keeps its own network-focused nav.
+  const isTenantStaff =
+    role !== "whitelabel-partner" &&
+    (Boolean((session?.user as any)?.isTenantOwner) ||
+     Boolean((session?.user as any)?.platformOwnerId));
+
+  const TENANT_DENIED_HREFS = new Set([
+    "/dashboard/admin/audit",
+    "/dashboard/admin/system",
+    "/dashboard/admin/join-requests",
+    "/dashboard/admin/kyc",
+    "/dashboard/admin/disputes",
+    "/dashboard/admin/whitelabel",
+  ]);
+
   const groups: NavGroup[] = useMemo(() => {
     let base = navByRole[role];
+
+    // Tenant staff: strip platform-owner-only pages from the admin nav.
+    if (isTenantStaff) {
+      base = base
+        .map((group) => ({
+          ...group,
+          items: filterNavItems(group.items, (item) => !TENANT_DENIED_HREFS.has(item.href)),
+        }))
+        .filter((group) => group.items.length > 0);
+    }
 
     // Admin/sub-admin: filter workspace tabs by allowedTabs. Tab links may sit
     // under /dashboard/admin/, /dashboard/master-admin/ or /dashboard/sub-admin/
     // depending on the nav — match by slug regardless of prefix.
     // Master-admins always have full access and are never scoped.
-    if ((role === "admin" || role === "sub-admin") && allowedTabs.length > 0) {
+    if (!isTenantStaff && (role === "admin" || role === "sub-admin") && allowedTabs.length > 0) {
       const prefixes = [
         "/dashboard/admin/",
         "/dashboard/master-admin/",
@@ -123,7 +150,7 @@ export function Sidebar({
     }
 
     return base;
-  }, [role, allowedTabs, isStaff, effectiveServices]);
+  }, [role, isTenantStaff, allowedTabs, isStaff, effectiveServices]);
 
   // Mobile drawer: close on Escape.
   useEffect(() => {

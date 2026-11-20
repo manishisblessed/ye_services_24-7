@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ssh -i \"C:\\\\Users\\\\hp\\\\Desktop\\\\banking24_2.pem\" -o StrictHostKeyChecking=no ubuntu@13.207.77.130 \"ls logs/\")"
+      "Bash(ssh -i \"C:\\\\Users\\\\hp\\\\Desktop\\\\banking24_2.pem\" -o StrictHostKeyChecking=no ubuntu@13.207.77.130 \"ls logs/\")",
+      "Read(//d/tech/Emoney/**)",
+      "Read(//d/tech/NEXTGEN/**)",
+      "Read(//d/tech/Paybridgex/**)"
     ]
   }
 }
