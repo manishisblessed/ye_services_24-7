@@ -248,10 +248,13 @@ export async function settleTopup(
   if (txn.status === "SUCCESS") return { refId, status: "SUCCESS", amount: creditedNet };
   if (txn.status === "FAILED") {
     if (opts?.forceResettle && webhookVerified) {
-      await prisma.transaction.update({
-        where: { id: txn.id },
+      const claimed = await prisma.transaction.updateMany({
+        where: { id: txn.id, status: "FAILED" },
         data: { status: "PROCESSING", errorCode: null, errorMessage: null },
       });
+      if (claimed.count === 0) {
+        throw new TopupError("Transaction is no longer FAILED — another resettle may be in progress", 409, "RACE");
+      }
       logger.info({ action: "wallet.topup_force_resettle", refId, from: "FAILED" });
     } else {
       return { refId, status: "FAILED" };

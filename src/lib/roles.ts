@@ -236,7 +236,11 @@ const adminMoneyDesk: NavItem[] = [
  *  Wallet). Company earnings are never shown to plain admins/sub-admins. */
 const masterAdminMoneyDesk: NavItem[] = adminMoneyDesk.flatMap((item) =>
   item.href === "/dashboard/admin/settlement-ops"
-    ? [item, { href: "/dashboard/admin/revenue", label: "Company Revenue", icon: CircleDollarSign }]
+    ? [
+        item,
+        { href: "/dashboard/admin/revenue", label: "Company Revenue", icon: CircleDollarSign },
+        { href: "/dashboard/admin/topup-resettle", label: "PG Re-settle", icon: RotateCcw },
+      ]
     : [item]
 );
 

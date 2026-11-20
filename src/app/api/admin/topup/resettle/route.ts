@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireRole } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { prisma } from "@/lib/db";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
@@ -7,20 +8,54 @@ import { toErrorResponse } from "@/lib/security/apiErrors";
 import { settleTopup, type VerifiedPayin } from "@/lib/wallet/topup";
 import { sendOpsAlert } from "@/lib/monitoring/alerts";
 import { logger } from "@/lib/logger";
+import { toNumber } from "@/lib/money";
 
 /**
  * Admin force-resettle for wallet top-ups stuck in FAILED due to a missed
  * webhook (Chagans PG webhook-only provider). MASTER_ADMIN only.
  *
+ * GET  ?refId=TOPUP…  — look up a WALLET_TOPUP transaction for the UI.
  * POST { refId, verifiedStatus, verifiedAmount, utr?, paymentMode?, providerRef? }
- *
- * Resets the transaction from FAILED → PROCESSING, then runs the standard
- * settleTopup path with the admin-supplied verified payin, so MDR settlement
- * and idempotent wallet credit all go through the normal engine.
+ *      — reset FAILED → PROCESSING and run the standard settle + MDR engine.
  */
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
+
+/** GET — look up a WALLET_TOPUP by refId for the admin UI. */
+export async function GET(req: Request) {
+  try {
+    await requireRole("MASTER_ADMIN");
+    const { searchParams } = new URL(req.url);
+    const refId = searchParams.get("refId")?.trim();
+    if (!refId) return NextResponse.json({ error: "refId is required" }, { status: 400 });
+
+    const txn = await prisma.transaction.findUnique({
+      where: { refId },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    if (!txn || txn.service !== "WALLET_TOPUP")
+      return NextResponse.json({ error: "Wallet top-up not found" }, { status: 404 });
+
+    const reqObj = (txn.request && typeof txn.request === "object" ? txn.request : {}) as Record<string, unknown>;
+    return NextResponse.json({
+      txn: {
+        refId: txn.refId,
+        status: txn.status,
+        amount: toNumber(txn.amount),
+        partner: txn.partner,
+        partnerTxnId: txn.partnerTxnId,
+        customer: txn.customer,
+        createdAt: txn.createdAt.toISOString(),
+        errorCode: txn.errorCode,
+        user: txn.user,
+        gatewayId: typeof reqObj.gatewayId === "string" ? reqObj.gatewayId : null,
+      },
+    });
+  } catch (e) {
+    return toErrorResponse(e);
+  }
+}
 
 const Body = z.object({
   refId: z.string().min(1),
