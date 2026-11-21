@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS, RateLimitError } from "@/lib/security/rateLimit";
 import { getRevenueReport } from "@/lib/reports/revenue";
+import { isPlatformStaff } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -28,6 +29,8 @@ export async function GET(req: Request) {
   let user;
   try {
     user = await requireRole("MASTER_ADMIN", "ADMIN", "FINANCE");
+    if (!isPlatformStaff(user))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`report:revenue:${user.id}`, RATE_LIMITS.reportQuery);
   } catch (e) {
     if (e instanceof AuthError)

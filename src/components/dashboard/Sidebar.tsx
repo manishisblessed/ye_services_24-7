@@ -110,6 +110,7 @@ export function Sidebar({
     "/dashboard/admin/pos-bookings",
     "/dashboard/admin/incentives",
     "/dashboard/admin/verify",
+    "/dashboard/admin/commission-report",
   ]);
 
   const groups: NavGroup[] = useMemo(() => {

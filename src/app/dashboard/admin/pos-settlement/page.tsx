@@ -18,7 +18,7 @@ type PosInstant = {
   dailyLimitAmount: number;
 };
 type PosIngest = { enabled: boolean; paused: boolean; lookbackDays: number; maxPages: number };
-type InstantButton = { posEnabled: boolean; qrEnabled: boolean };
+type InstantButton = { posEnabled: boolean; qrEnabled: boolean; pgEnabled: boolean };
 
 type InstantLimit = {
   globalEnabled: boolean;
@@ -122,7 +122,7 @@ export default function PosSettlementPage() {
   const [loading, setLoading] = useState(true);
   const [t1, setT1] = useState<PosT1>({ enabled: true, hour: 10, paused: false, minAmount: 50 });
   const [ingest, setIngest] = useState<PosIngest>({ enabled: true, paused: false, lookbackDays: 3, maxPages: 50 });
-  const [instantButton, setInstantButton] = useState<InstantButton>({ posEnabled: false, qrEnabled: false });
+  const [instantButton, setInstantButton] = useState<InstantButton>({ posEnabled: false, qrEnabled: false, pgEnabled: false });
   const [posInstant, setPosInstant] = useState<PosInstant>({
     defaultEnabled: false,
     paused: false,
@@ -226,7 +226,7 @@ export default function PosSettlementPage() {
       await post({
         action: "configure",
         key: "settlement.instant_button",
-        value: { posEnabled: next.posEnabled, qrEnabled: next.qrEnabled },
+        value: { posEnabled: next.posEnabled, qrEnabled: next.qrEnabled, pgEnabled: next.pgEnabled },
       });
       setInstantButton(next);
       notify("Instant settlement button updated.", true);
@@ -382,7 +382,7 @@ export default function PosSettlementPage() {
             </span>
           )}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <ToggleRow
             label="POS instant settle"
             hint="Retailers can instant-settle selected POS captures"
@@ -396,6 +396,13 @@ export default function PosSettlementPage() {
             checked={instantButton.qrEnabled}
             disabled={savingButton}
             onChange={(v) => saveButton({ ...instantButton, qrEnabled: v })}
+          />
+          <ToggleRow
+            label="PG instant settle"
+            hint="Retailers can instant-settle PG collections"
+            checked={instantButton.pgEnabled}
+            disabled={savingButton}
+            onChange={(v) => saveButton({ ...instantButton, pgEnabled: v })}
           />
         </div>
       </div>
