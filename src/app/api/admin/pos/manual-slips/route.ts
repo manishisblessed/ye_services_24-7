@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { toNumber } from "@/lib/money";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 /**
  * GET /api/admin/pos/manual-slips
@@ -16,15 +16,19 @@ export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  let admin;
   try {
-    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
-    if (!isPlatformStaff(admin))
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(admin) && !hasTenantWideScope(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     if (e instanceof AuthError)
       return NextResponse.json({ error: e.message }, { status: e.statusCode });
     throw e;
   }
+
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
   const url = new URL(req.url);
   const status = url.searchParams.get("status") ?? "PENDING";
@@ -35,7 +39,8 @@ export async function GET(req: Request) {
 
   const statusWhere = status && status !== "ALL" ? { status } : {};
   const prefWhere = pref ? { settlementPref: pref } : {};
-  const where = { ...statusWhere, ...prefWhere };
+  const memberWhere = memberIds ? { uploaderUserId: { in: memberIds } } : {};
+  const where = { ...statusWhere, ...prefWhere, ...memberWhere };
 
   const [total, slips, counts, prefCounts] = await Promise.all([
     prisma.posManualSlip.count({ where }),

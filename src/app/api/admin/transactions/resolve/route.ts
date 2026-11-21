@@ -4,7 +4,8 @@ import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
 import { correctOneTransaction } from "@/lib/recon/reconcileOne";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, assertCanAccessUser } from "@/lib/security/ownership";
+import { prisma } from "@/lib/db";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -45,16 +46,22 @@ export async function POST(req: Request) {
   try {
     const actor = await requireAdminActivity(req, {
       action: "txn.resolve",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "Transaction",
     });
-    if (!isPlatformStaff(actor))
+    if (!isPlatformStaff(actor) && !hasTenantWideScope(actor))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`txn:resolve:${actor.id}`, RATE_LIMITS.sensitiveWrite);
 
     const parsed = Body.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success)
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
+    if (!isPlatformStaff(actor)) {
+      const txn = await prisma.transaction.findUnique({ where: { refId: parsed.data.refId }, select: { userId: true } });
+      if (!txn) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+      await assertCanAccessUser(txn.userId, actor);
+    }
 
     const result = await correctOneTransaction(parsed.data.refId, {
       actorId: actor.id,

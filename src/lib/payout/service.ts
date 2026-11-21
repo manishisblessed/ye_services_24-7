@@ -653,9 +653,9 @@ export type HeldPayoutRow = {
 };
 
 /** List payouts held for review (INDETERMINATE outcome), oldest first. */
-export async function listHeldPayouts(limit = 200): Promise<HeldPayoutRow[]> {
+export async function listHeldPayouts(limit = 200, memberIds?: string[] | null): Promise<HeldPayoutRow[]> {
   const rows = await prisma.payoutRequest.findMany({
-    where: { status: "NEEDS_REVIEW" },
+    where: { status: "NEEDS_REVIEW", ...(memberIds ? { userId: { in: memberIds } } : {}) },
     orderBy: { processedAt: "asc" },
     take: limit,
     include: { user: { select: { userCode: true } } },

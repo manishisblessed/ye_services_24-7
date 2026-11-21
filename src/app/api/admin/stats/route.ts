@@ -19,8 +19,16 @@ export async function GET() {
     // Platform-wide KPIs, provider balances and GMV are native-staff only. A
     // white-label tenant admin never sees cross-tenant financials — they get a
     // tenant-scoped overview from the network/command-center endpoints instead.
+    // Return an empty shell so the home page renders without a Forbidden toast.
     if (!isPlatformStaff(session)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json({
+        activeUsers: 0, totalUsers: 0, pendingKyc: 0,
+        settledToday: 0, txnsToday: 0, monthlyGmv: 0,
+        dailyGmv: [], serviceHealth: [], pgGateways: [],
+        auditEvents: [], services: [], vendorBalances: [],
+        vendorBalanceTotal: 0,
+        payout: { volumeToday: 0, countToday: 0, volumeMonth: 0, successRate: null, successCount30: 0, terminalCount30: 0, inflight: 0, daily: [] },
+      });
     }
 
     const now = new Date();

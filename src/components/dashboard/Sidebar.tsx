@@ -99,6 +99,17 @@ export function Sidebar({
     "/dashboard/admin/kyc",
     "/dashboard/admin/disputes",
     "/dashboard/admin/whitelabel",
+    "/dashboard/admin/qr",
+    "/dashboard/admin/services",
+    "/dashboard/admin/controls",
+    "/dashboard/admin/slider",
+    "/dashboard/admin/aml",
+    "/dashboard/admin/pos-rental",
+    "/dashboard/admin/pos-reversals",
+    "/dashboard/admin/brands",
+    "/dashboard/admin/pos-bookings",
+    "/dashboard/admin/incentives",
+    "/dashboard/admin/verify",
   ]);
 
   const groups: NavGroup[] = useMemo(() => {

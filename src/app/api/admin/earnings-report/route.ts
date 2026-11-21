@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth-server";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 import {
   buildEarningsReport,
   fetchEarningsReportRows,
@@ -38,8 +38,8 @@ const schema = z.object({
 export async function POST(req: Request) {
   let user;
   try {
-    user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
-    if (!isPlatformStaff(user))
+    user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(user) && !hasTenantWideScope(user))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     await enforceRateLimit(`admin:earnings-report:${user.id}`, RATE_LIMITS.reportQuery);
   } catch (e) {
@@ -58,11 +58,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid date range" }, { status: 400 });
   }
 
+  const ownerId = tenantOwnerId(user);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
   const filters: EarningsReportFilters = {
     dateFrom,
     dateTo,
     rail: parsed.data.rail ?? null,
     retailerId: parsed.data.retailer_id?.trim() || null,
+    memberIds: memberIds ?? null,
   };
 
   try {

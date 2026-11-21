@@ -8,7 +8,7 @@ import {
 } from "@/lib/pos/settlementReport";
 import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ const EXPORT_CAP = 10000;
  * mirroring the sidebar + joinAccess/wallet-ops gating patterns).
  */
 function canViewPosSettlementReport(user: SessionUser): boolean {
-  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN" || user.role === "FINANCE") {
+  if (user.role === "MASTER_ADMIN" || user.role === "ADMIN" || user.role === "FINANCE" || user.role === "WHITELABEL_PARTNER") {
     return true;
   }
   if (user.role === "SUPPORT") {
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   let user: SessionUser;
   try {
     user = await requireAuth();
-    if (!canViewPosSettlementReport(user) || !isPlatformStaff(user)) {
+    if (!canViewPosSettlementReport(user) || (!isPlatformStaff(user) && !hasTenantWideScope(user))) {
       throw new AuthError("Forbidden", 403);
     }
     await enforceRateLimit(`admin:pos-settle-report:${user.id}`, RATE_LIMITS.reportQuery);

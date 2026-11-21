@@ -3,7 +3,7 @@ import { requireRole, AuthError } from "@/lib/auth-server";
 import { prisma } from "@/lib/db";
 import { signedPdfUrl, signedDeliveryUrl } from "@/lib/cloudinary";
 import { clientIp, logSecurityEvent } from "@/lib/security/audit";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   let admin;
   try {
-    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
-    if (!isPlatformStaff(admin))
+    admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(admin) && !hasTenantWideScope(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   } catch (e) {
     if (e instanceof AuthError)
@@ -25,12 +25,19 @@ export async function GET(req: Request) {
     throw e;
   }
 
+  const ownerId = tenantOwnerId(admin);
+  const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
+
   const url = new URL(req.url);
 
   const downloadId = url.searchParams.get("download");
   if (downloadId) {
     const doc = await prisma.document.findFirst({
-      where: { id: downloadId, type: "AGREEMENT" },
+      where: {
+        id: downloadId,
+        type: "AGREEMENT",
+        ...(memberIds ? { userId: { in: memberIds } } : {}),
+      },
       include: { user: { select: { id: true, name: true } } },
     });
     if (!doc) return NextResponse.json({ error: "Agreement not found" }, { status: 404 });
@@ -59,6 +66,7 @@ export async function GET(req: Request) {
 
   const where = {
     type: "AGREEMENT" as const,
+    ...(memberIds ? { userId: { in: memberIds } } : {}),
     ...(q
       ? {
           user: {

@@ -39,6 +39,8 @@ export type EarningsReportFilters = {
   rail?: EarningsRail | null;
   /** Narrow to a single transacting user (the retailer/merchant on the swipe). */
   retailerId?: string | null;
+  /** Restrict to a set of user IDs (tenant-scoping for white-label partners). */
+  memberIds?: string[] | null;
 };
 
 export type EarningsReportRetailer = {
@@ -190,7 +192,13 @@ function buildWhere(filters: EarningsReportFilters): Prisma.TransactionWhereInpu
     where.OR = ALL_RAILS_OR;
   }
 
-  if (filters.retailerId) where.userId = filters.retailerId;
+  if (filters.memberIds?.length) {
+    where.userId = filters.retailerId
+      ? (filters.memberIds.includes(filters.retailerId) ? filters.retailerId : "__none__")
+      : { in: filters.memberIds };
+  } else if (filters.retailerId) {
+    where.userId = filters.retailerId;
+  }
 
   return where;
 }

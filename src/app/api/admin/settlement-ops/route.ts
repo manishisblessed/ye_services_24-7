@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { requireRole, AuthError } from "@/lib/auth-server";
 import { requireAdminActivity } from "@/lib/security/adminActivity";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds, assertCanAccessUser } from "@/lib/security/ownership";
 import { prisma } from "@/lib/db";
 import { clientIp } from "@/lib/security/audit";
 import { getSetting, setSetting } from "@/lib/settings";
@@ -22,36 +22,50 @@ export const maxDuration = 60;
  */
 export async function GET(req: Request) {
   try {
-    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE");
-    if (!isPlatformStaff(user))
+    const user = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT", "FINANCE", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(user) && !hasTenantWideScope(user))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const ownerId = tenantOwnerId(user);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const url = new URL(req.url);
     const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
     const pageSize = 25;
     const dayKey = istDateKey(new Date());
 
+    const runWhere = memberIds ? { userId: { in: memberIds } } : {};
+    const alertWhere = memberIds
+      ? { readAt: null as null, userId: { in: memberIds } }
+      : { readAt: null as null };
+
     const [t1, todayByStatus, aepsPending, runs, runTotal, alerts] = await Promise.all([
       getSetting("settlement.t1"),
       prisma.settlementRun.groupBy({
         by: ["status"],
-        where: { dayKey },
+        where: { dayKey, ...runWhere },
         _count: true,
         _sum: { amount: true },
       }),
       prisma.user.aggregate({
-        where: { deletedAt: null, status: "ACTIVE", aepsBalance: { gt: 0 } },
+        where: {
+          deletedAt: null,
+          status: "ACTIVE",
+          aepsBalance: { gt: 0 },
+          ...(memberIds ? { id: { in: memberIds } } : {}),
+        },
         _sum: { aepsBalance: true },
         _count: true,
       }),
       prisma.settlementRun.findMany({
+        where: runWhere,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      prisma.settlementRun.count(),
+      prisma.settlementRun.count({ where: runWhere }),
       prisma.settlementAlert.findMany({
-        where: { readAt: null },
+        where: alertWhere,
         orderBy: { createdAt: "desc" },
         take: 50,
       }),
@@ -135,7 +149,7 @@ export async function POST(req: Request) {
   try {
     admin = await requireAdminActivity(req, {
       action: "settlement.ops",
-      roles: ["MASTER_ADMIN", "ADMIN"],
+      roles: ["MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER"],
       entity: "Settlement",
     });
   } catch (e) {
@@ -161,23 +175,36 @@ export async function POST(req: Request) {
   try {
     switch (body.action) {
       case "run_sweep": {
+        // Global sweep touches all users — platform staff only.
+        if (!isPlatformStaff(admin))
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         const r = await runT1SettlementSweep();
         await audit("settlement.sweep_manual", r as unknown as Record<string, unknown>);
         return NextResponse.json({ ok: true, result: r });
       }
       case "run_user": {
+        // Tenant staff can only settle users within their own tenant.
+        try { await assertCanAccessUser(body.userId, admin); } catch {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
         const r = await runT1SettlementForUser(body.userId, admin.id);
         await audit("settlement.run_user", { ...r, userId: body.userId });
         return NextResponse.json({ ok: true, result: r });
       }
       case "pause":
       case "resume": {
+        // Global engine controls — platform staff only.
+        if (!isPlatformStaff(admin))
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         const t1 = await getSetting("settlement.t1");
         await setSetting("settlement.t1", { ...t1, paused: body.action === "pause" }, admin.id);
         await audit(`settlement.${body.action}d`, {});
         return NextResponse.json({ ok: true });
       }
       case "configure": {
+        // Global engine config — platform staff only.
+        if (!isPlatformStaff(admin))
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         const t1 = await getSetting("settlement.t1");
         await setSetting(
           "settlement.t1",
@@ -192,6 +219,14 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
       case "ack_alert": {
+        const alert = await prisma.settlementAlert.findUnique({ where: { id: body.alertId } });
+        if (!alert) return NextResponse.json({ error: "Alert not found" }, { status: 404 });
+        // Tenant staff can only ack alerts for their own users.
+        if (!isPlatformStaff(admin) && alert.userId) {
+          try { await assertCanAccessUser(alert.userId, admin); } catch {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+          }
+        }
         await prisma.settlementAlert.update({
           where: { id: body.alertId },
           data: { readAt: new Date() },

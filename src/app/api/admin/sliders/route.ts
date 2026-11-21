@@ -19,7 +19,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "SUPPORT");
+    if (!isPlatformStaff(admin))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const rows = await prisma.slider.findMany({
       orderBy: [{ kind: "asc" }, { sortOrder: "asc" }, { createdAt: "desc" }],

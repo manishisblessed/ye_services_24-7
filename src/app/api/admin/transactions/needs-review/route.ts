@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { toNumber } from "@/lib/money";
 import { deriveTxnRefs } from "@/lib/recon/refs";
 import { toErrorResponse } from "@/lib/security/apiErrors";
-import { isPlatformStaff } from "@/lib/security/ownership";
+import { isPlatformStaff, hasTenantWideScope, tenantOwnerId, getTenantMemberIds } from "@/lib/security/ownership";
 
 export const fetchCache = "force-no-store";
 export const dynamic = "force-dynamic";
@@ -20,14 +20,20 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: Request) {
   try {
-    const admin = await requireRole("MASTER_ADMIN", "ADMIN");
-    if (!isPlatformStaff(admin))
+    const admin = await requireRole("MASTER_ADMIN", "ADMIN", "WHITELABEL_PARTNER");
+    if (!isPlatformStaff(admin) && !hasTenantWideScope(admin))
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const ownerId = tenantOwnerId(admin);
+    const memberIds = ownerId ? await getTenantMemberIds(ownerId) : null;
 
     const url = new URL(req.url);
     const page = Math.max(1, Number(url.searchParams.get("page") ?? 1));
     const pageSize = 25;
-    const where = { status: "NEEDS_REVIEW" as const };
+    const where = {
+      status: "NEEDS_REVIEW" as const,
+      ...(memberIds ? { userId: { in: memberIds } } : {}),
+    };
 
     const [rows, total] = await Promise.all([
       prisma.transaction.findMany({
